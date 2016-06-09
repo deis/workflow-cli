@@ -51,6 +51,21 @@ curl https://storage.googleapis.com/workflow-cli/deis-latest-darwin-386 > deis &
 
 Windows builds are not yet supported. [#26](https://github.com/deis/workflow-cli/issues/26) currently tracks the work to support them).
 
+
+After you execute the appropriate command for your system, you'll have a `deis` binary in the current directory.
+
+Run the following to see the version:
+
+```console
+$ ./deis --version
+```
+
+You can then move it anywhere in your path:
+
+```console
+$ mv deis /usr/local/bin
+```
+
 ### From Scratch
 
 To compile the client from scratch, ensure you have Docker installed and run
