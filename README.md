@@ -3,7 +3,15 @@
 [![Build Status](https://travis-ci.org/deis/workflow-cli.svg?branch=master)](https://travis-ci.org/deis/workflow-cli)
 [![Go Report Card](http://goreportcard.com/badge/deis/workflow-cli)](http://goreportcard.com/report/deis/workflow-cli)
 [![codebeat badge](https://codebeat.co/badges/05d314a8-ca61-4211-b69e-e7a3033662c8)](https://codebeat.co/projects/github-com-deis-workflow-cli)
-[![Download](https://api.bintray.com/packages/deis/deisci/deis/images/download.svg)](https://bintray.com/deis/deisci/deis/_latestVersion)
+
+Download Links:
+
+- [64 Bit Linux](https://storage.googleapis.com/workflow-cli/deis-latest-linux-amd64)
+- [32 Bit Linux](https://storage.googleapis.com/workflow-cli/deis-latest-linux-386)
+- [64 Bit Mac OS X](https://storage.googleapis.com/workflow-cli/deis-latest-darwin-amd64)
+- [32 Bit Max OS X](https://storage.googleapis.com/workflow-cli/deis-latest-darwin-386)
+
+(Note: Windows builds are not yet supported. [#26](https://github.com/deis/workflow-cli/issues/26) currently tracks the work to support them).
 
 `deis` is a command line utility used to interact with the [Deis](http://deis.io) open source PaaS.
 
@@ -11,19 +19,16 @@ Please add any [issues](https://github.com/deis/workflow-cli/issues) you find wi
 
 ## Installation
 
-### From Bintray
+### Pre-built Binary
 
-Install the `deis` client from [bintray](https://bintray.com/) by running
+Run the appropriate command for your system to download and install a `deis` binary:
 
-	$ curl -sSL http://deis.io/deis-cli/install-v2.sh | bash
+- 64 Bit Linux: `curl https://storage.googleapis.com/workflow-cli/deis-latest-linux-amd64 > deis && chmod +x deis`
+- 32 Bit Linux: `curl https://storage.googleapis.com/workflow-cli/deis-latest-linux-386 > deis && chmod +x deis`
+- 64 Bit Mac OS X: `curl https://storage.googleapis.com/workflow-cli/deis-latest-darwin-amd64 > deis && chmod +x deis`
+- 32 Bit Max OS X: `curl https://storage.googleapis.com/workflow-cli/deis-latest-darwin-386 > deis && chmod +x deis`
 
-The installer will fetch the latest version of the client into your current directory.
-
-	$ ./deis --version
-
-You can then move it anywhere in your path:
-
-    $ mv deis /usr/local/bin
+(Note: Windows builds are not yet supported. [#26](https://github.com/deis/workflow-cli/issues/26) currently tracks the work to support them).
 
 ### From Scratch
 
