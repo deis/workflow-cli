@@ -26,25 +26,25 @@ See the appropriate sub-section below for your system to download and install th
 #### 64 Bit Linux
 
 ```console
-curl https://storage.googleapis.com/workflow-cli/deis-latest-linux-amd64 > deis && chmod +x deis
+curl -o deis https://storage.googleapis.com/workflow-cli/deis-latest-linux-amd64 && chmod +x deis
 ```
 
 #### 32 Bit Linux
 
 ```console
-curl https://storage.googleapis.com/workflow-cli/deis-latest-linux-386 > deis && chmod +x deis
+curl -o deis https://storage.googleapis.com/workflow-cli/deis-latest-linux-386 && chmod +x deis
 ```
 
 #### 64 Bit Mac OS X
 
 ```console
-curl https://storage.googleapis.com/workflow-cli/deis-latest-darwin-amd64 > deis && chmod +x deis
+curl -o deis https://storage.googleapis.com/workflow-cli/deis-latest-darwin-amd64 && chmod +x deis
 ```
 
 #### 32 Bit Max OS X
 
 ```console
-curl https://storage.googleapis.com/workflow-cli/deis-latest-darwin-386 > deis && chmod +x deis
+curl -o deis https://storage.googleapis.com/workflow-cli/deis-latest-darwin-386 && chmod +x deis
 ```
 
 #### Windows
