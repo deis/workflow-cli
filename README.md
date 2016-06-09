@@ -21,7 +21,7 @@ Please add any [issues](https://github.com/deis/workflow-cli/issues) you find wi
 
 ### Pre-built Binary
 
-See the appropriate sub-section for your system to download and install the latest build of this software.
+See the appropriate sub-section below for your system to download and install the latest build of this software.
 
 #### 64 Bit Linux
 
