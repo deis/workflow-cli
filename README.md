@@ -21,14 +21,35 @@ Please add any [issues](https://github.com/deis/workflow-cli/issues) you find wi
 
 ### Pre-built Binary
 
-Run the appropriate command for your system to download and install a `deis` binary:
+See the appropriate sub-section for your system to download and install the latest pre-built build of this software.
 
-- 64 Bit Linux: `curl https://storage.googleapis.com/workflow-cli/deis-latest-linux-amd64 > deis && chmod +x deis`
-- 32 Bit Linux: `curl https://storage.googleapis.com/workflow-cli/deis-latest-linux-386 > deis && chmod +x deis`
-- 64 Bit Mac OS X: `curl https://storage.googleapis.com/workflow-cli/deis-latest-darwin-amd64 > deis && chmod +x deis`
-- 32 Bit Max OS X: `curl https://storage.googleapis.com/workflow-cli/deis-latest-darwin-386 > deis && chmod +x deis`
+#### 64 Bit Linux
 
-(Note: Windows builds are not yet supported. [#26](https://github.com/deis/workflow-cli/issues/26) currently tracks the work to support them).
+```console
+curl https://storage.googleapis.com/workflow-cli/deis-latest-linux-amd64 > deis && chmod +x deis
+```
+
+#### 32 Bit Linux
+
+```console
+curl https://storage.googleapis.com/workflow-cli/deis-latest-linux-386 > deis && chmod +x deis
+```
+
+#### 64 Bit Mac OS X
+
+```console
+curl https://storage.googleapis.com/workflow-cli/deis-latest-darwin-amd64 > deis && chmod +x deis
+```
+
+#### 32 Bit Max OS X
+
+```console
+curl https://storage.googleapis.com/workflow-cli/deis-latest-darwin-386 > deis && chmod +x deis
+```
+
+#### Windows
+
+Windows builds are not yet supported. [#26](https://github.com/deis/workflow-cli/issues/26) currently tracks the work to support them).
 
 ### From Scratch
 
