@@ -31,7 +31,13 @@ func createTempProfile(contents string) error {
 	return nil
 }
 
+type comparison struct {
+	key      interface{}
+	expected interface{}
+}
+
 func TestLoadSave(t *testing.T) {
+	// Load profile from file and confirm it is correctly parsed.
 	if err := createTempProfile(sFile); err != nil {
 		t.Fatal(err)
 	}
@@ -42,35 +48,36 @@ func TestLoadSave(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expectedB := false
-	if client.SSLVerify != expectedB {
-		t.Errorf("Expected %t, Got %t", expectedB, client.SSLVerify)
+	tests := []comparison{
+		comparison{
+			key:      false,
+			expected: client.SSLVerify,
+		},
+		comparison{
+			key:      "a",
+			expected: client.Token,
+		},
+		comparison{
+			key:      "t",
+			expected: client.Username,
+		},
+		comparison{
+			key:      "http://d.t",
+			expected: client.ControllerURL.String(),
+		},
+		comparison{
+			key:      50,
+			expected: client.ResponseLimit,
+		},
 	}
 
-	expected := "a"
-	if client.Token != expected {
-		t.Errorf("Expected %s, Got %s", expected, client.Token)
-	}
+	checkComparisons(tests, t)
 
-	expected = "t"
-	if client.Username != expected {
-		t.Errorf("Expected %s, Got %s", expected, client.Username)
-	}
-
-	expected = "http://d.t"
-	if client.ControllerURL.String() != expected {
-		t.Errorf("Expected %s, Got %s", expected, client.ControllerURL.String())
-	}
-
-	expectedI := 50
-	if client.ResponseLimit != expectedI {
-		t.Errorf("Expected %d, Got %d", expectedI, client.ResponseLimit)
-	}
-
+	// Modify profile and confirm it is correctly saved
 	client.SSLVerify = true
 	client.Token = "b"
 	client.Username = "c"
-	client.ResponseLimit = 0
+	client.ResponseLimit = 100
 
 	u, err := url.Parse("http://deis.test")
 
@@ -90,29 +97,37 @@ func TestLoadSave(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expectedB = true
-	if client.SSLVerify != expectedB {
-		t.Errorf("Expected %t, Got %t", expectedB, client.SSLVerify)
+	tests = []comparison{
+		comparison{
+			key:      true,
+			expected: client.SSLVerify,
+		},
+		comparison{
+			key:      "b",
+			expected: client.Token,
+		},
+		comparison{
+			key:      "c",
+			expected: client.Username,
+		},
+		comparison{
+			key:      "http://deis.test",
+			expected: client.ControllerURL.String(),
+		},
+		comparison{
+			key:      100,
+			expected: client.ResponseLimit,
+		},
 	}
 
-	expected = "b"
-	if client.Token != expected {
-		t.Errorf("Expected %s, Got %s", expected, client.Token)
-	}
+	checkComparisons(tests, t)
+}
 
-	expected = "c"
-	if client.Username != expected {
-		t.Errorf("Expected %s, Got %s", expected, client.Username)
-	}
-
-	expected = "http://deis.test"
-	if client.ControllerURL.String() != expected {
-		t.Errorf("Expected %s, Got %s", expected, client.ControllerURL.String())
-	}
-
-	expectedI = 100
-	if client.ResponseLimit != expectedI {
-		t.Errorf("Expected %d, Got %d", expectedI, client.ResponseLimit)
+func checkComparisons(tests []comparison, t *testing.T) {
+	for _, check := range tests {
+		if check.key != check.expected {
+			t.Errorf("Expected %v, Got %v", check.key, check.expected)
+		}
 	}
 }
 
