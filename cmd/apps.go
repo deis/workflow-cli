@@ -202,7 +202,12 @@ func AppRun(appID, command string) error {
 		return err
 	}
 
-	fmt.Print(out.Output)
+	if out.ReturnCode == 0 {
+		fmt.Print(out.Output)
+	} else {
+		fmt.Fprint(os.Stderr, out.Output)
+	}
+
 	os.Exit(out.ReturnCode)
 	return nil
 }
