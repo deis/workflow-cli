@@ -5,7 +5,7 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/deis/workflow-cli/controller/models/releases"
+	"github.com/deis/controller-sdk-go/releases"
 )
 
 // ReleasesList lists an app's releases.
@@ -21,8 +21,7 @@ func ReleasesList(appID string, results int) error {
 	}
 
 	releases, count, err := releases.List(c, appID, results)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -47,8 +46,7 @@ func ReleasesInfo(appID string, version int) error {
 	}
 
 	r, err := releases.Get(c, appID, version)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -84,8 +82,7 @@ func ReleasesRollback(appID string, version int) error {
 	newVersion, err := releases.Rollback(c, appID, version)
 	quit <- true
 	<-quit
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 

@@ -3,9 +3,10 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/deis/workflow-cli/controller/client"
-	"github.com/deis/workflow-cli/controller/models/perms"
+	"github.com/deis/controller-sdk-go"
+	"github.com/deis/controller-sdk-go/perms"
 	"github.com/deis/workflow-cli/pkg/git"
+	"github.com/deis/workflow-cli/settings"
 )
 
 // PermsList prints which users have permissions.
@@ -28,7 +29,7 @@ func PermsList(appID string, admin bool, results int) error {
 		users, err = perms.List(c, appID)
 	}
 
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -62,7 +63,7 @@ func PermCreate(appID string, username string, admin bool) error {
 		err = perms.New(c, appID, username)
 	}
 
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -88,7 +89,7 @@ func PermDelete(appID string, username string, admin bool) error {
 		err = perms.Delete(c, appID, username)
 	}
 
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -98,7 +99,7 @@ func PermDelete(appID string, username string, admin bool) error {
 }
 
 func permsLoad(appID string, admin bool) (*client.Client, string, error) {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return nil, "", err

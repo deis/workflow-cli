@@ -9,13 +9,14 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 
-	"github.com/deis/workflow-cli/controller/client"
-	"github.com/deis/workflow-cli/controller/models/certs"
+	"github.com/deis/controller-sdk-go"
+	"github.com/deis/controller-sdk-go/certs"
+	"github.com/deis/workflow-cli/settings"
 )
 
 // CertsList lists certs registered with the controller.
 func CertsList(results int) error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -26,8 +27,7 @@ func CertsList(results int) error {
 	}
 
 	certList, _, err := certs.List(c, results)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -97,7 +97,7 @@ func CertsList(results int) error {
 
 // CertAdd adds a cert to the controller.
 func CertAdd(cert string, key string, name string) error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -129,13 +129,13 @@ func doCertAdd(c *client.Client, cert string, key string, name string) error {
 	}
 
 	_, err = certs.New(c, string(certFile), string(keyFile), name)
-	return err
+	return checkAPICompatibility(c, err)
 }
 
 // CertRemove deletes a cert from the controller.
 func CertRemove(name string) error {
-	c, err := client.New()
-	if err != nil {
+	c, err := settings.Load()
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -143,26 +143,25 @@ func CertRemove(name string) error {
 	quit := progress()
 
 	err = certs.Delete(c, name)
-
 	quit <- true
 	<-quit
-
-	if err == nil {
-		fmt.Println("done")
+	if checkAPICompatibility(c, err) != nil {
+		return err
 	}
 
-	return err
+	fmt.Println("done")
+	return nil
 }
 
 // CertInfo gets info about certficiate
 func CertInfo(name string) error {
-	c, err := client.New()
+	c, err := settings.Load()
 	if err != nil {
 		return err
 	}
 
 	cert, err := certs.Get(c, name)
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -195,7 +194,7 @@ func CertInfo(name string) error {
 
 // CertAttach attaches a certificate to a domain
 func CertAttach(name string, domain string) error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -205,11 +204,9 @@ func CertAttach(name string, domain string) error {
 	quit := progress()
 
 	err = certs.Attach(c, name, domain)
-
 	quit <- true
 	<-quit
-
-	if err == nil {
+	if checkAPICompatibility(c, err) == nil {
 		fmt.Println("done")
 	}
 
@@ -218,7 +215,7 @@ func CertAttach(name string, domain string) error {
 
 // CertDetach detaches a certificate from a domain
 func CertDetach(name string, domain string) error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -228,13 +225,12 @@ func CertDetach(name string, domain string) error {
 	quit := progress()
 
 	err = certs.Detach(c, name, domain)
-
 	quit <- true
 	<-quit
-
-	if err == nil {
-		fmt.Println("done")
+	if checkAPICompatibility(c, err) != nil {
+		return err
 	}
 
-	return err
+	fmt.Println("done")
+	return nil
 }

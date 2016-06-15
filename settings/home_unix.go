@@ -1,4 +1,6 @@
-package client
+// +build linux darwin
+
+package settings
 
 import (
 	"os"
@@ -6,5 +8,5 @@ import (
 
 // FindHome returns the HOME directory of the current user
 func FindHome() string {
-	return os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+	return os.Getenv("HOME")
 }

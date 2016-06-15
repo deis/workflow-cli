@@ -1,6 +1,6 @@
 // +build linux darwin
 
-package client
+package settings
 
 import (
 	"os"

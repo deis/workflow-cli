@@ -6,8 +6,8 @@ import (
 
 	"github.com/deis/pkg/prettyprint"
 
-	"github.com/deis/workflow-cli/controller/api"
-	"github.com/deis/workflow-cli/controller/models/config"
+	"github.com/deis/controller-sdk-go/api"
+	"github.com/deis/controller-sdk-go/config"
 )
 
 // TagsList lists an app's tags.
@@ -19,8 +19,7 @@ func TagsList(appID string) error {
 	}
 
 	config, err := config.List(c, appID)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -54,11 +53,9 @@ func TagsSet(appID string, tags []string) error {
 	configObj.Tags = tagsMap
 
 	_, err = config.Set(c, appID, configObj)
-
 	quit <- true
 	<-quit
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -90,11 +87,9 @@ func TagsUnset(appID string, tags []string) error {
 	configObj.Tags = tagsMap
 
 	_, err = config.Set(c, appID, configObj)
-
 	quit <- true
 	<-quit
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 

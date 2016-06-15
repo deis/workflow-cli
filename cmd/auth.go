@@ -3,14 +3,14 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"reflect"
 	"strings"
 	"syscall"
 
-	"github.com/deis/workflow-cli/controller/client"
-	"github.com/deis/workflow-cli/controller/models/auth"
+	client "github.com/deis/controller-sdk-go"
+	"github.com/deis/controller-sdk-go/auth"
+	"github.com/deis/workflow-cli/settings"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
@@ -18,20 +18,22 @@ import (
 func Register(controller string, username string, password string, email string,
 	sslVerify bool) error {
 
-	u, err := url.Parse(controller)
-	httpClient := client.CreateHTTPClient(sslVerify)
+	c, err := client.New(sslVerify, controller, "", "")
 
 	if err != nil {
 		return err
 	}
 
-	controllerURL, err := chooseScheme(*u)
+	tempClient, err := settings.Load()
 
-	if err != nil {
-		return err
+	if err == nil && tempClient.ControllerURL.Host == c.ControllerURL.Host {
+		c.Token = tempClient.Token
 	}
 
-	if err = client.CheckConnection(httpClient, controllerURL); err != nil {
+	// Set user agent for temporary client.
+	c.UserAgent = settings.UserAgent
+
+	if err = c.CheckConnection(); checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -61,19 +63,11 @@ func Register(controller string, username string, password string, email string,
 		fmt.Scanln(&email)
 	}
 
-	c := &client.Client{ControllerURL: controllerURL, SSLVerify: sslVerify, HTTPClient: httpClient}
-
-	tempClient, err := client.New()
-
-	if err == nil {
-		c.Token = tempClient.Token
-	}
-
 	err = auth.Register(c, username, password, email)
 
 	c.Token = ""
 
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		fmt.Fprint(os.Stderr, "Registration failed: ")
 		return err
 	}
@@ -84,15 +78,14 @@ func Register(controller string, username string, password string, email string,
 
 func doLogin(c *client.Client, username, password string) error {
 	token, err := auth.Login(c, username, password)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
 	c.Token = token
 	c.Username = username
 
-	err = c.Save()
+	err = settings.Save(c)
 
 	if err != nil {
 		return nil
@@ -104,20 +97,16 @@ func doLogin(c *client.Client, username, password string) error {
 
 // Login to a Deis controller.
 func Login(controller string, username string, password string, sslVerify bool) error {
-	u, err := url.Parse(controller)
+	c, err := client.New(sslVerify, controller, "", "")
 
 	if err != nil {
 		return err
 	}
 
-	controllerURL, err := chooseScheme(*u)
-	httpClient := client.CreateHTTPClient(sslVerify)
+	// Set user agent for temporary client.
+	c.UserAgent = settings.UserAgent
 
-	if err != nil {
-		return err
-	}
-
-	if err = client.CheckConnection(httpClient, controllerURL); err != nil {
+	if err = c.CheckConnection(); checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -136,14 +125,12 @@ func Login(controller string, username string, password string, sslVerify bool) 
 		}
 	}
 
-	c := &client.Client{ControllerURL: controllerURL, SSLVerify: sslVerify, HTTPClient: httpClient}
-
 	return doLogin(c, username, password)
 }
 
 // Logout from a Deis controller.
 func Logout() error {
-	if err := client.Delete(); err != nil {
+	if err := settings.Delete(); err != nil {
 		return err
 	}
 
@@ -153,7 +140,7 @@ func Logout() error {
 
 // Passwd changes a user's password.
 func Passwd(username string, password string, newPassword string) error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -187,8 +174,7 @@ func Passwd(username string, password string, newPassword string) error {
 	}
 
 	err = auth.Passwd(c, username, password, newPassword)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		fmt.Fprint(os.Stderr, "Password change failed: ")
 		return err
 	}
@@ -199,7 +185,7 @@ func Passwd(username string, password string, newPassword string) error {
 
 // Cancel deletes a user's account.
 func Cancel(username string, password string, yes bool) error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -208,7 +194,7 @@ func Cancel(username string, password string, yes bool) error {
 	if username == "" || password != "" {
 		fmt.Println("Please log in again in order to cancel this account")
 
-		if err = Login(c.ControllerURL.String(), username, password, c.SSLVerify); err != nil {
+		if err = Login(c.ControllerURL.String(), username, password, c.VerifySSL); err != nil {
 			return err
 		}
 	}
@@ -216,7 +202,7 @@ func Cancel(username string, password string, yes bool) error {
 	if yes == false {
 		confirm := ""
 
-		c, err = client.New()
+		c, err = settings.Load()
 
 		if err != nil {
 			return err
@@ -244,15 +230,15 @@ func Cancel(username string, password string, yes bool) error {
 	err = auth.Delete(c, username)
 	cleanup := fmt.Errorf("\n%s %s\n\n", "409", "Conflict")
 	if reflect.DeepEqual(err, cleanup) {
-		fmt.Printf("%s still has application associated with it. Transfer ownership or delete them first\n", username)
+		fmt.Printf("%s still has applications associated with it. Transfer ownership or delete them first\n", username)
 		return nil
-	} else if err != nil {
+	} else if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
 	// If user targets themselves, logout.
 	if username == "" || c.Username == username {
-		if err := client.Delete(); err != nil {
+		if err := settings.Delete(); err != nil {
 			return err
 		}
 	}
@@ -263,7 +249,7 @@ func Cancel(username string, password string, yes bool) error {
 
 // Whoami prints the logged in user.
 func Whoami() error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -275,22 +261,21 @@ func Whoami() error {
 
 // Regenerate regenenerates a user's token.
 func Regenerate(username string, all bool) error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
 	}
 
 	token, err := auth.Regenerate(c, username, all)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
 	if username == "" && all == false {
 		c.Token = token
 
-		err = c.Save()
+		err = settings.Save(c)
 
 		if err != nil {
 			return err
@@ -305,19 +290,4 @@ func readPassword() (string, error) {
 	password, err := terminal.ReadPassword(int(syscall.Stdin))
 
 	return string(password), err
-}
-
-func chooseScheme(u url.URL) (url.URL, error) {
-	if u.Scheme == "" {
-		u.Scheme = "http"
-		u, err := url.Parse(u.String())
-
-		if err != nil {
-			return url.URL{}, err
-		}
-
-		return *u, nil
-	}
-
-	return u, nil
 }

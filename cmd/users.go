@@ -3,13 +3,13 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/deis/workflow-cli/controller/client"
-	"github.com/deis/workflow-cli/controller/models/users"
+	"github.com/deis/controller-sdk-go/users"
+	"github.com/deis/workflow-cli/settings"
 )
 
 // UsersList lists users registered with the controller.
 func UsersList(results int) error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -20,8 +20,7 @@ func UsersList(results int) error {
 	}
 
 	users, count, err := users.List(c, results)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 

@@ -19,7 +19,7 @@ DIST_DIR := _dist
 
 GO_FILES = $(wildcard *.go)
 GO_LDFLAGS = -ldflags "-s -X ${repo_path}/version.BuildVersion=${VERSION}"
-GO_PACKAGES = cmd controller/api controller/client $(wildcard controller/models/*) parser $(wildcard pkg/*)
+GO_PACKAGES = cmd parser $(wildcard pkg/*)
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 GOFMT = gofmt -e -l -s
 GOTEST = go test --cover --race -v

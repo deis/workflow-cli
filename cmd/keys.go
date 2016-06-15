@@ -7,15 +7,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/deis/workflow-cli/controller/api"
-	"github.com/deis/workflow-cli/controller/client"
-	"github.com/deis/workflow-cli/controller/models/keys"
+	"github.com/deis/controller-sdk-go/api"
+	"github.com/deis/controller-sdk-go/keys"
 	"github.com/deis/workflow-cli/pkg/ssh"
+	"github.com/deis/workflow-cli/settings"
 )
 
 // KeysList lists a user's keys.
 func KeysList(results int) error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -26,8 +26,7 @@ func KeysList(results int) error {
 	}
 
 	keys, count, err := keys.List(c, results)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -41,7 +40,7 @@ func KeysList(results int) error {
 
 // KeyRemove removes keys.
 func KeyRemove(keyID string) error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -49,7 +48,7 @@ func KeyRemove(keyID string) error {
 
 	fmt.Printf("Removing %s SSH Key...", keyID)
 
-	if err = keys.Delete(c, keyID); err != nil {
+	if err = keys.Delete(c, keyID); checkAPICompatibility(c, err) != nil {
 		fmt.Println()
 		return err
 	}
@@ -60,7 +59,7 @@ func KeyRemove(keyID string) error {
 
 // KeyAdd adds keys.
 func KeyAdd(keyLocation string) error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -80,7 +79,7 @@ func KeyAdd(keyLocation string) error {
 
 	fmt.Printf("Uploading %s to deis...", filepath.Base(key.Name))
 
-	if _, err = keys.New(c, key.ID, key.Public); err != nil {
+	if _, err = keys.New(c, key.ID, key.Public); checkAPICompatibility(c, err) != nil {
 		fmt.Println()
 		return err
 	}
@@ -132,7 +131,7 @@ func chooseKey() (api.KeyCreateRequest, error) {
 }
 
 func listKeys() ([]api.KeyCreateRequest, error) {
-	folder := filepath.Join(client.FindHome(), ".ssh")
+	folder := filepath.Join(settings.FindHome(), ".ssh")
 	files, err := ioutil.ReadDir(folder)
 
 	if err != nil {

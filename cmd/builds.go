@@ -7,7 +7,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"github.com/deis/workflow-cli/controller/models/builds"
+	"github.com/deis/controller-sdk-go/builds"
 )
 
 // BuildsList lists an app's builds.
@@ -23,8 +23,7 @@ func BuildsList(appID string, results int) error {
 	}
 
 	builds, count, err := builds.List(c, appID, results)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -66,8 +65,7 @@ func BuildsCreate(appID, image, procfile string) error {
 	_, err = builds.New(c, appID, image, procfileMap)
 	quit <- true
 	<-quit
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 

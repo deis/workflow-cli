@@ -1,21 +1,47 @@
-hash: 8acf580cb839e38d5842e1b4e143449507a0d91e00820a6ef5bc99fe05f36775
-updated: 2016-02-18T15:05:38.56032202-08:00
+hash: efb390ce6569c895e553582bd010493901e3fa4733fb9037970003c870cb5df2
+updated: 2016-06-16T17:39:55.70719745Z
 imports:
+- name: github.com/deis/controller-sdk-go
+  version: 04f745f793e66aaf3e6a272a1483628233fad2e1
+  subpackages:
+  - api
+  - apps
+  - auth
+  - builds
+  - certs
+  - config
+  - domains
+  - keys
+  - perms
+  - ps
+  - releases
+  - users
 - name: github.com/deis/pkg
-  version: 20cd6d3875d29b186b47d7466dcc1672db01619c
+  version: 189ed6bd6b6aa6629b72c2c5472095e176eec8a6
   subpackages:
   - time
   - prettyprint
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
+- name: github.com/goware/urlx
+  version: 86bdc24560383254e8b977da31a823eddf904409
 - name: github.com/mattn/go-runewidth
-  version: d037b52ae5c0338c2bb18da01fb7ddf0e8be9aa1
+  version: d6bea18f789704b5f83375793155289da36a3c7f
 - name: github.com/olekukonko/tablewriter
-  version: cca8bbc0798408af109aaaa239cbd2634846b340
+  version: 8d0265a48283795806b872b4728c67bf5c777f20
+- name: github.com/PuerkitoBio/purell
+  version: 1d5d1cfad45d42ec5f81fa8ef23de09cebc6dcc3
+- name: github.com/PuerkitoBio/urlesc
+  version: 5fa9ff0392746aeae1c4b37fcc42c65afa7a9587
 - name: golang.org/x/crypto
-  version: c84e1f8e3a7e322d497cd16c0e8a13c7e127baf3
+  version: f3241ce8505855877cc8a9717bd61a0f7c4ea83c
   subpackages:
   - ssh/terminal
+- name: golang.org/x/net
+  version: c2528b2dd8352441850638a8bb678c2ad056fd3e
+  subpackages:
+  - context
+  - idna
 - name: gopkg.in/yaml.v2
-  version: d466437aa4adc35830964cffc5b5f262c63ddcb4
+  version: a83829b6f1293c91addabc89d0571c246397bbf4
 devImports: []

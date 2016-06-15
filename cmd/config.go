@@ -12,8 +12,8 @@ import (
 
 	"github.com/deis/pkg/prettyprint"
 
-	"github.com/deis/workflow-cli/controller/api"
-	"github.com/deis/workflow-cli/controller/models/config"
+	"github.com/deis/controller-sdk-go/api"
+	"github.com/deis/controller-sdk-go/config"
 )
 
 // ConfigList lists an app's config.
@@ -25,8 +25,7 @@ func ConfigList(appID string, oneLine bool) error {
 	}
 
 	config, err := config.List(c, appID)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -72,7 +71,7 @@ func ConfigSet(appID string, configVars []string) error {
 	if ok {
 		sshKey := value.(string)
 
-		if _, err := os.Stat(value.(string)); err == nil {
+		if _, err = os.Stat(value.(string)); err == nil {
 			contents, err := ioutil.ReadFile(value.(string))
 
 			if err != nil {
@@ -96,11 +95,9 @@ func ConfigSet(appID string, configVars []string) error {
 	quit := progress()
 	configObj := api.Config{Values: configMap}
 	configObj, err = config.Set(c, appID, configObj)
-
 	quit <- true
 	<-quit
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -136,11 +133,9 @@ func ConfigUnset(appID string, configVars []string) error {
 	configObj.Values = valuesMap
 
 	_, err = config.Set(c, appID, configObj)
-
 	quit <- true
 	<-quit
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -158,8 +153,7 @@ func ConfigPull(appID string, interactive bool, overwrite bool) error {
 	}
 
 	configVars, err := config.List(c, appID)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 

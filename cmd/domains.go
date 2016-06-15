@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/deis/workflow-cli/controller/models/domains"
+	"github.com/deis/controller-sdk-go/domains"
 )
 
 // DomainsList lists domains registered with an app.
@@ -19,8 +19,7 @@ func DomainsList(appID string, results int) error {
 	}
 
 	domains, count, err := domains.List(c, appID, results)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -46,8 +45,7 @@ func DomainsAdd(appID, domain string) error {
 	_, err = domains.New(c, appID, domain)
 	quit <- true
 	<-quit
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -69,8 +67,7 @@ func DomainsRemove(appID, domain string) error {
 	err = domains.Delete(c, appID, domain)
 	quit <- true
 	<-quit
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 

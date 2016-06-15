@@ -6,8 +6,8 @@ import (
 
 	"github.com/deis/pkg/prettyprint"
 
-	"github.com/deis/workflow-cli/controller/api"
-	"github.com/deis/workflow-cli/controller/models/config"
+	"github.com/deis/controller-sdk-go/api"
+	"github.com/deis/controller-sdk-go/config"
 )
 
 // LimitsList lists an app's limits.
@@ -19,8 +19,7 @@ func LimitsList(appID string) error {
 	}
 
 	config, err := config.List(c, appID)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -80,11 +79,9 @@ func LimitsSet(appID string, limits []string, limitType string) error {
 	}
 
 	_, err = config.Set(c, appID, configObj)
-
 	quit <- true
 	<-quit
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -120,11 +117,9 @@ func LimitsUnset(appID string, limits []string, limitType string) error {
 	}
 
 	_, err = config.Set(c, appID, configObj)
-
 	quit <- true
 	<-quit
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 

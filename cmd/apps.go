@@ -8,17 +8,17 @@ import (
 
 	"github.com/deis/pkg/prettyprint"
 
-	"github.com/deis/workflow-cli/controller/api"
-	"github.com/deis/workflow-cli/controller/client"
-	"github.com/deis/workflow-cli/controller/models/apps"
-	"github.com/deis/workflow-cli/controller/models/config"
+	"github.com/deis/controller-sdk-go/api"
+	"github.com/deis/controller-sdk-go/apps"
+	"github.com/deis/controller-sdk-go/config"
 	"github.com/deis/workflow-cli/pkg/git"
 	"github.com/deis/workflow-cli/pkg/webbrowser"
+	"github.com/deis/workflow-cli/settings"
 )
 
 // AppCreate creates an app.
 func AppCreate(id string, buildpack string, remote string, noRemote bool) error {
-	c, err := client.New()
+	c, err := settings.Load()
 	if err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 	quit <- true
 	<-quit
 
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -42,7 +42,7 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 				"BUILDPACK_URL": buildpack,
 			},
 		}
-		if _, err = config.Set(c, app.ID, configValues); err != nil {
+		if _, err = config.Set(c, app.ID, configValues); checkAPICompatibility(c, err) != nil {
 			return err
 		}
 	}
@@ -68,7 +68,7 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 
 // AppsList lists apps on the Deis controller.
 func AppsList(results int) error {
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -79,8 +79,7 @@ func AppsList(results int) error {
 	}
 
 	apps, count, err := apps.List(c, results)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -101,8 +100,7 @@ func AppInfo(appID string) error {
 	}
 
 	app, err := apps.Get(c, appID)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -140,8 +138,7 @@ func AppOpen(appID string) error {
 	}
 
 	app, err := apps.Get(c, appID)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -162,8 +159,7 @@ func AppLogs(appID string, lines int) error {
 	}
 
 	logs, err := apps.Logs(c, appID, lines)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -197,8 +193,7 @@ func AppRun(appID, command string) error {
 	fmt.Printf("Running '%s'...\n", command)
 
 	out, err := apps.Run(c, appID, command)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -216,7 +211,7 @@ func AppRun(appID, command string) error {
 func AppDestroy(appID, confirm string) error {
 	gitSession := false
 
-	c, err := client.New()
+	c, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -249,7 +244,7 @@ func AppDestroy(appID, confirm string) error {
 	startTime := time.Now()
 	fmt.Printf("Destroying %s...\n", appID)
 
-	if err = apps.Delete(c, appID); err != nil {
+	if err = apps.Delete(c, appID); checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -273,8 +268,7 @@ func AppTransfer(appID, username string) error {
 	fmt.Printf("Transferring %s to %s... ", appID, username)
 
 	err = apps.Transfer(c, appID, username)
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 

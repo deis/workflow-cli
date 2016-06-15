@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/deis/workflow-cli/controller/api"
-	"github.com/deis/workflow-cli/controller/models/ps"
+	"github.com/deis/controller-sdk-go/api"
+	"github.com/deis/controller-sdk-go/ps"
 )
 
 // PsList lists an app's processes.
@@ -23,7 +23,7 @@ func PsList(appID string, results int) error {
 	}
 
 	processes, _, err := ps.List(c, appID, results)
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -61,11 +61,9 @@ func PsScale(appID string, targets []string) error {
 	quit := progress()
 
 	err = ps.Scale(c, appID, targetMap)
-
 	quit <- true
 	<-quit
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -108,11 +106,9 @@ func PsRestart(appID, target string) error {
 	quit := progress()
 
 	processes, err := ps.Restart(c, appID, psType, psName)
-
 	quit <- true
 	<-quit
-
-	if err != nil {
+	if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
