@@ -1,7 +1,7 @@
 # Deis Client
 
 [![Build Status](https://travis-ci.org/deis/workflow-cli.svg?branch=master)](https://travis-ci.org/deis/workflow-cli)
-[![Go Report Card](http://goreportcard.com/badge/deis/workflow-cli)](http://goreportcard.com/report/deis/workflow-cli)
+[![Go Report Card](https://goreportcard.com/badge/github.com/deis/workflow-cli)](https://goreportcard.com/report/github.com/deis/workflow-cli)
 [![codebeat badge](https://codebeat.co/badges/05d314a8-ca61-4211-b69e-e7a3033662c8)](https://codebeat.co/projects/github-com-deis-workflow-cli)
 
 Download Links:
