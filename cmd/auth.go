@@ -8,7 +8,7 @@ import (
 	"strings"
 	"syscall"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/auth"
 	"github.com/deis/workflow-cli/settings"
 	"golang.org/x/crypto/ssh/terminal"
@@ -18,7 +18,7 @@ import (
 func Register(controller string, username string, password string, email string,
 	sslVerify bool) error {
 
-	c, err := client.New(sslVerify, controller, "", "")
+	c, err := deis.New(sslVerify, controller, "", "")
 
 	if err != nil {
 		return err
@@ -76,7 +76,7 @@ func Register(controller string, username string, password string, email string,
 	return doLogin(c, username, password)
 }
 
-func doLogin(c *client.Client, username, password string) error {
+func doLogin(c *deis.Client, username, password string) error {
 	token, err := auth.Login(c, username, password)
 	if checkAPICompatibility(c, err) != nil {
 		return err
@@ -97,7 +97,7 @@ func doLogin(c *client.Client, username, password string) error {
 
 // Login to a Deis controller.
 func Login(controller string, username string, password string, sslVerify bool) error {
-	c, err := client.New(sslVerify, controller, "", "")
+	c, err := deis.New(sslVerify, controller, "", "")
 
 	if err != nil {
 		return err

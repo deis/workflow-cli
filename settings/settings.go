@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/workflow-cli/version"
 )
 
@@ -23,7 +23,7 @@ type settingsFile struct {
 }
 
 // Load loads a new client from a settings file.
-func Load() (*client.Client, error) {
+func Load() (*deis.Client, error) {
 	filename := locateSettingsFile()
 
 	if _, err := os.Stat(filename); err != nil {
@@ -44,7 +44,7 @@ func Load() (*client.Client, error) {
 		return nil, err
 	}
 
-	c, err := client.New(settings.VerifySSL, settings.Controller, settings.Token, settings.Username)
+	c, err := deis.New(settings.VerifySSL, settings.Controller, settings.Token, settings.Username)
 
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func Load() (*client.Client, error) {
 }
 
 // Save settings to a file
-func Save(c *client.Client) error {
+func Save(c *deis.Client) error {
 	settings := settingsFile{Username: c.Username, VerifySSL: c.VerifySSL,
 		Controller: c.ControllerURL.String(), Token: c.Token, Limit: c.ResponseLimit}
 

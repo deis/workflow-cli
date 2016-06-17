@@ -117,7 +117,7 @@ func CertAdd(cert string, key string, name string) error {
 	return nil
 }
 
-func doCertAdd(c *client.Client, cert string, key string, name string) error {
+func doCertAdd(c *deis.Client, cert string, key string, name string) error {
 	certFile, err := ioutil.ReadFile(cert)
 	if err != nil {
 		return err

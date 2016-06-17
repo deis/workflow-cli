@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	client "github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/workflow-cli/pkg/git"
 	"github.com/deis/workflow-cli/settings"
 )
@@ -54,7 +54,7 @@ func chooseColor(input string) string {
 	return fmt.Sprintf("\033[3%dm", color)
 }
 
-func load(appID string) (*client.Client, string, error) {
+func load(appID string) (*deis.Client, string, error) {
 	c, err := settings.Load()
 
 	if err != nil {
@@ -92,12 +92,12 @@ func limitCount(objs, total int) string {
 
 // checkAPICompatibility handles specific behavior for certain errors,
 // such as printing an warning for the API mismatch error
-func checkAPICompatibility(c *client.Client, err error) error {
-	if err == client.ErrAPIMismatch {
+func checkAPICompatibility(c *deis.Client, err error) error {
+	if err == deis.ErrAPIMismatch {
 		fmt.Printf(`!    WARNING: Client and server API versions do not match. Please consider upgrading.
 !    Client version: %s
 !    Server version: %s
-`, client.APIVersion, c.ControllerAPIVersion)
+`, deis.APIVersion, c.ControllerAPIVersion)
 
 		// API mismatch isn't fatal, so after warning continue on.
 		return nil

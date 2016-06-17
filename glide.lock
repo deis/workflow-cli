@@ -1,8 +1,8 @@
 hash: efb390ce6569c895e553582bd010493901e3fa4733fb9037970003c870cb5df2
-updated: 2016-06-16T17:39:55.70719745Z
+updated: 2016-06-17T22:43:06.487192518Z
 imports:
 - name: github.com/deis/controller-sdk-go
-  version: 04f745f793e66aaf3e6a272a1483628233fad2e1
+  version: aba8426cebe1717cd8fb755543002894d0453a73
   subpackages:
   - api
   - apps
@@ -16,6 +16,7 @@ imports:
   - ps
   - releases
   - users
+  - pkg/time
 - name: github.com/deis/pkg
   version: 189ed6bd6b6aa6629b72c2c5472095e176eec8a6
   subpackages:

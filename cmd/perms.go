@@ -98,7 +98,7 @@ func PermDelete(appID string, username string, admin bool) error {
 	return nil
 }
 
-func permsLoad(appID string, admin bool) (*client.Client, string, error) {
+func permsLoad(appID string, admin bool) (*deis.Client, string, error) {
 	c, err := settings.Load()
 
 	if err != nil {
