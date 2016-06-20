@@ -41,7 +41,7 @@ func PsScale(appID string, targets []string) error {
 	}
 
 	targetMap := make(map[string]int)
-	regex := regexp.MustCompile("^([A-z]+)=([0-9]+)$")
+	regex := regexp.MustCompile("^([a-z0-9]+)=([0-9]+)$")
 
 	for _, target := range targets {
 		if regex.MatchString(target) {
