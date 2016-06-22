@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 	"github.com/deis/controller-sdk-go/ps"
 )
@@ -108,7 +109,9 @@ func PsRestart(appID, target string) error {
 	processes, err := ps.Restart(c, appID, psType, psName)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if err == deis.ErrPodNotFound {
+		return fmt.Errorf("Could not find proccess type %s in app %s", psType, appID)
+	} else if checkAPICompatibility(c, err) != nil {
 		return err
 	}
 

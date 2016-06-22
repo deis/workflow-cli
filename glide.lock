@@ -1,8 +1,8 @@
 hash: efb390ce6569c895e553582bd010493901e3fa4733fb9037970003c870cb5df2
-updated: 2016-06-17T22:43:06.487192518Z
+updated: 2016-06-22T22:40:27.56890943Z
 imports:
 - name: github.com/deis/controller-sdk-go
-  version: aba8426cebe1717cd8fb755543002894d0453a73
+  version: 3b277af9c00d5e5368862e09effa8ac18c93c0a3
   subpackages:
   - api
   - apps
@@ -29,7 +29,7 @@ imports:
 - name: github.com/mattn/go-runewidth
   version: d6bea18f789704b5f83375793155289da36a3c7f
 - name: github.com/olekukonko/tablewriter
-  version: 8d0265a48283795806b872b4728c67bf5c777f20
+  version: daf2955e742cf123959884fdff4685aa79b63135
 - name: github.com/PuerkitoBio/purell
   version: 1d5d1cfad45d42ec5f81fa8ef23de09cebc6dcc3
 - name: github.com/PuerkitoBio/urlesc

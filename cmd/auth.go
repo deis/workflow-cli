@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"reflect"
 	"strings"
 	"syscall"
 
@@ -228,10 +227,8 @@ func Cancel(username string, password string, yes bool) error {
 	}
 
 	err = auth.Delete(c, username)
-	cleanup := fmt.Errorf("\n%s %s\n\n", "409", "Conflict")
-	if reflect.DeepEqual(err, cleanup) {
-		fmt.Printf("%s still has applications associated with it. Transfer ownership or delete them first\n", username)
-		return nil
+	if err == deis.ErrConflict {
+		return fmt.Errorf("%s still has applications associated with it. Transfer ownership or delete them first", username)
 	} else if checkAPICompatibility(c, err) != nil {
 		return err
 	}
