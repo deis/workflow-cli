@@ -45,11 +45,11 @@ build: binary-build
 	@$(call check-static-binary,deis)
 
 build-all:
-	${DEV_ENV_CMD} gox -verbose ${GO_LDFLAGS} -os="linux darwin " -arch="amd64 386" -output="$(DIST_DIR)/deis-latest-{{.OS}}-{{.Arch}}" .
+	${DEV_ENV_CMD} gox -verbose ${GO_LDFLAGS} -os="linux darwin windows" -arch="amd64 386" -output="$(DIST_DIR)/deis-latest-{{.OS}}-{{.Arch}}" .
 ifdef TRAVIS_TAG
-	${DEV_ENV_CMD} gox -verbose ${GO_LDFLAGS} -os="linux darwin" -arch="amd64 386" -output="$(DIST_DIR)/${TRAVIS_TAG}/deis-${TRAVIS_TAG}-{{.OS}}-{{.Arch}}" .
+	${DEV_ENV_CMD} gox -verbose ${GO_LDFLAGS} -os="linux darwin windows" -arch="amd64 386" -output="$(DIST_DIR)/${TRAVIS_TAG}/deis-${TRAVIS_TAG}-{{.OS}}-{{.Arch}}" .
 else
-	${DEV_ENV_CMD} gox -verbose ${GO_LDFLAGS} -os="linux darwin" -arch="amd64 386" -output="$(DIST_DIR)/${VERSION}/deis-${VERSION}-{{.OS}}-{{.Arch}}" .
+	${DEV_ENV_CMD} gox -verbose ${GO_LDFLAGS} -os="linux darwin windows" -arch="amd64 386" -output="$(DIST_DIR)/${VERSION}/deis-${VERSION}-{{.OS}}-{{.Arch}}" .
 endif
 
 binary-build:

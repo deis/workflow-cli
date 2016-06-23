@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/deis/controller-sdk-go/api"
+	"github.com/deis/workflow-cli/settings"
 )
 
 func TestGetKey(t *testing.T) {
@@ -83,7 +84,7 @@ func TestListKeys(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	os.Setenv("HOME", name)
+	settings.SetHome(name)
 
 	folder := filepath.Join(name, ".ssh")
 

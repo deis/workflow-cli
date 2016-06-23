@@ -21,7 +21,7 @@ func createTempProfile(contents string) error {
 	}
 
 	os.Unsetenv("DEIS_PROFILE")
-	os.Setenv("HOME", name)
+	SetHome(name)
 	folder := filepath.Join(name, ".deis")
 	if err = os.Mkdir(folder, 0755); err != nil {
 		return err
