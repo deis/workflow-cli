@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/deis/controller-sdk-go/api"
@@ -119,5 +121,39 @@ func TestListKeys(t *testing.T) {
 
 	if !reflect.DeepEqual(expected, keys) {
 		t.Errorf("Expected %v, Got %v", expected, keys)
+	}
+}
+
+type chooseKeyCases struct {
+	Reader   io.Reader
+	Expected string
+}
+
+func TestChooseKey(t *testing.T) {
+	testKeys := []api.KeyCreateRequest{
+		api.KeyCreateRequest{},
+	}
+
+	checks := []chooseKeyCases{
+		chooseKeyCases{
+			Reader:   strings.NewReader("-1"),
+			Expected: "-1 is not a valid option",
+		},
+		chooseKeyCases{
+			Reader:   strings.NewReader("2"),
+			Expected: "2 is not a valid option",
+		},
+		chooseKeyCases{
+			Reader:   strings.NewReader("a"),
+			Expected: "a is not a valid integer",
+		},
+	}
+
+	for _, check := range checks {
+		_, err := chooseKey(testKeys, check.Reader)
+
+		if err.Error() != check.Expected {
+			t.Errorf("Expected %s, Got %s", check.Expected, err.Error())
+		}
 	}
 }

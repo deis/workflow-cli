@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -68,13 +70,19 @@ func KeyAdd(keyLocation string) error {
 	var key api.KeyCreateRequest
 
 	if keyLocation == "" {
-		key, err = chooseKey()
+		ks, err := listKeys()
+		if err != nil {
+			return err
+		}
+		key, err = chooseKey(ks, os.Stdin)
+		if err != nil {
+			return err
+		}
 	} else {
 		key, err = getKey(keyLocation)
-	}
-
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
 	}
 
 	fmt.Printf("Uploading %s to deis...", filepath.Base(key.Name))
@@ -88,13 +96,7 @@ func KeyAdd(keyLocation string) error {
 	return nil
 }
 
-func chooseKey() (api.KeyCreateRequest, error) {
-	keys, err := listKeys()
-
-	if err != nil {
-		return api.KeyCreateRequest{}, err
-	}
-
+func chooseKey(keys []api.KeyCreateRequest, input io.Reader) (api.KeyCreateRequest, error) {
 	fmt.Println("Found the following SSH public keys:")
 
 	for i, key := range keys {
@@ -106,15 +108,15 @@ func chooseKey() (api.KeyCreateRequest, error) {
 	var selected string
 
 	fmt.Print("Which would you like to use with Deis? ")
-	fmt.Scanln(&selected)
+	fmt.Fscanln(input, &selected)
 
 	numSelected, err := strconv.Atoi(selected)
 
 	if err != nil {
-		return api.KeyCreateRequest{}, err
+		return api.KeyCreateRequest{}, fmt.Errorf("%s is not a valid integer", selected)
 	}
 
-	if numSelected > len(keys)+1 {
+	if numSelected < 0 || numSelected > len(keys) {
 		return api.KeyCreateRequest{}, fmt.Errorf("%d is not a valid option", numSelected)
 	}
 
