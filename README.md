@@ -1,7 +1,7 @@
 # Deis Client
 
 [![Build Status](https://travis-ci.org/deis/workflow-cli.svg?branch=master)](https://travis-ci.org/deis/workflow-cli)
-[![Build status](https://ci.appveyor.com/api/projects/status/gduy4urj0q6lnrxx?svg=true)](https://ci.appveyor.com/project/mboersma/workflow-cli-fgqd7)
+[![Build status](https://ci.appveyor.com/api/projects/status/gduy4urj0q6lnrxx/branch/master?svg=true)](https://ci.appveyor.com/project/mboersma/workflow-cli-fgqd7/branch/master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/deis/workflow-cli)](https://goreportcard.com/report/github.com/deis/workflow-cli)
 [![codebeat badge](https://codebeat.co/badges/05d314a8-ca61-4211-b69e-e7a3033662c8)](https://codebeat.co/projects/github-com-deis-workflow-cli)
 
@@ -11,10 +11,8 @@ Download Links:
 - [32 Bit Linux](https://storage.googleapis.com/workflow-cli/deis-latest-linux-386)
 - [64 Bit Mac OS X](https://storage.googleapis.com/workflow-cli/deis-latest-darwin-amd64)
 - [32 Bit Max OS X](https://storage.googleapis.com/workflow-cli/deis-latest-darwin-386)
-- [64 Bit Windows](https://storage.googleapis.com/workflow-cli/ddeis-latest-windows-amd64.exe)
+- [64 Bit Windows](https://storage.googleapis.com/workflow-cli/deis-latest-windows-amd64.exe)
 - [32 Bit Windows](https://storage.googleapis.com/workflow-cli/deis-latest-windows-386.exe)
-
-(Note: Windows builds are not yet supported. [#26](https://github.com/deis/workflow-cli/issues/26) currently tracks the work to support them).
 
 `deis` is a command line utility used to interact with the [Deis](http://deis.io) open source PaaS.
 
