@@ -15,9 +15,6 @@ build_script:
 test_script:
   - ps: .\make test
 
-cache:
-  - vendor
-
 artifacts:
   - path: deis.exe
     name: deis.exe
