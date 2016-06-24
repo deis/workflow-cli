@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/perms"
 	"github.com/deis/workflow-cli/pkg/git"
 	"github.com/deis/workflow-cli/settings"

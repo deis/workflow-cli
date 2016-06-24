@@ -9,7 +9,7 @@ import (
 
 	"github.com/olekukonko/tablewriter"
 
-	"github.com/deis/controller-sdk-go"
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/certs"
 	"github.com/deis/workflow-cli/settings"
 )
