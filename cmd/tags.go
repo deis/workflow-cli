@@ -12,14 +12,14 @@ import (
 
 // TagsList lists an app's tags.
 func TagsList(appID string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	config, err := config.List(c, appID)
-	if checkAPICompatibility(c, err) != nil {
+	config, err := config.List(s.Client, appID)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -38,7 +38,7 @@ func TagsList(appID string) error {
 
 // TagsSet sets an app's tags.
 func TagsSet(appID string, tags []string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -52,10 +52,10 @@ func TagsSet(appID string, tags []string) error {
 	configObj := api.Config{}
 	configObj.Tags = tagsMap
 
-	_, err = config.Set(c, appID, configObj)
+	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -66,7 +66,7 @@ func TagsSet(appID string, tags []string) error {
 
 // TagsUnset removes an app's tags.
 func TagsUnset(appID string, tags []string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -86,10 +86,10 @@ func TagsUnset(appID string, tags []string) error {
 
 	configObj.Tags = tagsMap
 
-	_, err = config.Set(c, appID, configObj)
+	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

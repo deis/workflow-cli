@@ -17,22 +17,22 @@ import (
 
 // KeysList lists a user's keys.
 func KeysList(results int) error {
-	c, err := settings.Load()
+	s, err := settings.Load()
 
 	if err != nil {
 		return err
 	}
 
 	if results == defaultLimit {
-		results = c.ResponseLimit
+		results = s.Limit
 	}
 
-	keys, count, err := keys.List(c, results)
-	if checkAPICompatibility(c, err) != nil {
+	keys, count, err := keys.List(s.Client, results)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
-	fmt.Printf("=== %s Keys%s", c.Username, limitCount(len(keys), count))
+	fmt.Printf("=== %s Keys%s", s.Username, limitCount(len(keys), count))
 
 	for _, key := range keys {
 		fmt.Printf("%s %s...%s\n", key.ID, key.Public[:16], key.Public[len(key.Public)-10:])
@@ -42,7 +42,7 @@ func KeysList(results int) error {
 
 // KeyRemove removes keys.
 func KeyRemove(keyID string) error {
-	c, err := settings.Load()
+	s, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func KeyRemove(keyID string) error {
 
 	fmt.Printf("Removing %s SSH Key...", keyID)
 
-	if err = keys.Delete(c, keyID); checkAPICompatibility(c, err) != nil {
+	if err = keys.Delete(s.Client, keyID); checkAPICompatibility(s.Client, err) != nil {
 		fmt.Println()
 		return err
 	}
@@ -61,7 +61,7 @@ func KeyRemove(keyID string) error {
 
 // KeyAdd adds keys.
 func KeyAdd(keyLocation string) error {
-	c, err := settings.Load()
+	s, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -87,7 +87,7 @@ func KeyAdd(keyLocation string) error {
 
 	fmt.Printf("Uploading %s to deis...", filepath.Base(key.Name))
 
-	if _, err = keys.New(c, key.ID, key.Public); checkAPICompatibility(c, err) != nil {
+	if _, err = keys.New(s.Client, key.ID, key.Public); checkAPICompatibility(s.Client, err) != nil {
 		fmt.Println()
 		return err
 	}

@@ -36,22 +36,23 @@ func progress() chan bool {
 	return quit
 }
 
-func load(appID string) (*deis.Client, string, error) {
-	c, err := settings.Load()
+// load loads settings file and looks up the app name
+func load(appID string) (*settings.Settings, string, error) {
+	s, err := settings.Load()
 
 	if err != nil {
 		return nil, "", err
 	}
 
 	if appID == "" {
-		appID, err = git.DetectAppName(c.ControllerURL.Host)
+		appID, err = git.DetectAppName(s.Client.ControllerURL.Host)
 
 		if err != nil {
 			return nil, "", err
 		}
 	}
 
-	return c, appID, nil
+	return s, appID, nil
 }
 
 func drinkOfChoice() string {

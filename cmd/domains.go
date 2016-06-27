@@ -8,18 +8,18 @@ import (
 
 // DomainsList lists domains registered with an app.
 func DomainsList(appID string, results int) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
 	if results == defaultLimit {
-		results = c.ResponseLimit
+		results = s.Limit
 	}
 
-	domains, count, err := domains.List(c, appID, results)
-	if checkAPICompatibility(c, err) != nil {
+	domains, count, err := domains.List(s.Client, appID, results)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -33,7 +33,7 @@ func DomainsList(appID string, results int) error {
 
 // DomainsAdd adds a domain to an app.
 func DomainsAdd(appID, domain string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -42,10 +42,10 @@ func DomainsAdd(appID, domain string) error {
 	fmt.Printf("Adding %s to %s... ", domain, appID)
 
 	quit := progress()
-	_, err = domains.New(c, appID, domain)
+	_, err = domains.New(s.Client, appID, domain)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -55,7 +55,7 @@ func DomainsAdd(appID, domain string) error {
 
 // DomainsRemove removes a domain registered with an app.
 func DomainsRemove(appID, domain string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -64,10 +64,10 @@ func DomainsRemove(appID, domain string) error {
 	fmt.Printf("Removing %s from %s... ", domain, appID)
 
 	quit := progress()
-	err = domains.Delete(c, appID, domain)
+	err = domains.Delete(s.Client, appID, domain)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

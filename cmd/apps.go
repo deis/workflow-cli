@@ -18,19 +18,19 @@ import (
 
 // AppCreate creates an app.
 func AppCreate(id string, buildpack string, remote string, noRemote bool) error {
-	c, err := settings.Load()
+	s, err := settings.Load()
 	if err != nil {
 		return err
 	}
 
 	fmt.Print("Creating Application... ")
 	quit := progress()
-	app, err := apps.New(c, id)
+	app, err := apps.New(s.Client, id)
 
 	quit <- true
 	<-quit
 
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -42,13 +42,13 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 				"BUILDPACK_URL": buildpack,
 			},
 		}
-		if _, err = config.Set(c, app.ID, configValues); checkAPICompatibility(c, err) != nil {
+		if _, err = config.Set(s.Client, app.ID, configValues); checkAPICompatibility(s.Client, err) != nil {
 			return err
 		}
 	}
 
 	if !noRemote {
-		if err = git.CreateRemote(c.ControllerURL.Host, remote, app.ID); err != nil {
+		if err = git.CreateRemote(s.Client.ControllerURL.Host, remote, app.ID); err != nil {
 			if err.Error() == "exit status 128" {
 				fmt.Println("To replace the existing git remote entry, run:")
 				fmt.Printf("  git remote rename deis deis.old && deis git:remote -a %s\n", app.ID)
@@ -60,7 +60,7 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 	if noRemote {
 		fmt.Printf("If you want to add a git remote for this app later, use `deis git:remote -a %s`\n", app.ID)
 	} else {
-		fmt.Println("remote available at", git.RemoteURL(c.ControllerURL.Host, app.ID))
+		fmt.Println("remote available at", git.RemoteURL(s.Client.ControllerURL.Host, app.ID))
 	}
 
 	return nil
@@ -68,18 +68,18 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 
 // AppsList lists apps on the Deis controller.
 func AppsList(results int) error {
-	c, err := settings.Load()
+	s, err := settings.Load()
 
 	if err != nil {
 		return err
 	}
 
 	if results == defaultLimit {
-		results = c.ResponseLimit
+		results = s.Limit
 	}
 
-	apps, count, err := apps.List(c, results)
-	if checkAPICompatibility(c, err) != nil {
+	apps, count, err := apps.List(s.Client, results)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -93,14 +93,14 @@ func AppsList(results int) error {
 
 // AppInfo prints info about app.
 func AppInfo(appID string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	app, err := apps.Get(c, appID)
-	if checkAPICompatibility(c, err) != nil {
+	app, err := apps.Get(s.Client, appID)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -131,14 +131,14 @@ func AppInfo(appID string) error {
 
 // AppOpen opens an app in the default webbrowser.
 func AppOpen(appID string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	app, err := apps.Get(c, appID)
-	if checkAPICompatibility(c, err) != nil {
+	app, err := apps.Get(s.Client, appID)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -152,14 +152,14 @@ func AppOpen(appID string) error {
 
 // AppLogs returns the logs from an app.
 func AppLogs(appID string, lines int) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	logs, err := apps.Logs(c, appID, lines)
-	if checkAPICompatibility(c, err) != nil {
+	logs, err := apps.Logs(s.Client, appID, lines)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -184,7 +184,7 @@ func printLogs(logs string) error {
 
 // AppRun runs a one time command in the app.
 func AppRun(appID, command string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -192,8 +192,8 @@ func AppRun(appID, command string) error {
 
 	fmt.Printf("Running '%s'...\n", command)
 
-	out, err := apps.Run(c, appID, command)
-	if checkAPICompatibility(c, err) != nil {
+	out, err := apps.Run(s.Client, appID, command)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -211,14 +211,14 @@ func AppRun(appID, command string) error {
 func AppDestroy(appID, confirm string) error {
 	gitSession := false
 
-	c, err := settings.Load()
+	s, err := settings.Load()
 
 	if err != nil {
 		return err
 	}
 
 	if appID == "" {
-		appID, err = git.DetectAppName(c.ControllerURL.Host)
+		appID, err = git.DetectAppName(s.Client.ControllerURL.Host)
 
 		if err != nil {
 			return err
@@ -244,7 +244,7 @@ func AppDestroy(appID, confirm string) error {
 	startTime := time.Now()
 	fmt.Printf("Destroying %s...\n", appID)
 
-	if err = apps.Delete(c, appID); checkAPICompatibility(c, err) != nil {
+	if err = apps.Delete(s.Client, appID); checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -259,7 +259,7 @@ func AppDestroy(appID, confirm string) error {
 
 // AppTransfer transfers app ownership to another user.
 func AppTransfer(appID, username string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -267,8 +267,8 @@ func AppTransfer(appID, username string) error {
 
 	fmt.Printf("Transferring %s to %s... ", appID, username)
 
-	err = apps.Transfer(c, appID, username)
-	if checkAPICompatibility(c, err) != nil {
+	err = apps.Transfer(s.Client, appID, username)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

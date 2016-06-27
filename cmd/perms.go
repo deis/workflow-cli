@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/perms"
 	"github.com/deis/workflow-cli/pkg/git"
 	"github.com/deis/workflow-cli/settings"
@@ -11,7 +10,7 @@ import (
 
 // PermsList prints which users have permissions.
 func PermsList(appID string, admin bool, results int) error {
-	c, appID, err := permsLoad(appID, admin)
+	s, appID, err := permsLoad(appID, admin)
 
 	if err != nil {
 		return err
@@ -22,14 +21,14 @@ func PermsList(appID string, admin bool, results int) error {
 
 	if admin {
 		if results == defaultLimit {
-			results = c.ResponseLimit
+			results = s.Limit
 		}
-		users, count, err = perms.ListAdmins(c, results)
+		users, count, err = perms.ListAdmins(s.Client, results)
 	} else {
-		users, err = perms.List(c, appID)
+		users, err = perms.List(s.Client, appID)
 	}
 
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -49,7 +48,7 @@ func PermsList(appID string, admin bool, results int) error {
 // PermCreate adds a user to an app or makes them an administrator.
 func PermCreate(appID string, username string, admin bool) error {
 
-	c, appID, err := permsLoad(appID, admin)
+	s, appID, err := permsLoad(appID, admin)
 
 	if err != nil {
 		return err
@@ -57,13 +56,13 @@ func PermCreate(appID string, username string, admin bool) error {
 
 	if admin {
 		fmt.Printf("Adding %s to system administrators... ", username)
-		err = perms.NewAdmin(c, username)
+		err = perms.NewAdmin(s.Client, username)
 	} else {
 		fmt.Printf("Adding %s to %s collaborators... ", username, appID)
-		err = perms.New(c, appID, username)
+		err = perms.New(s.Client, appID, username)
 	}
 
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -75,7 +74,7 @@ func PermCreate(appID string, username string, admin bool) error {
 // PermDelete removes a user from an app or revokes admin privileges.
 func PermDelete(appID string, username string, admin bool) error {
 
-	c, appID, err := permsLoad(appID, admin)
+	s, appID, err := permsLoad(appID, admin)
 
 	if err != nil {
 		return err
@@ -83,13 +82,13 @@ func PermDelete(appID string, username string, admin bool) error {
 
 	if admin {
 		fmt.Printf("Removing %s from system administrators... ", username)
-		err = perms.DeleteAdmin(c, username)
+		err = perms.DeleteAdmin(s.Client, username)
 	} else {
 		fmt.Printf("Removing %s from %s collaborators... ", username, appID)
-		err = perms.Delete(c, appID, username)
+		err = perms.Delete(s.Client, appID, username)
 	}
 
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -98,20 +97,20 @@ func PermDelete(appID string, username string, admin bool) error {
 	return nil
 }
 
-func permsLoad(appID string, admin bool) (*deis.Client, string, error) {
-	c, err := settings.Load()
+func permsLoad(appID string, admin bool) (*settings.Settings, string, error) {
+	s, err := settings.Load()
 
 	if err != nil {
 		return nil, "", err
 	}
 
 	if !admin && appID == "" {
-		appID, err = git.DetectAppName(c.ControllerURL.Host)
+		appID, err = git.DetectAppName(s.Client.ControllerURL.Host)
 
 		if err != nil {
 			return nil, "", err
 		}
 	}
 
-	return c, appID, err
+	return s, appID, err
 }

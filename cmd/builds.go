@@ -5,25 +5,25 @@ import (
 	"io/ioutil"
 	"os"
 
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/deis/controller-sdk-go/builds"
 )
 
 // BuildsList lists an app's builds.
 func BuildsList(appID string, results int) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
 	if results == defaultLimit {
-		results = c.ResponseLimit
+		results = s.Limit
 	}
 
-	builds, count, err := builds.List(c, appID, results)
-	if checkAPICompatibility(c, err) != nil {
+	builds, count, err := builds.List(s.Client, appID, results)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -37,7 +37,7 @@ func BuildsList(appID string, results int) error {
 
 // BuildsCreate creates a build for an app.
 func BuildsCreate(appID, image, procfile string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -62,10 +62,10 @@ func BuildsCreate(appID, image, procfile string) error {
 
 	fmt.Print("Creating build... ")
 	quit := progress()
-	_, err = builds.New(c, appID, image, procfileMap)
+	_, err = builds.New(s.Client, appID, image, procfileMap)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

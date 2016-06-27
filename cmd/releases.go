@@ -10,18 +10,18 @@ import (
 
 // ReleasesList lists an app's releases.
 func ReleasesList(appID string, results int) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
 	if results == defaultLimit {
-		results = c.ResponseLimit
+		results = s.Limit
 	}
 
-	releases, count, err := releases.List(c, appID, results)
-	if checkAPICompatibility(c, err) != nil {
+	releases, count, err := releases.List(s.Client, appID, results)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -39,14 +39,14 @@ func ReleasesList(appID string, results int) error {
 
 // ReleasesInfo prints info about a specific release.
 func ReleasesInfo(appID string, version int) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	r, err := releases.Get(c, appID, version)
-	if checkAPICompatibility(c, err) != nil {
+	r, err := releases.Get(s.Client, appID, version)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -66,7 +66,7 @@ func ReleasesInfo(appID string, version int) error {
 
 // ReleasesRollback rolls an app back to a previous release.
 func ReleasesRollback(appID string, version int) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -79,10 +79,10 @@ func ReleasesRollback(appID string, version int) error {
 	}
 
 	quit := progress()
-	newVersion, err := releases.Rollback(c, appID, version)
+	newVersion, err := releases.Rollback(s.Client, appID, version)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

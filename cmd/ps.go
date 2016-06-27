@@ -14,17 +14,17 @@ import (
 
 // PsList lists an app's processes.
 func PsList(appID string, results int) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 	if err != nil {
 		return err
 	}
 
 	if results == defaultLimit {
-		results = c.ResponseLimit
+		results = s.Limit
 	}
 
-	processes, _, err := ps.List(c, appID, results)
-	if checkAPICompatibility(c, err) != nil {
+	processes, _, err := ps.List(s.Client, appID, results)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -35,7 +35,7 @@ func PsList(appID string, results int) error {
 
 // PsScale scales an app's processes.
 func PsScale(appID string, targets []string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -61,16 +61,16 @@ func PsScale(appID string, targets []string) error {
 	startTime := time.Now()
 	quit := progress()
 
-	err = ps.Scale(c, appID, targetMap)
+	err = ps.Scale(s.Client, appID, targetMap)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
 	fmt.Printf("done in %ds\n", int(time.Since(startTime).Seconds()))
 
-	processes, _, err := ps.List(c, appID, c.ResponseLimit)
+	processes, _, err := ps.List(s.Client, appID, s.Limit)
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ func PsScale(appID string, targets []string) error {
 
 // PsRestart restarts an app's processes.
 func PsRestart(appID, target string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -106,12 +106,12 @@ func PsRestart(appID, target string) error {
 	startTime := time.Now()
 	quit := progress()
 
-	processes, err := ps.Restart(c, appID, psType, psName)
+	processes, err := ps.Restart(s.Client, appID, psType, psName)
 	quit <- true
 	<-quit
 	if err == deis.ErrPodNotFound {
 		return fmt.Errorf("Could not find proccess type %s in app %s", psType, appID)
-	} else if checkAPICompatibility(c, err) != nil {
+	} else if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

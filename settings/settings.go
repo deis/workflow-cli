@@ -11,8 +11,14 @@ import (
 	"github.com/deis/workflow-cli/version"
 )
 
-// UserAgent is the user agent used by the CLI
-const UserAgent = "Deis Client v" + version.Version
+const (
+	// UserAgent is the user agent used by the CLI
+	UserAgent = "Deis Client v" + version.Version
+
+	// DefaultResponseLimit is the default number of responses to return on requests that can
+	// be limited.
+	DefaultResponseLimit = 100
+)
 
 type settingsFile struct {
 	Username   string `json:"username"`
@@ -22,8 +28,15 @@ type settingsFile struct {
 	Limit      int    `json:"response_limit"`
 }
 
+// Settings is the settings object created from the settings file.
+type Settings struct {
+	Username string
+	Limit    int
+	Client   *deis.Client
+}
+
 // Load loads a new client from a settings file.
-func Load() (*deis.Client, error) {
+func Load() (*Settings, error) {
 	filename := locateSettingsFile()
 
 	if _, err := os.Stat(filename); err != nil {
@@ -39,32 +52,38 @@ func Load() (*deis.Client, error) {
 		return nil, err
 	}
 
-	settings := settingsFile{}
-	if err = json.Unmarshal(contents, &settings); err != nil {
+	sF := settingsFile{}
+	if err = json.Unmarshal(contents, &sF); err != nil {
 		return nil, err
 	}
 
-	c, err := deis.New(settings.VerifySSL, settings.Controller, settings.Token, settings.Username)
+	c, err := deis.New(sF.VerifySSL, sF.Controller, sF.Token)
+
+	// Set a custom user agent
+	c.UserAgent = UserAgent
 
 	if err != nil {
 		return nil, err
 	}
 
+	settings := Settings{}
+	settings.Username = sF.Username
+	settings.Client = c
+
 	// If users have defined a custom response limit, respect it.
-	if settings.Limit > 0 {
-		c.ResponseLimit = settings.Limit
+	if sF.Limit > 0 {
+		settings.Limit = sF.Limit
+	} else {
+		settings.Limit = DefaultResponseLimit
 	}
 
-	// Set a custom user agent
-	c.UserAgent = UserAgent
-
-	return c, nil
+	return &settings, nil
 }
 
 // Save settings to a file
-func Save(c *deis.Client) error {
-	settings := settingsFile{Username: c.Username, VerifySSL: c.VerifySSL,
-		Controller: c.ControllerURL.String(), Token: c.Token, Limit: c.ResponseLimit}
+func (s *Settings) Save() error {
+	settings := settingsFile{Username: s.Username, VerifySSL: s.Client.VerifySSL,
+		Controller: s.Client.ControllerURL.String(), Token: s.Client.Token, Limit: s.Limit}
 
 	settingsContents, err := json.Marshal(settings)
 

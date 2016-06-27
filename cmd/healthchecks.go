@@ -9,13 +9,13 @@ import (
 
 // HealthchecksList lists an app's healthchecks.
 func HealthchecksList(appID string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	config, err := config.List(c, appID)
+	config, err := config.List(s.Client, appID)
 
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func HealthchecksList(appID string) error {
 
 // HealthchecksSet sets an app's healthchecks.
 func HealthchecksSet(appID, healthcheckType string, probe *api.Healthcheck) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func HealthchecksSet(appID, healthcheckType string, probe *api.Healthcheck) erro
 
 	configObj.Healthcheck[healthcheckType] = probe
 
-	_, err = config.Set(c, appID, configObj)
+	_, err = config.Set(s.Client, appID, configObj)
 
 	quit <- true
 	<-quit
@@ -71,7 +71,7 @@ func HealthchecksSet(appID, healthcheckType string, probe *api.Healthcheck) erro
 
 // HealthchecksUnset removes an app's healthchecks.
 func HealthchecksUnset(appID string, healthchecks []string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func HealthchecksUnset(appID string, healthchecks []string) error {
 
 	configObj.Healthcheck = healthcheckMap
 
-	_, err = config.Set(c, appID, configObj)
+	_, err = config.Set(s.Client, appID, configObj)
 
 	quit <- true
 	<-quit

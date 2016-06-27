@@ -16,18 +16,18 @@ import (
 
 // CertsList lists certs registered with the controller.
 func CertsList(results int) error {
-	c, err := settings.Load()
+	s, err := settings.Load()
 
 	if err != nil {
 		return err
 	}
 
 	if results == defaultLimit {
-		results = c.ResponseLimit
+		results = s.Limit
 	}
 
-	certList, _, err := certs.List(c, results)
-	if checkAPICompatibility(c, err) != nil {
+	certList, _, err := certs.List(s.Client, results)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -97,7 +97,7 @@ func CertsList(results int) error {
 
 // CertAdd adds a cert to the controller.
 func CertAdd(cert string, key string, name string) error {
-	c, err := settings.Load()
+	s, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -105,7 +105,7 @@ func CertAdd(cert string, key string, name string) error {
 
 	fmt.Print("Adding SSL endpoint... ")
 	quit := progress()
-	err = doCertAdd(c, cert, key, name)
+	err = doCertAdd(s.Client, cert, key, name)
 	quit <- true
 	<-quit
 
@@ -134,18 +134,18 @@ func doCertAdd(c *deis.Client, cert string, key string, name string) error {
 
 // CertRemove deletes a cert from the controller.
 func CertRemove(name string) error {
-	c, err := settings.Load()
-	if checkAPICompatibility(c, err) != nil {
+	s, err := settings.Load()
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
 	fmt.Printf("Removing %s... ", name)
 	quit := progress()
 
-	err = certs.Delete(c, name)
+	err = certs.Delete(s.Client, name)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -155,13 +155,13 @@ func CertRemove(name string) error {
 
 // CertInfo gets info about certficiate
 func CertInfo(name string) error {
-	c, err := settings.Load()
+	s, err := settings.Load()
 	if err != nil {
 		return err
 	}
 
-	cert, err := certs.Get(c, name)
-	if checkAPICompatibility(c, err) != nil {
+	cert, err := certs.Get(s.Client, name)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -194,7 +194,7 @@ func CertInfo(name string) error {
 
 // CertAttach attaches a certificate to a domain
 func CertAttach(name string, domain string) error {
-	c, err := settings.Load()
+	s, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -203,10 +203,10 @@ func CertAttach(name string, domain string) error {
 	fmt.Printf("Attaching certificate %s to domain %s... ", name, domain)
 	quit := progress()
 
-	err = certs.Attach(c, name, domain)
+	err = certs.Attach(s.Client, name, domain)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) == nil {
+	if checkAPICompatibility(s.Client, err) == nil {
 		fmt.Println("done")
 	}
 
@@ -215,7 +215,7 @@ func CertAttach(name string, domain string) error {
 
 // CertDetach detaches a certificate from a domain
 func CertDetach(name string, domain string) error {
-	c, err := settings.Load()
+	s, err := settings.Load()
 
 	if err != nil {
 		return err
@@ -224,10 +224,10 @@ func CertDetach(name string, domain string) error {
 	fmt.Printf("Detaching certificate %s from domain %s... ", name, domain)
 	quit := progress()
 
-	err = certs.Detach(c, name, domain)
+	err = certs.Detach(s.Client, name, domain)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

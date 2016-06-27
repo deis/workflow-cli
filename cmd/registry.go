@@ -12,14 +12,14 @@ import (
 
 // RegistryList lists an app's registry information.
 func RegistryList(appID string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	config, err := config.List(c, appID)
-	if checkAPICompatibility(c, err) != nil {
+	config, err := config.List(s.Client, appID)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -38,7 +38,7 @@ func RegistryList(appID string) error {
 
 // RegistrySet sets an app's registry information.
 func RegistrySet(appID string, item []string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -52,10 +52,10 @@ func RegistrySet(appID string, item []string) error {
 	configObj := api.Config{}
 	configObj.Registry = registryMap
 
-	_, err = config.Set(c, appID, configObj)
+	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -66,7 +66,7 @@ func RegistrySet(appID string, item []string) error {
 
 // RegistryUnset removes an app's registry information.
 func RegistryUnset(appID string, items []string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -86,10 +86,10 @@ func RegistryUnset(appID string, items []string) error {
 
 	configObj.Registry = registryMap
 
-	_, err = config.Set(c, appID, configObj)
+	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

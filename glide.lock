@@ -1,8 +1,8 @@
-hash: efb390ce6569c895e553582bd010493901e3fa4733fb9037970003c870cb5df2
-updated: 2016-06-27T11:56:08.014343879-07:00
+hash: a9ade02839b3b4a568225bf30592fbe944f4d74f60ec08e054d4b42f19f93271
+updated: 2016-06-27T11:39:10.012207091-07:00
 imports:
 - name: github.com/deis/controller-sdk-go
-  version: 3b6502cecedc6ebd7b0f42a8c01c31e8292d1e0d
+  version: ac8f6dce8f544c137607408f568fbf868e8027a9
   subpackages:
   - api
   - apps

@@ -9,18 +9,18 @@ import (
 
 // UsersList lists users registered with the controller.
 func UsersList(results int) error {
-	c, err := settings.Load()
+	s, err := settings.Load()
 
 	if err != nil {
 		return err
 	}
 
 	if results == defaultLimit {
-		results = c.ResponseLimit
+		results = s.Limit
 	}
 
-	users, count, err := users.List(c, results)
-	if checkAPICompatibility(c, err) != nil {
+	users, count, err := users.List(s.Client, results)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

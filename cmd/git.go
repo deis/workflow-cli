@@ -6,11 +6,11 @@ import (
 
 // GitRemote creates a git remote for a deis app.
 func GitRemote(appID, remote string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	return git.CreateRemote(c.ControllerURL.Host, remote, appID)
+	return git.CreateRemote(s.Client.ControllerURL.Host, remote, appID)
 }

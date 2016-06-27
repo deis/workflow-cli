@@ -12,14 +12,14 @@ import (
 
 // LimitsList lists an app's limits.
 func LimitsList(appID string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	config, err := config.List(c, appID)
-	if checkAPICompatibility(c, err) != nil {
+	config, err := config.List(s.Client, appID)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -56,7 +56,7 @@ func LimitsList(appID string) error {
 
 // LimitsSet sets an app's limits.
 func LimitsSet(appID string, limits []string, limitType string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -78,10 +78,10 @@ func LimitsSet(appID string, limits []string, limitType string) error {
 		configObj.Memory = limitsMap
 	}
 
-	_, err = config.Set(c, appID, configObj)
+	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -92,7 +92,7 @@ func LimitsSet(appID string, limits []string, limitType string) error {
 
 // LimitsUnset removes an app's limits.
 func LimitsUnset(appID string, limits []string, limitType string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -116,10 +116,10 @@ func LimitsUnset(appID string, limits []string, limitType string) error {
 		configObj.Memory = valuesMap
 	}
 
-	_, err = config.Set(c, appID, configObj)
+	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

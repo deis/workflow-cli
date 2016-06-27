@@ -45,7 +45,7 @@ func TestLoadSave(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c, err := Load()
+	s, err := Load()
 
 	if err != nil {
 		t.Fatal(err)
@@ -54,27 +54,27 @@ func TestLoadSave(t *testing.T) {
 	tests := []comparison{
 		comparison{
 			key:      false,
-			expected: c.VerifySSL,
+			expected: s.Client.VerifySSL,
 		},
 		comparison{
 			key:      "a",
-			expected: c.Token,
+			expected: s.Client.Token,
 		},
 		comparison{
 			key:      "t",
-			expected: c.Username,
+			expected: s.Username,
 		},
 		comparison{
 			key:      "http://foo.bar",
-			expected: c.ControllerURL.String(),
+			expected: s.Client.ControllerURL.String(),
 		},
 		comparison{
 			key:      50,
-			expected: c.ResponseLimit,
+			expected: s.Limit,
 		},
 		comparison{
 			key:      "Deis Client v" + version.Version,
-			expected: c.UserAgent,
+			expected: s.Client.UserAgent,
 		},
 	}
 
@@ -83,10 +83,10 @@ func TestLoadSave(t *testing.T) {
 	}
 
 	// Modify profile and confirm it is correctly saved
-	c.VerifySSL = true
-	c.Token = "b"
-	c.Username = "c"
-	c.ResponseLimit = 100
+	s.Client.VerifySSL = true
+	s.Client.Token = "b"
+	s.Username = "c"
+	s.Limit = 100
 
 	u, err := url.Parse("http://deis.test")
 
@@ -94,13 +94,13 @@ func TestLoadSave(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c.ControllerURL = u
+	s.Client.ControllerURL = u
 
-	if err = Save(c); err != nil {
+	if err = s.Save(); err != nil {
 		t.Fatal(err)
 	}
 
-	c, err = Load()
+	s, err = Load()
 
 	if err != nil {
 		t.Fatal(err)
@@ -109,27 +109,27 @@ func TestLoadSave(t *testing.T) {
 	tests = []comparison{
 		comparison{
 			key:      true,
-			expected: c.VerifySSL,
+			expected: s.Client.VerifySSL,
 		},
 		comparison{
 			key:      "b",
-			expected: c.Token,
+			expected: s.Client.Token,
 		},
 		comparison{
 			key:      "c",
-			expected: c.Username,
+			expected: s.Username,
 		},
 		comparison{
 			key:      "http://deis.test",
-			expected: c.ControllerURL.String(),
+			expected: s.Client.ControllerURL.String(),
 		},
 		comparison{
 			key:      100,
-			expected: c.ResponseLimit,
+			expected: s.Limit,
 		},
 		comparison{
 			key:      "Deis Client v" + version.Version,
-			expected: c.UserAgent,
+			expected: s.Client.UserAgent,
 		},
 	}
 

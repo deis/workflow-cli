@@ -18,14 +18,14 @@ import (
 
 // ConfigList lists an app's config.
 func ConfigList(appID string, oneLine bool) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	config, err := config.List(c, appID)
-	if checkAPICompatibility(c, err) != nil {
+	config, err := config.List(s.Client, appID)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -58,7 +58,7 @@ func ConfigList(appID string, oneLine bool) error {
 
 // ConfigSet sets an app's config variables.
 func ConfigSet(appID string, configVars []string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -104,10 +104,10 @@ to set up healthchecks. This functionality has been deprecated. In the future, p
 
 	quit := progress()
 	configObj := api.Config{Values: configMap}
-	configObj, err = config.Set(c, appID, configObj)
+	configObj, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -122,7 +122,7 @@ to set up healthchecks. This functionality has been deprecated. In the future, p
 
 // ConfigUnset removes a config variable from an app.
 func ConfigUnset(appID string, configVars []string) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
@@ -142,10 +142,10 @@ func ConfigUnset(appID string, configVars []string) error {
 
 	configObj.Values = valuesMap
 
-	_, err = config.Set(c, appID, configObj)
+	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(c, err) != nil {
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -156,14 +156,14 @@ func ConfigUnset(appID string, configVars []string) error {
 
 // ConfigPull pulls an app's config to a file.
 func ConfigPull(appID string, interactive bool, overwrite bool) error {
-	c, appID, err := load(appID)
+	s, appID, err := load(appID)
 
 	if err != nil {
 		return err
 	}
 
-	configVars, err := config.List(c, appID)
-	if checkAPICompatibility(c, err) != nil {
+	configVars, err := config.List(s.Client, appID)
+	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
