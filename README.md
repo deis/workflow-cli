@@ -104,11 +104,6 @@ the client in the current directory.
 Running `deis help` will give you a up to date list of `deis` commands.
 To learn more about a command run `deis help <command>`.
 
-## Windows Support
-
-`deis` has experimental support for Windows. To build deis for Windows, you need to install
-[go](https://golang.org/) and [glide](https://github.com/Masterminds/glide). Then run the `make.bat` script.
-
 ## License
 
 see [LICENSE](https://github.com/deis/workflow-cli/blob/master/LICENSE)
