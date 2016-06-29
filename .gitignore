@@ -25,3 +25,4 @@ _testmain.go
 vendor
 deis
 _dist
+workflow-cli

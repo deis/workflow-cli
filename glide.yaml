@@ -15,3 +15,4 @@ import:
 - package: gopkg.in/yaml.v2
 - package: github.com/olekukonko/tablewriter
 - package: github.com/deis/controller-sdk-go
+  version: e286df036c597f00f071bb77fea595974d6f14dc
