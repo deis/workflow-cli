@@ -11,6 +11,7 @@ import (
 	"github.com/deis/controller-sdk-go/api"
 	"github.com/deis/controller-sdk-go/apps"
 	"github.com/deis/controller-sdk-go/config"
+	"github.com/deis/controller-sdk-go/domains"
 	"github.com/deis/workflow-cli/pkg/git"
 	"github.com/deis/workflow-cli/pkg/webbrowser"
 	"github.com/deis/workflow-cli/settings"
@@ -104,11 +105,20 @@ func AppInfo(appID string) error {
 		return err
 	}
 
+	url, err := appURL(s, appID)
+	if err != nil {
+		return err
+	}
+
+	if url == "" {
+		url = fmt.Sprintf(noDomainAssignedMsg, appID)
+	}
+
 	fmt.Printf("=== %s Application\n", app.ID)
 	fmt.Println("updated: ", app.Updated)
 	fmt.Println("uuid:    ", app.UUID)
 	fmt.Println("created: ", app.Created)
-	fmt.Println("url:     ", app.URL)
+	fmt.Println("url:     ", url)
 	fmt.Println("owner:   ", app.Owner)
 	fmt.Println("id:      ", app.ID)
 
@@ -137,12 +147,15 @@ func AppOpen(appID string) error {
 		return err
 	}
 
-	app, err := apps.Get(s.Client, appID)
-	if checkAPICompatibility(s.Client, err) != nil {
+	u, err := appURL(s, appID)
+	if err != nil {
 		return err
 	}
 
-	u := app.URL
+	if u == "" {
+		return fmt.Errorf(noDomainAssignedMsg, appID)
+	}
+
 	if !(strings.HasPrefix(u, "http://") || strings.HasPrefix(u, "https://")) {
 		u = "http://" + u
 	}
@@ -275,4 +288,33 @@ func AppTransfer(appID, username string) error {
 	fmt.Println("done")
 
 	return nil
+}
+
+const noDomainAssignedMsg = "No domain assigned to %s"
+
+// appURL grabs the first domain an app has and returns this.
+func appURL(s *settings.Settings, appID string) (string, error) {
+	domains, _, err := domains.List(s.Client, appID, 1)
+	if checkAPICompatibility(s.Client, err) != nil {
+		return "", err
+	}
+
+	if len(domains) == 0 {
+		return "", nil
+	}
+
+	return expandURL(s.Client.ControllerURL.Host, domains[0].Domain), nil
+}
+
+// expandURL expands an app url if neccessary.
+func expandURL(host, u string) string {
+	if strings.Contains(u, ".") {
+		// If domain is a full url.
+		return u
+	}
+
+	// If domain is a subdomain, look up the controller url and replace the subdomain.
+	parts := strings.Split(host, ".")
+	parts[0] = u
+	return strings.Join(parts, ".")
 }

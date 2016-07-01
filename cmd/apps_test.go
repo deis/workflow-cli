@@ -16,3 +16,29 @@ func TestPrintLogLinesBadLine(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+type expandURLCases struct {
+	Input    string
+	Expected string
+}
+
+func TestExpandUrl(t *testing.T) {
+	checks := []expandURLCases{
+		expandURLCases{
+			Input:    "test.com",
+			Expected: "test.com",
+		},
+		expandURLCases{
+			Input:    "test",
+			Expected: "test.foo.com",
+		},
+	}
+
+	for _, check := range checks {
+		out := expandURL("deis.foo.com", check.Input)
+
+		if out != check.Expected {
+			t.Errorf("Expected %s, Got %s", check.Expected, out)
+		}
+	}
+}
