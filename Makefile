@@ -10,12 +10,20 @@ else
 	GOOS=linux
 endif
 
+BUILD_OS ?=linux darwin windows
+BUILD_ARCH ?=amd64 386
+
 DEV_ENV_IMAGE := quay.io/deis/go-dev:0.10.0
 DEV_ENV_WORK_DIR := /go/src/${repo_path}
 DEV_ENV_PREFIX := docker run --rm -e GO15VENDOREXPERIMENT=1 -e CGO_ENABLED=0 -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR}
 DEV_ENV_PREFIX_CGO_ENABLED := docker run --rm -e GO15VENDOREXPERIMENT=1 -e CGO_ENABLED=1 -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR}
 DEV_ENV_CMD := ${DEV_ENV_PREFIX} ${DEV_ENV_IMAGE}
 DIST_DIR := _dist
+
+GSUTIL_IMAGE := google/cloud-sdk:latest
+GSUTIL_PREFIX := docker run --rm -v  ${CURDIR}/tmp:/.config -v ${CURDIR}/${DIST_DIR}:/upload
+GSUTIL_CMD := ${GSUTIL_PREFIX} ${GSUTIL_IMAGE}
+GCS_BUCKET ?= "gs://workflow-cli"
 
 GO_FILES = $(wildcard *.go)
 GO_LDFLAGS = -ldflags "-s -X ${repo_path}/version.BuildVersion=${VERSION}"
@@ -24,6 +32,8 @@ GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 GOFMT = gofmt -e -l -s
 GOTEST = go test --cover --race -v
 
+# The tag of the commit
+GIT_TAG := $(shell git tag -l --contains HEAD)
 VERSION ?= $(shell git rev-parse --short HEAD)
 
 define check-static-binary
@@ -44,13 +54,18 @@ glideup:
 build: binary-build
 	@$(call check-static-binary,deis)
 
-build-all:
-	${DEV_ENV_CMD} gox -verbose ${GO_LDFLAGS} -os="linux darwin windows" -arch="amd64 386" -output="$(DIST_DIR)/deis-latest-{{.OS}}-{{.Arch}}" .
-ifdef TRAVIS_TAG
-	${DEV_ENV_CMD} gox -verbose ${GO_LDFLAGS} -os="linux darwin windows" -arch="amd64 386" -output="$(DIST_DIR)/${TRAVIS_TAG}/deis-${TRAVIS_TAG}-{{.OS}}-{{.Arch}}" .
+build-latest:
+	${DEV_ENV_CMD} gox -verbose -parallel=3 ${GO_LDFLAGS} -os="${BUILD_OS}" -arch="${BUILD_ARCH}" -output="$(DIST_DIR)/deis-latest-{{.OS}}-{{.Arch}}" .
+
+build-revision:
+ifdef GIT_TAG
+	${DEV_ENV_CMD} gox -verbose -parallel=3 ${GO_LDFLAGS} -os="${BUILD_OS}" -arch="${BUILD_ARCH}" -output="$(DIST_DIR)/${GIT_TAG}/deis-${GIT_TAG}-{{.OS}}-{{.Arch}}" .
 else
-	${DEV_ENV_CMD} gox -verbose ${GO_LDFLAGS} -os="linux darwin windows" -arch="amd64 386" -output="$(DIST_DIR)/${VERSION}/deis-${VERSION}-{{.OS}}-{{.Arch}}" .
+	${DEV_ENV_CMD} gox -verbose -parallel=3 ${GO_LDFLAGS} -os="${BUILD_OS}" -arch="${BUILD_ARCH}" -output="$(DIST_DIR)/${VERSION}/deis-${VERSION}-{{.OS}}-{{.Arch}}" .
 endif
+
+build-all: build-latest build-revision
+
 
 binary-build:
 	${DEV_ENV_PREFIX} -e GOOS=${GOOS} ${DEV_ENV_IMAGE} go build -a -installsuffix cgo ${GO_LDFLAGS} -o deis .
@@ -86,3 +101,9 @@ test-style:
 
 test-unit:
 	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} sh -c '${GOTEST} $$(glide nv)'
+
+upload-gcs:
+	${GSUTIL_CMD} sh -c 'gcloud auth activate-service-account -q --key-file /.config/key.json'
+	${GSUTIL_CMD} sh -c 'gsutil -mq cp -a public-read -r /upload/* ${GCS_BUCKET}'
+	# This has to run in the container to delete files created by the container
+	${GSUTIL_CMD} sh -c 'rm -rf /.config/*'
