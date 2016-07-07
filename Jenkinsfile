@@ -66,8 +66,8 @@ parallel(
 					sh 'mkdir -p tmp'
 					sh 'git describe --all --exact-match > tmp/GIT_BRANCH'
 					sh 'git tag -l --contains HEAD > tmp/GIT_TAG'
-					def git_branch = readFile('tmp/GIT_BRANCH')
-					def git_tag = readFile('tmp/GIT_TAG')
+					def git_branch = readFile('tmp/GIT_BRANCH').trim()
+					def git_tag = readFile('tmp/GIT_TAG').trim()
 
 					if (git_branch != "remotes/origin/master" && git_tag == "") {
 						echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
@@ -92,7 +92,7 @@ parallel(
 					// HACK: Recommended approach for getting command output is writing to and then reading a file.
 					sh 'mkdir -p tmp'
 					sh 'git describe --all --exact-match > tmp/GIT_BRANCH'
-					def git_branch = readFile('tmp/GIT_BRANCH')
+					def git_branch = readFile('tmp/GIT_BRANCH').trim()
 
 					if (git_branch == "remotes/origin/master") {
 						sh 'make bootstrap'
