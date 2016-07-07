@@ -69,7 +69,7 @@ parallel(
 					def git_branch = readFile('tmp/GIT_BRANCH')
 					def git_tag = readFile('tmp/GIT_TAG')
 
-					if (git_branch != "heads/master" && git_tag == "") {
+					if (git_branch != "remotes/origin/master" && git_tag == "") {
 						echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
 						env.BUILD_ARCH = "amd64"
 					}
@@ -94,7 +94,7 @@ parallel(
 					sh 'git describe --all --exact-match > tmp/GIT_BRANCH'
 					def git_branch = readFile('tmp/GIT_BRANCH')
 
-					if (git_branch == "heads/master") {
+					if (git_branch == "remotes/origin/master") {
 						sh 'make bootstrap'
 						sh 'make build-latest'
 
