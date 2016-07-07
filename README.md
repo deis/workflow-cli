@@ -1,7 +1,6 @@
 # Deis Client
 
-[![Build Status](https://travis-ci.org/deis/workflow-cli.svg?branch=master)](https://travis-ci.org/deis/workflow-cli)
-[![Build status](https://ci.appveyor.com/api/projects/status/gduy4urj0q6lnrxx/branch/master?svg=true)](https://ci.appveyor.com/project/mboersma/workflow-cli-fgqd7/branch/master)
+[![Build Status](https://ci.deis.io/buildStatus/icon?job=Deis/workflow-cli/master)](https://ci.deis.io/job/Deis/job/workflow-cli/job/master/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/deis/workflow-cli)](https://goreportcard.com/report/github.com/deis/workflow-cli)
 [![codebeat badge](https://codebeat.co/badges/05d314a8-ca61-4211-b69e-e7a3033662c8)](https://codebeat.co/projects/github-com-deis-workflow-cli)
 
