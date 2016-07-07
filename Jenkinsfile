@@ -64,12 +64,12 @@ parallel(
 
 					// HACK: Recommended approach for getting command output is writing to and then reading a file.
 					sh 'mkdir -p tmp'
-					sh 'git rev-parse --abbrev-ref HEAD > tmp/GIT_BRANCH'
+					sh 'git describe --all --exact-match > tmp/GIT_BRANCH'
 					sh 'git tag -l --contains HEAD > tmp/GIT_TAG'
 					def git_branch = readFile('tmp/GIT_BRANCH')
 					def git_tag = readFile('tmp/GIT_TAG')
 
-					if (git_branch != "master" && git_tag == "") {
+					if (git_branch != "heads/master" && git_tag == "") {
 						echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
 						env.BUILD_ARCH = "amd64"
 					}
@@ -91,10 +91,10 @@ parallel(
 
 					// HACK: Recommended approach for getting command output is writing to and then reading a file.
 					sh 'mkdir -p tmp'
-					sh 'git rev-parse --abbrev-ref HEAD > tmp/GIT_BRANCH'
+					sh 'git describe --all --exact-match > tmp/GIT_BRANCH'
 					def git_branch = readFile('tmp/GIT_BRANCH')
 
-					if (git_branch == "master") {
+					if (git_branch == "heads/master") {
 						sh 'make bootstrap'
 						sh 'make build-latest'
 
