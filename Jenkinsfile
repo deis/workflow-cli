@@ -51,6 +51,27 @@ node('linux') {
 	}
 }
 
+def git_commit = ''
+def git_branch = ''
+
+stage 'Git Info'
+node('linux') {
+
+	def gopath = gopath_linux()
+	def workdir = workdir_linux(gopath)
+
+	dir(workdir) {
+		checkout scm
+
+		// HACK: Recommended approach for getting command output is writing to and then reading a file.
+		sh 'mkdir -p tmp'
+		sh 'git describe --all --exact-match > tmp/GIT_BRANCH'
+		sh 'git rev-parse HEAD > tmp/GIT_COMMIT'
+		git_branch = readFile('tmp/GIT_BRANCH').trim()
+		git_commit = readFile('tmp/GIT_COMMIT').trim()
+	}
+}
+
 stage 'Build and Upload Artifacts'
 
 parallel(
@@ -62,14 +83,7 @@ parallel(
 			dir(workdir) {
 					checkout scm
 
-					// HACK: Recommended approach for getting command output is writing to and then reading a file.
-					sh 'mkdir -p tmp'
-					sh 'git describe --all --exact-match > tmp/GIT_BRANCH'
-					sh 'git tag -l --contains HEAD > tmp/GIT_TAG'
-					def git_branch = readFile('tmp/GIT_BRANCH').trim()
-					def git_tag = readFile('tmp/GIT_TAG').trim()
-
-					if (git_branch != "remotes/origin/master" && git_tag == "") {
+					if (git_branch != "remotes/origin/master") {
 						echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
 						env.BUILD_ARCH = "amd64"
 					}
@@ -89,11 +103,6 @@ parallel(
 			dir(workdir) {
 					checkout scm
 
-					// HACK: Recommended approach for getting command output is writing to and then reading a file.
-					sh 'mkdir -p tmp'
-					sh 'git describe --all --exact-match > tmp/GIT_BRANCH'
-					def git_branch = readFile('tmp/GIT_BRANCH').trim()
-
 					if (git_branch == "remotes/origin/master") {
 						sh 'make bootstrap'
 						sh 'make build-latest'
@@ -106,3 +115,19 @@ parallel(
 		}
 	}
 )
+
+stage 'Trigger e2e tests'
+
+// If build is on master, trigger workflow-test, otherwise, assume build is a PR and trigger workflow-test-pr
+waitUntil {
+	try {
+		if (git_branch == "remotes/origin/master") {
+			build job: '/workflow-test', parameters: [[$class: 'StringParameterValue', name: 'WORKFLOW_CLI_SHA', value: git_commit]]
+		} else {
+			build job: '/workflow-test-pr', parameters: [[$class: 'StringParameterValue', name: 'WORKFLOW_CLI_SHA', value: git_commit]]
+		}
+	} catch(error) {
+		 input "Retry the e2e tests?"
+		 false
+	}
+}
