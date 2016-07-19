@@ -132,19 +132,19 @@ type chooseKeyCases struct {
 
 func TestChooseKey(t *testing.T) {
 	testKeys := []api.KeyCreateRequest{
-		api.KeyCreateRequest{},
+		{},
 	}
 
 	checks := []chooseKeyCases{
-		chooseKeyCases{
+		{
 			Reader:   strings.NewReader("-1"),
 			Expected: "-1 is not a valid option",
 		},
-		chooseKeyCases{
+		{
 			Reader:   strings.NewReader("2"),
 			Expected: "2 is not a valid option",
 		},
-		chooseKeyCases{
+		{
 			Reader:   strings.NewReader("a"),
 			Expected: "a is not a valid integer",
 		},

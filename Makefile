@@ -27,9 +27,9 @@ GCS_BUCKET ?= "gs://workflow-cli"
 
 GO_FILES = $(wildcard *.go)
 GO_LDFLAGS = -ldflags "-s -X ${repo_path}/version.BuildVersion=${VERSION}"
-GO_PACKAGES = cmd parser $(wildcard pkg/*)
+GO_PACKAGES = cmd parser cli $(wildcard pkg/*)
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
-GOFMT = gofmt -e -l -s
+GOFMT = gofmtresult=$$(gofmt -e -l -s ${GO_FILES} ${GO_PACKAGES}); if [[ -n $$gofmtresult ]]; then echo "gofmt errors found in the following files: $${gofmtresult}"; false; fi;
 GOTEST = go test --cover --race -v
 
 # The tag of the commit
@@ -94,7 +94,8 @@ setup-gotools:
 test: test-style test-unit
 
 test-style:
-	${DEV_ENV_CMD} sh -c '${GOFMT} ${GO_FILES} ${GO_PACKAGES} && go vet $(repo_path) $(GO_PACKAGES_REPO_PATH)'
+	${DEV_ENV_CMD} bash -c '${GOFMT}'
+	${DEV_ENV_CMD} sh -c 'go vet $(repo_path) $(GO_PACKAGES_REPO_PATH)'
 	@for i in $(addsuffix /...,$(GO_PACKAGES)); do \
 		${DEV_ENV_CMD} golint $$i; \
 	done

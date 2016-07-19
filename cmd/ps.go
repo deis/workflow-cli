@@ -133,7 +133,7 @@ func parseType(target string, appID string) (string, string) {
 	psType, psName := "", ""
 
 	if strings.Contains(target, "-") {
-		replaced := strings.Replace(target, appID + "-", "", 1)
+		replaced := strings.Replace(target, appID+"-", "", 1)
 		parts := strings.Split(replaced, "-")
 		// the API requires the type, for now
 		// regex matches against how Deployment pod name is constructed

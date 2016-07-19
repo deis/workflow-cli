@@ -24,11 +24,11 @@ type expandURLCases struct {
 
 func TestExpandUrl(t *testing.T) {
 	checks := []expandURLCases{
-		expandURLCases{
+		{
 			Input:    "test.com",
 			Expected: "test.com",
 		},
-		expandURLCases{
+		{
 			Input:    "test",
 			Expected: "test.foo.com",
 		},

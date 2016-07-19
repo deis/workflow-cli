@@ -1,5 +1,6 @@
 package cli
 
+// Shortcuts is a map of all the shortcuts supported by the CLI
 var Shortcuts = map[string]string{
 	"create":         "apps:create",
 	"destroy":        "apps:destroy",
