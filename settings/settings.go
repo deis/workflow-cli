@@ -59,12 +59,12 @@ func Load() (*Settings, error) {
 
 	c, err := deis.New(sF.VerifySSL, sF.Controller, sF.Token)
 
-	// Set a custom user agent
-	c.UserAgent = UserAgent
-
 	if err != nil {
 		return nil, err
 	}
+
+	// Set a custom user agent
+	c.UserAgent = UserAgent
 
 	settings := Settings{}
 	settings.Username = sF.Username
