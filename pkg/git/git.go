@@ -8,7 +8,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
+
+// ErrRemoteNotFound is returned when the remote cannot be found in git
+var ErrRemoteNotFound = errors.New("Could not find remote matching app in 'git remote -v'")
 
 // CreateRemote adds a git remote in the current directory.
 func CreateRemote(host, remote, appID string) error {
@@ -30,44 +34,62 @@ func CreateRemote(host, remote, appID string) error {
 		return err
 	}
 
-	fmt.Printf("Git remote %s added\n", remote)
-
 	return nil
 }
 
-// DeleteRemote removes a git remote in the current directory.
-func DeleteRemote(appID string) error {
-	name, err := remoteNameFromAppID(appID)
+// DeleteAppRemotes removes all git remotes corresponding to an app in the repository.
+func DeleteAppRemotes(host, appID string) error {
+	names, err := remoteNamesFromAppID(host, appID)
 
 	if err != nil {
 		return err
 	}
 
-	if _, err = exec.Command("git", "remote", "remove", name).Output(); err != nil {
-		return err
-	}
-
-	fmt.Printf("Git remote %s removed\n", name)
-
-	return nil
-}
-
-func remoteNameFromAppID(appID string) (string, error) {
-	out, err := exec.Command("git", "remote", "-v").Output()
-
-	if err != nil {
-		return "", err
-	}
-
-	cmd := string(out)
-
-	for _, line := range strings.Split(cmd, "\n") {
-		if strings.Contains(line, appID) {
-			return strings.Split(line, "\t")[0], nil
+	for _, name := range names {
+		if err := DeleteRemote(name); err != nil {
+			return err
 		}
 	}
 
-	return "", errors.New("Could not find remote matching app in 'git remote -v'")
+	return nil
+}
+
+// DeleteRemote removes a remote from the repository
+func DeleteRemote(name string) error {
+	_, err := exec.Command("git", "remote", "remove", name).Output()
+	return err
+}
+
+// remoteNamesFromAppID returns the git remote names for an app
+func remoteNamesFromAppID(host, appID string) ([]string, error) {
+	out, err := exec.Command("git", "remote", "-v").Output()
+
+	if err != nil {
+		return []string{}, err
+	}
+
+	cmd := string(out)
+	remotes := []string{}
+
+lines:
+	for _, line := range strings.Split(cmd, "\n") {
+		if strings.Contains(line, RemoteURL(host, appID)) {
+			name := strings.Split(line, "\t")[0]
+			// git remote -v can show duplicate remotes, so don't add a remote if it already has been added
+			for _, remote := range remotes {
+				if remote == name {
+					continue lines
+				}
+			}
+			remotes = append(remotes, name)
+		}
+	}
+
+	if len(remotes) == 0 {
+		return remotes, ErrRemoteNotFound
+	}
+
+	return remotes, nil
 }
 
 // DetectAppName detects if there is deis remote in git.
@@ -105,7 +127,7 @@ func findRemote(host string) (string, error) {
 		}
 	}
 
-	return "", errors.New("Could not find deis remote in 'git remote -v'")
+	return "", ErrRemoteNotFound
 }
 
 // RemoteURL returns the git URL of app.
@@ -120,4 +142,19 @@ func getBuilderHostname(host string) string {
 	hostTokens := strings.Split(host, ".")
 	hostTokens[0] = fmt.Sprintf("%s-builder", hostTokens[0])
 	return strings.Join(hostTokens, ".")
+}
+
+// RemoteValue gets the url that a git remote is set to.
+func RemoteValue(name string) (string, error) {
+	out, err := exec.Command("git", "remote", "get-url", name).Output()
+
+	if err != nil {
+		// get the return code of the program and see if it equals not found
+		if err.(*exec.ExitError).Sys().(syscall.WaitStatus).ExitStatus() == 128 {
+			return "", ErrRemoteNotFound
+		}
+		return "", err
+	}
+
+	return strings.Trim(string(out), "\n"), nil
 }

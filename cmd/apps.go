@@ -50,17 +50,18 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 	if !noRemote {
 		if err = git.CreateRemote(s.Client.ControllerURL.Host, remote, app.ID); err != nil {
 			if err.Error() == "exit status 128" {
-				fmt.Println("To replace the existing git remote entry, run:")
-				fmt.Printf("  git remote rename deis deis.old && deis git:remote -a %s\n", app.ID)
+				msg := "A git remote with the name %s already exists. To overwrite this remote run:\n"
+				msg += "deis git:remote --force --remote %s --app %s"
+				return fmt.Errorf(msg, remote, remote, app.ID)
 			}
 			return err
 		}
+
+		fmt.Printf(remoteCreationMsg, remote, app.ID)
 	}
 
 	if noRemote {
 		fmt.Printf("If you want to add a git remote for this app later, use `deis git:remote -a %s`\n", app.ID)
-	} else {
-		fmt.Println("remote available at", git.RemoteURL(s.Client.ControllerURL.Host, app.ID))
 	}
 
 	return nil
@@ -251,7 +252,7 @@ func AppDestroy(appID, confirm string) error {
 	fmt.Printf("done in %ds\n", int(time.Since(startTime).Seconds()))
 
 	if gitSession {
-		return git.DeleteRemote(appID)
+		return GitRemove(appID)
 	}
 
 	return nil
