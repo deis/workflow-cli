@@ -169,14 +169,20 @@ func authWhoami(argv []string) error {
 	usage := `
 Displays the currently logged in user.
 
-Usage: deis auth:whoami
+Usage: deis auth:whoami [options]
+
+Options:
+  --all
+    fetch a more detailed description about the user.
 `
 
-	if _, err := docopt.Parse(usage, argv, true, "", false, true); err != nil {
+	args, err := docopt.Parse(usage, argv, true, "", false, true)
+
+	if err != nil {
 		return err
 	}
 
-	return cmd.Whoami()
+	return cmd.Whoami(args["--all"].(bool))
 }
 
 func authCancel(argv []string) error {
