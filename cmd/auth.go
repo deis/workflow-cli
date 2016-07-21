@@ -247,15 +247,24 @@ func Cancel(username string, password string, yes bool) error {
 	return nil
 }
 
-// Whoami prints the logged in user.
-func Whoami() error {
+// Whoami prints the logged in user. If all is true, it fetches info from the controller to know
+// more about the user.
+func Whoami(all bool) error {
 	s, err := settings.Load()
 
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("You are %s at %s\n", s.Username, s.Client.ControllerURL.String())
+	if all {
+		user, err := auth.Whoami(s.Client)
+		if err != nil {
+			return err
+		}
+		fmt.Println(user)
+	} else {
+		fmt.Printf("You are %s at %s\n", s.Username, s.Client.ControllerURL.String())
+	}
 	return nil
 }
 
