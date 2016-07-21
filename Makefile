@@ -23,7 +23,7 @@ GO_LDFLAGS = -ldflags "-s -X ${repo_path}/version.BuildVersion=${VERSION}"
 GO_PACKAGES = cmd parser cli $(wildcard pkg/*)
 GO_PACKAGES_REPO_PATH = $(addprefix $(repo_path)/,$(GO_PACKAGES))
 GOFMT = gofmtresult=$$(gofmt -e -l -s ${GO_FILES} ${GO_PACKAGES}); if [[ -n $$gofmtresult ]]; then echo "gofmt errors found in the following files: $${gofmtresult}"; false; fi;
-GOTEST = go test --cover --race -v
+GOTEST = go test --race -v
 
 # The tag of the commit
 GIT_TAG := $(shell git tag -l --contains HEAD)
@@ -63,7 +63,6 @@ endif
 
 build-all: build-latest build-revision
 
-
 binary-build:
 	${DEV_ENV_PREFIX} -e GOOS=${GOOS} ${DEV_ENV_IMAGE} go build -a -installsuffix cgo ${GO_LDFLAGS} -o deis .
 
@@ -88,8 +87,6 @@ setup-gotools:
 	go get -u golang.org/x/tools/cmd/cover
 	go get -u golang.org/x/tools/cmd/vet
 
-test: test-style test-unit
-
 test-style:
 	${DEV_ENV_CMD} bash -c '${GOFMT}'
 	${DEV_ENV_CMD} sh -c 'go vet $(repo_path) $(GO_PACKAGES_REPO_PATH)'
@@ -97,8 +94,11 @@ test-style:
 		${DEV_ENV_CMD} golint $$i; \
 	done
 
-test-unit:
+test: test-style
 	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} sh -c '${GOTEST} $$(glide nv)'
+
+test-cover: test-style
+	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} test-cover.sh
 
 # Set local user as owner for files
 fileperms:
