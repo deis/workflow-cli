@@ -36,6 +36,10 @@ GOTEST = go test --cover --race -v
 GIT_TAG := $(shell git tag -l --contains HEAD)
 VERSION ?= $(shell git rev-parse --short HEAD)
 
+# UID and GID of local user
+UID := $(shell id -u)
+GID := $(shell id -g)
+
 define check-static-binary
   if file $(1) | egrep -q "(statically linked|Mach-O)"; then \
     echo -n ""; \
@@ -107,3 +111,7 @@ upload-gcs:
 	${GSUTIL_CMD} sh -c 'gsutil -mq cp -a public-read -r /upload/* ${GCS_BUCKET}'
 	# This has to run in the container to delete files created by the container
 	${GSUTIL_CMD} sh -c 'rm -rf /.config/*'
+
+# Set local user as owner for files
+fileperms:
+	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} chown -R ${UID}:${GID} .

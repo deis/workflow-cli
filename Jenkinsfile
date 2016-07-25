@@ -6,11 +6,20 @@ def getBasePath = { String filepath ->
 	return filepath.substring(0, filename)
 }
 
+def make = { String target ->
+	try {
+		sh "make ${target} fileperms"
+	} catch(error) {
+		sh "make fileperms"
+		false
+	}
+}
+
 def upload_artifacts = { String filepath ->
 	withCredentials([[$class: 'FileBinding', credentialsId: 'e80fd033-dd76-4d96-be79-6c272726fb82', variable: 'GCSKEY']]) {
 		sh "mkdir -p ${getBasePath(filepath)}"
 		sh "cat \"\${GCSKEY}\" > ${filepath}"
-		sh "make upload-gcs"
+		make 'upload-gcs'
 	}
 }
 
@@ -51,9 +60,9 @@ node('linux') {
 		stage 'Checkout Linux'
 			checkout scm
 		stage 'Install Linux'
-			sh 'make bootstrap'
+			make 'bootstrap'
 		stage 'Test Linux'
-			sh 'make test'
+			make 'test'
 	}
 }
 
@@ -94,8 +103,9 @@ parallel(
 						env.BUILD_ARCH = "amd64"
 					}
 
-					sh 'make bootstrap'
-					sh "VERSION=${git_commit.take(7)} make build-revision"
+					make 'bootstrap'
+					env.VERSION = git_commit.take(7)
+					make 'build-revision'
 
 					upload_artifacts(keyfile)
 			}
@@ -110,8 +120,8 @@ parallel(
 					checkout scm
 
 					if (git_branch == "remotes/origin/master") {
-						sh 'make bootstrap'
-						sh 'make build-latest'
+						make 'bootstrap'
+						make 'build-latest'
 
 						upload_artifacts(keyfile)
 					} else {
