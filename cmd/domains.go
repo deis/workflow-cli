@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/deis/controller-sdk-go/domains"
 )
@@ -25,8 +26,14 @@ func DomainsList(appID string, results int) error {
 
 	fmt.Printf("=== %s Domains%s", appID, limitCount(len(domains), count))
 
+	var domainNames []string
 	for _, domain := range domains {
-		fmt.Println(domain.Domain)
+		domainNames = append(domainNames, domain.Domain)
+	}
+	sort.Strings(domainNames)
+
+	for _, domainName := range domainNames {
+		fmt.Println(domainName)
 	}
 	return nil
 }

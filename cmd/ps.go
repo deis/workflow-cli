@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -120,10 +121,16 @@ func printProcesses(appID string, processes []api.Pods) {
 
 	fmt.Printf("=== %s Processes\n", appID)
 
-	for psType, procs := range psMap {
+	var psTypes []string
+	for psType := range psMap {
+		psTypes = append(psTypes, psType)
+	}
+	sort.Strings(psTypes)
+
+	for _, psType := range psTypes {
 		fmt.Printf("--- %s:\n", psType)
 
-		for _, proc := range procs {
+		for _, proc := range psMap[psType] {
 			fmt.Printf("%s %s (%s)\n", proc.Name, proc.State, proc.Release)
 		}
 	}
