@@ -18,11 +18,6 @@ DEV_ENV_PREFIX_CGO_ENABLED := docker run --rm -e CGO_ENABLED=1 -v ${CURDIR}:${DE
 DEV_ENV_CMD := ${DEV_ENV_PREFIX} ${DEV_ENV_IMAGE}
 DIST_DIR := _dist
 
-GSUTIL_IMAGE := google/cloud-sdk:latest
-GSUTIL_PREFIX := docker run --rm -v  ${CURDIR}/tmp:/.config -v ${CURDIR}/${DIST_DIR}:/upload
-GSUTIL_CMD := ${GSUTIL_PREFIX} ${GSUTIL_IMAGE}
-GCS_BUCKET ?= "gs://workflow-cli"
-
 GO_FILES = $(wildcard *.go)
 GO_LDFLAGS = -ldflags "-s -X ${repo_path}/version.BuildVersion=${VERSION}"
 GO_PACKAGES = cmd parser cli $(wildcard pkg/*)
@@ -104,12 +99,6 @@ test-style:
 
 test-unit:
 	${DEV_ENV_PREFIX_CGO_ENABLED} ${DEV_ENV_IMAGE} sh -c '${GOTEST} $$(glide nv)'
-
-upload-gcs:
-	${GSUTIL_CMD} sh -c 'gcloud auth activate-service-account -q --key-file /.config/key.json'
-	${GSUTIL_CMD} sh -c 'gsutil -mq cp -a public-read -r /upload/* ${GCS_BUCKET}'
-	# This has to run in the container to delete files created by the container
-	${GSUTIL_CMD} sh -c 'rm -rf /.config/*'
 
 # Set local user as owner for files
 fileperms:

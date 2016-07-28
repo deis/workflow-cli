@@ -1,5 +1,4 @@
 def workpath_linux = "/src/github.com/deis/workflow-cli"
-def keyfile = "tmp/key.json"
 
 def getBasePath = { String filepath ->
 	def filename = filepath.lastIndexOf(File.separator)
@@ -15,11 +14,27 @@ def make = { String target ->
 	}
 }
 
-def upload_artifacts = { String filepath ->
+def gcs_cleanup_cmd = "sh -c 'rm -rf /.config/*'"
+def gcs_bucket = "gs://workflow-cli"
+def gcs_key = "tmp/key.json"
+
+def gcs_cmd = { String cmd ->
+	gcs_cmd = "docker run --rm -v  ${pwd()}/tmp:/.config -v ${pwd()}/_dist:/upload google/cloud-sdk:latest "
+	try {
+		sh(gcs_cmd + cmd)
+	} catch(error) {
+		sh(gcs_cmd + gcs_cleanup_cmd)
+		error 'gcs error'
+	}
+}
+
+def upload_artifacts = {
 	withCredentials([[$class: 'FileBinding', credentialsId: 'e80fd033-dd76-4d96-be79-6c272726fb82', variable: 'GCSKEY']]) {
-		sh "mkdir -p ${getBasePath(filepath)}"
-		sh "cat \"\${GCSKEY}\" > ${filepath}"
-		make 'upload-gcs'
+		sh "mkdir -p ${getBasePath(gcs_key)}"
+		sh "cat \"\${GCSKEY}\" > ${gcs_key}"
+		gcs_cmd 'gcloud auth activate-service-account -q --key-file /.config/key.json'
+		gcs_cmd "gsutil -mq cp -a public-read -r /upload/* ${gcs_bucket}"
+		gcs_cmd gcs_cleanup_cmd
 	}
 }
 
@@ -113,7 +128,7 @@ parallel(
 					env.VERSION = git_commit.take(7)
 					make 'build-revision'
 
-					upload_artifacts(keyfile)
+					upload_artifacts()
 			}
 		}
 	},
@@ -129,7 +144,7 @@ parallel(
 						make 'bootstrap'
 						make 'build-latest'
 
-						upload_artifacts(keyfile)
+						upload_artifacts()
 					} else {
 						echo "Skipping build of latest artifacts because this build is not on the master branch (branch: ${git_branch})"
 					}
