@@ -52,27 +52,27 @@ func TestLoadSave(t *testing.T) {
 	}
 
 	tests := []comparison{
-		comparison{
+		{
 			key:      false,
 			expected: s.Client.VerifySSL,
 		},
-		comparison{
+		{
 			key:      "a",
 			expected: s.Client.Token,
 		},
-		comparison{
+		{
 			key:      "t",
 			expected: s.Username,
 		},
-		comparison{
+		{
 			key:      "http://foo.bar",
 			expected: s.Client.ControllerURL.String(),
 		},
-		comparison{
+		{
 			key:      50,
 			expected: s.Limit,
 		},
-		comparison{
+		{
 			key:      "Deis Client v" + version.Version,
 			expected: s.Client.UserAgent,
 		},
@@ -107,27 +107,27 @@ func TestLoadSave(t *testing.T) {
 	}
 
 	tests = []comparison{
-		comparison{
+		{
 			key:      true,
 			expected: s.Client.VerifySSL,
 		},
-		comparison{
+		{
 			key:      "b",
 			expected: s.Client.Token,
 		},
-		comparison{
+		{
 			key:      "c",
 			expected: s.Username,
 		},
-		comparison{
+		{
 			key:      "http://deis.test",
 			expected: s.Client.ControllerURL.String(),
 		},
-		comparison{
+		{
 			key:      100,
 			expected: s.Limit,
 		},
-		comparison{
+		{
 			key:      "Deis Client v" + version.Version,
 			expected: s.Client.UserAgent,
 		},

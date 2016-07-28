@@ -201,7 +201,7 @@ func Cancel(username string, password string, yes bool) error {
 		}
 	}
 
-	if yes == false {
+	if !yes {
 		confirm := ""
 
 		s, err = settings.Load()
@@ -224,7 +224,7 @@ func Cancel(username string, password string, yes bool) error {
 		}
 	}
 
-	if yes == false {
+	if !yes {
 		fmt.Fprintln(os.Stderr, "Account not changed")
 		return nil
 	}
@@ -281,7 +281,7 @@ func Regenerate(username string, all bool) error {
 		return err
 	}
 
-	if username == "" && all == false {
+	if username == "" && !all {
 		s.Client.Token = token
 
 		err = s.Save()

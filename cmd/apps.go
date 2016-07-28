@@ -306,7 +306,7 @@ func appURL(s *settings.Settings, appID string) (string, error) {
 	return expandURL(s.Client.ControllerURL.Host, domains[0].Domain), nil
 }
 
-// expandURL expands an app url if neccessary.
+// expandURL expands an app url if necessary.
 func expandURL(host, u string) string {
 	if strings.Contains(u, ".") {
 		// If domain is a full url.
