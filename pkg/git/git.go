@@ -30,11 +30,7 @@ func CreateRemote(host, remote, appID string) error {
 	output, _ := ioutil.ReadAll(stderr)
 	fmt.Print(string(output))
 
-	if err := cmd.Wait(); err != nil {
-		return err
-	}
-
-	return nil
+	return cmd.Wait()
 }
 
 // DeleteAppRemotes removes all git remotes corresponding to an app in the repository.
