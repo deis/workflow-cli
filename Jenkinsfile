@@ -207,5 +207,6 @@ Commit: ${env.CHANGE_TITLE}<br/>
 			}
 			input "Retry the e2e tests?"
 		}
+		false
 	}
 }
