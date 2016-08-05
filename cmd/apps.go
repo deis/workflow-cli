@@ -6,13 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/deis/pkg/prettyprint"
-
 	"github.com/deis/controller-sdk-go/api"
 	"github.com/deis/controller-sdk-go/apps"
 	"github.com/deis/controller-sdk-go/config"
 	"github.com/deis/controller-sdk-go/domains"
 	"github.com/deis/workflow-cli/pkg/git"
+	"github.com/deis/workflow-cli/pkg/logging"
 	"github.com/deis/workflow-cli/pkg/webbrowser"
 	"github.com/deis/workflow-cli/settings"
 )
@@ -177,20 +176,8 @@ func AppLogs(appID string, lines int) error {
 		return err
 	}
 
-	return printLogs(logs)
-}
-
-// printLogs prints each log line with a color matched to its category.
-func printLogs(logs string) error {
-	for _, log := range strings.Split(logs, `\n`) {
-		category := "unknown"
-		parts := strings.Split(strings.Split(log, " -- ")[0], " ")
-		category = parts[0]
-		colorVars := map[string]string{
-			"Color": chooseColor(category),
-			"Log":   log,
-		}
-		fmt.Println(prettyprint.ColorizeVars("{{.V.Color}}{{.V.Log}}{{.C.Default}}", colorVars))
+	for _, log := range strings.Split(strings.TrimRight(logs, `\n`), `\n`) {
+		logging.PrintLog(os.Stdout, log)
 	}
 
 	return nil

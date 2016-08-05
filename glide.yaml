@@ -14,5 +14,6 @@ import:
   - ssh/terminal
 - package: gopkg.in/yaml.v2
 - package: github.com/olekukonko/tablewriter
+- package: github.com/arschles/assert
 - package: github.com/deis/controller-sdk-go
   version: 09f8465bf5598f84987734082d22f4201632a320

@@ -1,8 +1,14 @@
 // +build linux darwin
 
-package cmd
+package logging
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+	"strings"
+
+	"github.com/deis/pkg/prettyprint"
+)
 
 const colorStringEscape = "\033[3%dm"
 
@@ -33,4 +39,16 @@ func chooseColor(input string) string {
 	}
 
 	return fmt.Sprintf(colorStringEscape, color)
+}
+
+// PrintLog prints a log line with a color matched to its category.
+func PrintLog(out io.Writer, log string) {
+	category := "unknown"
+	parts := strings.Split(strings.Split(log, " -- ")[0], " ")
+	category = parts[0]
+	colorVars := map[string]string{
+		"Color": chooseColor(category),
+		"Log":   log,
+	}
+	fmt.Fprintln(out, prettyprint.ColorizeVars("{{.V.Color}}{{.V.Log}}{{.C.Default}}", colorVars))
 }
