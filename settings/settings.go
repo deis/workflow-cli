@@ -11,14 +11,12 @@ import (
 	"github.com/deis/workflow-cli/version"
 )
 
-const (
-	// UserAgent is the user agent used by the CLI
-	UserAgent = "Deis Client v" + version.Version
+// DefaultResponseLimit is the default number of responses to return on requests that can
+// be limited.
+const DefaultResponseLimit = 100
 
-	// DefaultResponseLimit is the default number of responses to return on requests that can
-	// be limited.
-	DefaultResponseLimit = 100
-)
+// UserAgent is the user agent used by the CLI
+var UserAgent = "Deis Client v" + version.Version
 
 type settingsFile struct {
 	Username   string `json:"username"`

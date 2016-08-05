@@ -144,7 +144,7 @@ parallel(
 					}
 
 					make 'bootstrap'
-					env.VERSION = git_commit.take(7)
+					env.REVISION = git_commit.take(7)
 					make 'build-revision'
 
 					upload_artifacts()

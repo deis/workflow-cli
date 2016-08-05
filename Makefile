@@ -8,6 +8,18 @@ else
 	GOOS=linux
 endif
 
+# The latest git tag on branch
+GIT_TAG := $(shell git describe --abbrev=0 --tags)
+# If the latest commit is tagged
+TAGGED_COMMIT := $(shell git tag -l --contains HEAD)
+REVISION ?= $(shell git rev-parse --short HEAD)
+
+ifdef TAGGED_COMMIT
+	VERSION ?= ${GIT_TAG}
+else
+	VERSION ?= ${GIT_TAG}-${REVISION}
+endif
+
 BUILD_OS ?=linux darwin windows
 BUILD_ARCH ?=amd64 386
 
@@ -18,12 +30,8 @@ DEV_ENV_PREFIX_CGO_ENABLED := docker run --rm -e CGO_ENABLED=1 -v ${CURDIR}:${DE
 DEV_ENV_CMD := ${DEV_ENV_PREFIX} ${DEV_ENV_IMAGE}
 DIST_DIR := _dist
 
-GO_LDFLAGS = -ldflags "-s -X ${repo_path}/version.BuildVersion=${VERSION}"
+GO_LDFLAGS = -ldflags "-s -X ${repo_path}/version.Version=${VERSION}"
 GOTEST = go test --race
-
-# The tag of the commit
-GIT_TAG := $(shell git tag -l --contains HEAD)
-VERSION ?= $(shell git rev-parse --short HEAD)
 
 # UID and GID of local user
 UID := $(shell id -u)
@@ -51,10 +59,10 @@ build-latest:
 	${DEV_ENV_CMD} gox -verbose -parallel=3 ${GO_LDFLAGS} -os="${BUILD_OS}" -arch="${BUILD_ARCH}" -output="$(DIST_DIR)/deis-latest-{{.OS}}-{{.Arch}}" .
 
 build-revision:
-ifdef GIT_TAG
+ifdef TAGGED_COMMIT
 	${DEV_ENV_CMD} gox -verbose -parallel=3 ${GO_LDFLAGS} -os="${BUILD_OS}" -arch="${BUILD_ARCH}" -output="$(DIST_DIR)/${GIT_TAG}/deis-${GIT_TAG}-{{.OS}}-{{.Arch}}" .
 else
-	${DEV_ENV_CMD} gox -verbose -parallel=3 ${GO_LDFLAGS} -os="${BUILD_OS}" -arch="${BUILD_ARCH}" -output="$(DIST_DIR)/${VERSION}/deis-${VERSION}-{{.OS}}-{{.Arch}}" .
+	${DEV_ENV_CMD} gox -verbose -parallel=3 ${GO_LDFLAGS} -os="${BUILD_OS}" -arch="${BUILD_ARCH}" -output="$(DIST_DIR)/${REVISION}/deis-${REVISION}-{{.OS}}-{{.Arch}}" .
 endif
 
 build-all: build-latest build-revision

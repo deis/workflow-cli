@@ -1,8 +1,5 @@
 package version
 
-// Version identifies this Deis product revision.
-const Version = "2.3.0"
-
-// BuildVersion is the git revision of the build.
+// Version identifies the Deis product revision.
 // Note: This value is overwritten by the linker during build
-var BuildVersion = ""
+var Version = "unknown version (override me)"

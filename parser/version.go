@@ -20,11 +20,7 @@ Use 'deis help [command]' to learn more.
 		return err
 	}
 
-	v := version.Version
-	if version.BuildVersion != "" {
-		v = fmt.Sprintf("%s-%s", version.Version, version.BuildVersion)
-	}
-	fmt.Println(v)
+	fmt.Println(version.Version)
 
 	return nil
 }
