@@ -20,6 +20,9 @@ const (
 	DefaultResponseLimit = 100
 )
 
+// ErrNotLoggedIn is returned when loading settings without being logged in.
+var ErrNotLoggedIn = errors.New("Not logged in. Use 'deis login' or 'deis register' to get started.")
+
 type settingsFile struct {
 	Username   string `json:"username"`
 	VerifySSL  bool   `json:"ssl_verify"`
@@ -41,7 +44,7 @@ func Load() (*Settings, error) {
 
 	if _, err := os.Stat(filename); err != nil {
 		if os.IsNotExist(err) {
-			return nil, errors.New("Not logged in. Use 'deis login' or 'deis register' to get started.")
+			return nil, ErrNotLoggedIn
 		}
 
 		return nil, err

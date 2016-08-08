@@ -11,9 +11,22 @@ import (
 	"github.com/deis/workflow-cli/version"
 )
 
-const sFile string = `{"username":"t","ssl_verify":false,"controller":"http://foo.bar","token":"a","response_limit": 50}`
+const sFile string = `{"username":"t","ssl_verify":false,"controller":"http://foo.bar","token":"a"}`
 
 func createTempProfile(contents string) error {
+	err := createTempDirs()
+	if err != nil {
+		return err
+	}
+
+	if err = ioutil.WriteFile(filepath.Join(FindHome(), ".deis", "client.json"), []byte(contents), 0775); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createTempDirs() error {
 	name, err := ioutil.TempDir("", "client")
 
 	if err != nil {
@@ -23,15 +36,7 @@ func createTempProfile(contents string) error {
 	os.Unsetenv("DEIS_PROFILE")
 	SetHome(name)
 	folder := filepath.Join(name, ".deis")
-	if err = os.Mkdir(folder, 0755); err != nil {
-		return err
-	}
-
-	if err = ioutil.WriteFile(filepath.Join(folder, "client.json"), []byte(contents), 0775); err != nil {
-		return err
-	}
-
-	return nil
+	return os.Mkdir(folder, 0755)
 }
 
 type comparison struct {
@@ -69,7 +74,7 @@ func TestLoadSave(t *testing.T) {
 			expected: s.Client.ControllerURL.String(),
 		},
 		{
-			key:      50,
+			key:      100,
 			expected: s.Limit,
 		},
 		{
@@ -86,7 +91,7 @@ func TestLoadSave(t *testing.T) {
 	s.Client.VerifySSL = true
 	s.Client.Token = "b"
 	s.Username = "c"
-	s.Limit = 100
+	s.Limit = 10
 
 	u, err := url.Parse("http://deis.test")
 
@@ -124,7 +129,7 @@ func TestLoadSave(t *testing.T) {
 			expected: s.Client.ControllerURL.String(),
 		},
 		{
-			key:      100,
+			key:      10,
 			expected: s.Limit,
 		},
 		{
@@ -161,5 +166,20 @@ func TestDeleteSettings(t *testing.T) {
 
 	if _, err := os.Stat(file); err == nil {
 		t.Errorf("File %s exists, supposed to have been deleted.", file)
+	}
+
+	// Test the deleting an nonexistent settings file isn't an error.
+	if err := Delete(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestNotLoggedIn(t *testing.T) {
+	if err := createTempDirs(); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := Load(); err != ErrNotLoggedIn {
+		t.Errorf("Expected Error %s, Got %s", ErrNotLoggedIn, err)
 	}
 }
