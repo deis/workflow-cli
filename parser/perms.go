@@ -6,7 +6,7 @@ import (
 )
 
 // Perms routes perms commands to their specific function.
-func Perms(argv []string) error {
+func Perms(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for perms:
 
@@ -16,13 +16,14 @@ perms:delete          delete a permission for a user
 
 Use 'deis help perms:[command]' to learn more.
 `
+
 	switch argv[0] {
 	case "perms:list":
-		return permsList(argv)
+		return permsList(argv, cmdr)
 	case "perms:create":
-		return permCreate(argv)
+		return permCreate(argv, cmdr)
 	case "perms:delete":
-		return permDelete(argv)
+		return permDelete(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -30,7 +31,7 @@ Use 'deis help perms:[command]' to learn more.
 
 		if argv[0] == "perms" {
 			argv[0] = "perms:list"
-			return permsList(argv)
+			return permsList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -38,7 +39,7 @@ Use 'deis help perms:[command]' to learn more.
 	}
 }
 
-func permsList(argv []string) error {
+func permsList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists all users with permission to use an app, or lists all users with system
 administrator privileges.
@@ -52,8 +53,7 @@ Options:
   --admin
     lists all users with system administrator privileges.
   -l --limit=<num>
-    the maximum number of results to display, defaults to config setting
-`
+    the maximum number of results to display, defaults to config setting`
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 
@@ -61,6 +61,7 @@ Options:
 		return err
 	}
 
+	app := safeGetValue(args, "--app")
 	admin := args["--admin"].(bool)
 
 	results, err := responseLimit(safeGetValue(args, "--limit"))
@@ -69,10 +70,10 @@ Options:
 		return err
 	}
 
-	return cmd.PermsList(safeGetValue(args, "--app"), admin, results)
+	return cmdr.PermsList(app, admin, results)
 }
 
-func permCreate(argv []string) error {
+func permCreate(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Gives another user permission to use an app, or gives another user
 system administrator privileges.
@@ -101,10 +102,10 @@ Options:
 	username := args["<username>"].(string)
 	admin := args["--admin"].(bool)
 
-	return cmd.PermCreate(app, username, admin)
+	return cmdr.PermCreate(app, username, admin)
 }
 
-func permDelete(argv []string) error {
+func permDelete(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Revokes another user's permission to use an app, or revokes another user's system
 administrator privileges.
@@ -120,8 +121,7 @@ Options:
     revokes <username> permission to use <app>. <app> is the uniquely identifiable name
     for the application.
   --admin
-    revokes <username> system administrator privileges.
-`
+    revokes <username> system administrator privileges.`
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 
@@ -133,5 +133,5 @@ Options:
 	username := args["<username>"].(string)
 	admin := args["--admin"].(bool)
 
-	return cmd.PermDelete(app, username, admin)
+	return cmdr.PermDelete(app, username, admin)
 }

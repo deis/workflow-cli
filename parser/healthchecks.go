@@ -18,7 +18,7 @@ const (
 )
 
 // Healthchecks routes ealthcheck commands to their specific function
-func Healthchecks(argv []string) error {
+func Healthchecks(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for healthchecks:
 
@@ -31,11 +31,11 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "healthchecks:list":
-		return healthchecksList(argv)
+		return healthchecksList(argv, cmdr)
 	case "healthchecks:set":
-		return healthchecksSet(argv)
+		return healthchecksSet(argv, cmdr)
 	case "healthchecks:unset":
-		return healthchecksUnset(argv)
+		return healthchecksUnset(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -43,7 +43,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "healthchecks" {
 			argv[0] = "healthchecks:list"
-			return healthchecksList(argv)
+			return healthchecksList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -51,7 +51,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func healthchecksList(argv []string) error {
+func healthchecksList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists healthchecks for an application.
 
@@ -76,10 +76,10 @@ Options:
 		procType = defaultProcType
 	}
 
-	return cmd.HealthchecksList(app, procType)
+	return cmdr.HealthchecksList(app, procType)
 }
 
-func healthchecksSet(argv []string) error {
+func healthchecksSet(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Sets healthchecks for an application.
 
@@ -213,10 +213,11 @@ Options:
 	default:
 		return fmt.Errorf("Invalid probe type. Must be one of: \"httpGet\", \"exec\"")
 	}
-	return cmd.HealthchecksSet(app, healthcheckType, procType, probe)
+
+	return cmdr.HealthchecksSet(app, healthcheckType, procType, probe)
 }
 
-func healthchecksUnset(argv []string) error {
+func healthchecksUnset(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Unsets healthchecks for an application.
 
@@ -252,7 +253,7 @@ Options:
 		healthchecks[healthcheck] += "Probe"
 	}
 
-	return cmd.HealthchecksUnset(app, procType, healthchecks)
+	return cmdr.HealthchecksUnset(app, procType, healthchecks)
 }
 
 func parseHeaders(headers []string) ([]*api.KVPair, error) {

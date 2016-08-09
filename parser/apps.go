@@ -9,7 +9,7 @@ import (
 )
 
 // Apps routes app commands to their specific function.
-func Apps(argv []string) error {
+func Apps(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for apps:
 
@@ -27,21 +27,21 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "apps:create":
-		return appCreate(argv)
+		return appCreate(argv, cmdr)
 	case "apps:list":
-		return appsList(argv)
+		return appsList(argv, cmdr)
 	case "apps:info":
-		return appInfo(argv)
+		return appInfo(argv, cmdr)
 	case "apps:open":
-		return appOpen(argv)
+		return appOpen(argv, cmdr)
 	case "apps:logs":
-		return appLogs(argv)
+		return appLogs(argv, cmdr)
 	case "apps:run":
-		return appRun(argv)
+		return appRun(argv, cmdr)
 	case "apps:destroy":
-		return appDestroy(argv)
+		return appDestroy(argv, cmdr)
 	case "apps:transfer":
-		return appTransfer(argv)
+		return appTransfer(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -49,7 +49,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "apps" {
 			argv[0] = "apps:list"
-			return appsList(argv)
+			return appsList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -57,7 +57,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func appCreate(argv []string) error {
+func appCreate(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Creates a new application.
 
@@ -78,6 +78,7 @@ Options:
   -r --remote REMOTE
     name of remote to create. [default: deis]
 `
+
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 
 	if err != nil {
@@ -89,10 +90,10 @@ Options:
 	remote := safeGetValue(args, "--remote")
 	noRemote := args["--no-remote"].(bool)
 
-	return cmd.AppCreate(id, buildpack, remote, noRemote)
+	return cmdr.AppCreate(id, buildpack, remote, noRemote)
 }
 
-func appsList(argv []string) error {
+func appsList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists applications visible to the current user.
 
@@ -102,6 +103,7 @@ Options:
   -l --limit=<num>
     the maximum number of results to display, defaults to config setting
 `
+
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 
 	if err != nil {
@@ -114,10 +116,10 @@ Options:
 		return err
 	}
 
-	return cmd.AppsList(results)
+	return cmdr.AppsList(results)
 }
 
-func appInfo(argv []string) error {
+func appInfo(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Prints info about the current application.
 
@@ -127,6 +129,7 @@ Options:
   -a --app=<app>
     the uniquely identifiable name for the application.
 `
+
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 
 	if err != nil {
@@ -135,10 +138,10 @@ Options:
 
 	app := safeGetValue(args, "--app")
 
-	return cmd.AppInfo(app)
+	return cmdr.AppInfo(app)
 }
 
-func appOpen(argv []string) error {
+func appOpen(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Opens a URL to the application in the default browser.
 
@@ -148,6 +151,7 @@ Options:
   -a --app=<app>
     the uniquely identifiable name for the application.
 `
+
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 
 	if err != nil {
@@ -156,10 +160,10 @@ Options:
 
 	app := safeGetValue(args, "--app")
 
-	return cmd.AppOpen(app)
+	return cmdr.AppOpen(app)
 }
 
-func appLogs(argv []string) error {
+func appLogs(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Retrieves the most recent log events.
 
@@ -171,6 +175,7 @@ Options:
   -n --lines=<lines>
     the number of lines to display
 `
+
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 
 	if err != nil {
@@ -192,10 +197,10 @@ Options:
 		}
 	}
 
-	return cmd.AppLogs(app, lines)
+	return cmdr.AppLogs(app, lines)
 }
 
-func appRun(argv []string) error {
+func appRun(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Runs a command inside an ephemeral app container. Default environment is
 /bin/bash.
@@ -210,6 +215,7 @@ Options:
   -a --app=<app>
     the uniquely identifiable name for the application.
 `
+
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 
 	if err != nil {
@@ -219,10 +225,10 @@ Options:
 	app := safeGetValue(args, "--app")
 	command := strings.Join(args["<command>"].([]string), " ")
 
-	return cmd.AppRun(app, command)
+	return cmdr.AppRun(app, command)
 }
 
-func appDestroy(argv []string) error {
+func appDestroy(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Destroys an application.
 
@@ -234,8 +240,8 @@ Options:
   --confirm=<app>
     skips the prompt for the application name. <app> is the uniquely identifiable
     name for the application.
-
 `
+
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 
 	if err != nil {
@@ -245,10 +251,10 @@ Options:
 	app := safeGetValue(args, "--app")
 	confirm := safeGetValue(args, "--confirm")
 
-	return cmd.AppDestroy(app, confirm)
+	return cmdr.AppDestroy(app, confirm)
 }
 
-func appTransfer(argv []string) error {
+func appTransfer(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Transfer app ownership to another user.
 
@@ -262,11 +268,15 @@ Options:
   -a --app=<app>
     the uniquely identifiable name for the application.
 `
+
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 
 	if err != nil {
 		return err
 	}
 
-	return cmd.AppTransfer(safeGetValue(args, "--app"), safeGetValue(args, "<username>"))
+	app := safeGetValue(args, "--app")
+	user := safeGetValue(args, "<username>")
+
+	return cmdr.AppTransfer(app, user)
 }

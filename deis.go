@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/deis/workflow-cli/cli"
+	"github.com/deis/workflow-cli/cmd"
 	"github.com/deis/workflow-cli/parser"
 	docopt "github.com/docopt/docopt-go"
 )
@@ -25,10 +26,15 @@ The Deis command-line client issues API calls to a Deis controller.
 
 Usage: deis <command> [<args>...]
 
-Option flags::
-
-  -h --help     display help information
-  -v --version  display client version
+Options:
+  -h --help
+    display help information
+  -v --version
+    display client version
+  -c --config=<config>
+    path to configuration file. Equivalent to
+    setting $DEIS_PROFILE. Defaults to ~/.deis/config.json.
+    If value is not a filepath, will assume location ~/.deis/client.json
 
 Auth commands, use 'deis help auth' to learn more::
 
@@ -85,50 +91,54 @@ Use 'git push deis master' to deploy to an application.
 		return 1
 	}
 
+	configFlag := getConfigFlag(argv)
+	// Don't pass down config flag to parser because it isn't defined there.
+	argv = removeConfigFlag(argv)
+	cmdr := cmd.DeisCmd{ConfigFile: configFlag}
 	// Dispatch the command, passing the argv through so subcommands can
 	// re-parse it according to their usage strings.
 	switch command {
 	case "apps":
-		err = parser.Apps(argv)
+		err = parser.Apps(argv, cmdr)
 	case "auth":
-		err = parser.Auth(argv)
+		err = parser.Auth(argv, cmdr)
 	case "builds":
-		err = parser.Builds(argv)
+		err = parser.Builds(argv, cmdr)
 	case "certs":
-		err = parser.Certs(argv)
+		err = parser.Certs(argv, cmdr)
 	case "config":
-		err = parser.Config(argv)
+		err = parser.Config(argv, cmdr)
 	case "domains":
-		err = parser.Domains(argv)
+		err = parser.Domains(argv, cmdr)
 	case "git":
-		err = parser.Git(argv)
+		err = parser.Git(argv, cmdr)
 	case "healthchecks":
-		err = parser.Healthchecks(argv)
+		err = parser.Healthchecks(argv, cmdr)
 	case "help":
 		fmt.Print(usage)
 		return 0
 	case "keys":
-		err = parser.Keys(argv)
+		err = parser.Keys(argv, cmdr)
 	case "limits":
-		err = parser.Limits(argv)
+		err = parser.Limits(argv, cmdr)
 	case "perms":
-		err = parser.Perms(argv)
+		err = parser.Perms(argv, cmdr)
 	case "ps":
-		err = parser.Ps(argv)
+		err = parser.Ps(argv, cmdr)
 	case "registry":
-		err = parser.Registry(argv)
+		err = parser.Registry(argv, cmdr)
 	case "releases":
-		err = parser.Releases(argv)
+		err = parser.Releases(argv, cmdr)
 	case "routing":
-		err = parser.Routing(argv)
+		err = parser.Routing(argv, cmdr)
 	case "maintenance":
-		err = parser.Maintenance(argv)
+		err = parser.Maintenance(argv, cmdr)
 	case "shortcuts":
 		err = parser.Shortcuts(argv)
 	case "tags":
-		err = parser.Tags(argv)
+		err = parser.Tags(argv, cmdr)
 	case "users":
-		err = parser.Users(argv)
+		err = parser.Users(argv, cmdr)
 	case "version":
 		err = parser.Version(argv)
 	default:
@@ -164,6 +174,34 @@ Use 'git push deis master' to deploy to an application.
 	return 0
 }
 
+func removeConfigFlag(argv []string) []string {
+	var kept []string
+	for i, arg := range argv {
+		if arg == "-c" || strings.HasPrefix(arg, "--config=") {
+			continue
+			// If the previous option is -c, remove the argument as well
+		} else if i != 0 && argv[i-1] == "-c" {
+			continue
+		}
+
+		kept = append(kept, arg)
+	}
+
+	return kept
+}
+
+func getConfigFlag(argv []string) string {
+	for i, arg := range argv {
+		if strings.HasPrefix(arg, "--config=") {
+			return strings.TrimPrefix(arg, "--config=")
+		} else if i != 0 && argv[i-1] == "-c" {
+			return arg
+		}
+	}
+
+	return ""
+}
+
 // parseArgs returns the provided args with "--help" as the last arg if need be,
 // expands shortcuts and formats commands to be properly routed.
 func parseArgs(argv []string) (string, []string) {
@@ -177,7 +215,7 @@ func parseArgs(argv []string) (string, []string) {
 		}
 	}
 
-	if len(argv) >= 2 {
+	if len(argv) > 1 {
 		// Rearrange "deis help <command>" to "deis <command> --help".
 		if argv[0] == "help" || argv[0] == "--help" || argv[0] == "-h" {
 			argv = append(argv[1:], "--help")

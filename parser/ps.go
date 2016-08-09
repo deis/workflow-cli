@@ -6,7 +6,7 @@ import (
 )
 
 // Ps routes ps commands to their specific function.
-func Ps(argv []string) error {
+func Ps(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for processes:
 
@@ -19,11 +19,11 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "ps:list":
-		return psList(argv)
+		return psList(argv, cmdr)
 	case "ps:restart":
-		return psRestart(argv)
+		return psRestart(argv, cmdr)
 	case "ps:scale":
-		return psScale(argv)
+		return psScale(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -31,7 +31,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "ps" {
 			argv[0] = "ps:list"
-			return psList(argv)
+			return psList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -39,7 +39,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func psList(argv []string) error {
+func psList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists processes servicing an application.
 
@@ -56,10 +56,10 @@ Options:
 	}
 
 	// The 1000 is fake for now until API understands limits
-	return cmd.PsList(safeGetValue(args, "--app"), 1000)
+	return cmdr.PsList(safeGetValue(args, "--app"), 1000)
 }
 
-func psRestart(argv []string) error {
+func psRestart(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Restart an application, a process type or a specific process.
 
@@ -81,10 +81,12 @@ Options:
 		return err
 	}
 
-	return cmd.PsRestart(safeGetValue(args, "--app"), safeGetValue(args, "<type>"))
+	apps := safeGetValue(args, "--app")
+	tp := safeGetValue(args, "<type>")
+	return cmdr.PsRestart(apps, tp)
 }
 
-func psScale(argv []string) error {
+func psScale(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Scales an application's processes by type.
 
@@ -108,5 +110,6 @@ Options:
 		return err
 	}
 
-	return cmd.PsScale(safeGetValue(args, "--app"), args["<type>=<num>"].([]string))
+	apps := safeGetValue(args, "--app")
+	return cmdr.PsScale(apps, args["<type>=<num>"].([]string))
 }

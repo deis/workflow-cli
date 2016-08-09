@@ -8,8 +8,8 @@ import (
 )
 
 // UsersList lists users registered with the controller.
-func UsersList(results int) error {
-	s, err := settings.Load()
+func (d DeisCmd) UsersList(results int) error {
+	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
 		return err

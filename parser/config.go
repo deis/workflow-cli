@@ -6,7 +6,7 @@ import (
 )
 
 // Config routes config commands to their specific function.
-func Config(argv []string) error {
+func Config(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for config:
 
@@ -21,15 +21,15 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "config:list":
-		return configList(argv)
+		return configList(argv, cmdr)
 	case "config:set":
-		return configSet(argv)
+		return configSet(argv, cmdr)
 	case "config:unset":
-		return configUnset(argv)
+		return configUnset(argv, cmdr)
 	case "config:pull":
-		return configPull(argv)
+		return configPull(argv, cmdr)
 	case "config:push":
-		return configPush(argv)
+		return configPush(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -37,7 +37,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "config" {
 			argv[0] = "config:list"
-			return configList(argv)
+			return configList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -45,7 +45,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func configList(argv []string) error {
+func configList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists environment variables for an application.
 
@@ -63,11 +63,13 @@ Options:
 	if err != nil {
 		return err
 	}
+	app := safeGetValue(args, "--app")
+	oneline := args["--oneline"].(bool)
 
-	return cmd.ConfigList(safeGetValue(args, "--app"), args["--oneline"].(bool))
+	return cmdr.ConfigList(app, oneline)
 }
 
-func configSet(argv []string) error {
+func configSet(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Sets environment variables for an application.
 
@@ -90,10 +92,12 @@ Options:
 		return err
 	}
 
-	return cmd.ConfigSet(safeGetValue(args, "--app"), args["<var>=<value>"].([]string))
+	app := safeGetValue(args, "--app")
+
+	return cmdr.ConfigSet(app, args["<var>=<value>"].([]string))
 }
 
-func configUnset(argv []string) error {
+func configUnset(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Unsets an environment variable for an application.
 
@@ -113,11 +117,12 @@ Options:
 	if err != nil {
 		return err
 	}
+	app := safeGetValue(args, "--app")
 
-	return cmd.ConfigUnset(safeGetValue(args, "--app"), args["<key>"].([]string))
+	return cmdr.ConfigUnset(app, args["<key>"].([]string))
 }
 
-func configPull(argv []string) error {
+func configPull(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Extract all environment variables from an application for local use.
 
@@ -146,10 +151,10 @@ Options:
 	interactive := args["--interactive"].(bool)
 	overwrite := args["--overwrite"].(bool)
 
-	return cmd.ConfigPull(app, interactive, overwrite)
+	return cmdr.ConfigPull(app, interactive, overwrite)
 }
 
-func configPush(argv []string) error {
+func configPush(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Sets environment variables for an application.
 
@@ -172,5 +177,8 @@ Options:
 		return err
 	}
 
-	return cmd.ConfigPush(safeGetValue(args, "--app"), safeGetValue(args, "--path"))
+	app := safeGetValue(args, "--app")
+	path := safeGetValue(args, "--path")
+
+	return cmdr.ConfigPush(app, path)
 }

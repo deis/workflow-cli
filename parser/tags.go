@@ -6,7 +6,7 @@ import (
 )
 
 // Tags routes tags commands to their specific function
-func Tags(argv []string) error {
+func Tags(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for tags:
 
@@ -19,11 +19,11 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "tags:list":
-		return tagsList(argv)
+		return tagsList(argv, cmdr)
 	case "tags:set":
-		return tagsSet(argv)
+		return tagsSet(argv, cmdr)
 	case "tags:unset":
-		return tagsUnset(argv)
+		return tagsUnset(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -31,7 +31,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "tags" {
 			argv[0] = "tags:list"
-			return tagsList(argv)
+			return tagsList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -39,7 +39,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func tagsList(argv []string) error {
+func tagsList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists tags for an application.
 
@@ -56,10 +56,10 @@ Options:
 		return err
 	}
 
-	return cmd.TagsList(safeGetValue(args, "--app"))
+	return cmdr.TagsList(safeGetValue(args, "--app"))
 }
 
-func tagsSet(argv []string) error {
+func tagsSet(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Sets tags for an application.
 
@@ -79,7 +79,6 @@ Options:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
-
 	if err != nil {
 		return err
 	}
@@ -87,10 +86,10 @@ Options:
 	app := safeGetValue(args, "--app")
 	tags := args["<key>=<value>"].([]string)
 
-	return cmd.TagsSet(app, tags)
+	return cmdr.TagsSet(app, tags)
 }
 
-func tagsUnset(argv []string) error {
+func tagsUnset(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Unsets tags for an application.
 
@@ -105,7 +104,6 @@ Options:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
-
 	if err != nil {
 		return err
 	}
@@ -113,5 +111,5 @@ Options:
 	app := safeGetValue(args, "--app")
 	tags := args["<key>"].([]string)
 
-	return cmd.TagsUnset(app, tags)
+	return cmdr.TagsUnset(app, tags)
 }

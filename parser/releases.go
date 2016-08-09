@@ -9,7 +9,7 @@ import (
 )
 
 // Releases routes releases commands to their specific function.
-func Releases(argv []string) error {
+func Releases(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for releases:
 
@@ -22,11 +22,11 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "releases:list":
-		return releasesList(argv)
+		return releasesList(argv, cmdr)
 	case "releases:info":
-		return releasesInfo(argv)
+		return releasesInfo(argv, cmdr)
 	case "releases:rollback":
-		return releasesRollback(argv)
+		return releasesRollback(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -34,7 +34,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "releases" {
 			argv[0] = "releases:list"
-			return releasesList(argv)
+			return releasesList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -42,7 +42,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func releasesList(argv []string) error {
+func releasesList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists release history for an application.
 
@@ -56,21 +56,21 @@ Options:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
-
 	if err != nil {
 		return err
 	}
 
 	results, err := responseLimit(safeGetValue(args, "--limit"))
-
 	if err != nil {
 		return err
 	}
 
-	return cmd.ReleasesList(safeGetValue(args, "--app"), results)
+	app := safeGetValue(args, "--app")
+
+	return cmdr.ReleasesList(app, results)
 }
 
-func releasesInfo(argv []string) error {
+func releasesInfo(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Prints info about a particular release.
 
@@ -93,10 +93,12 @@ Options:
 		return err
 	}
 
-	return cmd.ReleasesInfo(safeGetValue(args, "--app"), version)
+	app := safeGetValue(args, "--app")
+
+	return cmdr.ReleasesInfo(app, version)
 }
 
-func releasesRollback(argv []string) error {
+func releasesRollback(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Rolls back to a previous application release.
 
@@ -125,7 +127,9 @@ Options:
 		}
 	}
 
-	return cmd.ReleasesRollback(safeGetValue(args, "--app"), version)
+	app := safeGetValue(args, "--app")
+
+	return cmdr.ReleasesRollback(app, version)
 }
 
 func versionFromString(version string) (int, error) {

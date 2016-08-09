@@ -11,8 +11,8 @@ import (
 )
 
 // LimitsList lists an app's limits.
-func LimitsList(appID string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) LimitsList(appID string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -55,8 +55,8 @@ func LimitsList(appID string) error {
 }
 
 // LimitsSet sets an app's limits.
-func LimitsSet(appID string, limits []string, limitType string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) LimitsSet(appID string, limits []string, limitType string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -87,12 +87,12 @@ func LimitsSet(appID string, limits []string, limitType string) error {
 
 	fmt.Print("done\n\n")
 
-	return LimitsList(appID)
+	return d.LimitsList(appID)
 }
 
 // LimitsUnset removes an app's limits.
-func LimitsUnset(appID string, limits []string, limitType string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) LimitsUnset(appID string, limits []string, limitType string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -125,7 +125,7 @@ func LimitsUnset(appID string, limits []string, limitType string) error {
 
 	fmt.Print("done\n\n")
 
-	return LimitsList(appID)
+	return d.LimitsList(appID)
 }
 
 func parseLimits(limits []string) (map[string]interface{}, error) {

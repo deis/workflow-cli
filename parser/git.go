@@ -8,7 +8,7 @@ import (
 )
 
 // Git routes git commands to their specific function.
-func Git(argv []string) error {
+func Git(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for git:
 
@@ -20,9 +20,9 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "git:remote":
-		return gitRemote(argv)
+		return gitRemote(argv, cmdr)
 	case "git:remove":
-		return gitRemove(argv)
+		return gitRemove(argv, cmdr)
 	case "git":
 		fmt.Print(usage)
 		return nil
@@ -32,7 +32,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func gitRemote(argv []string) error {
+func gitRemote(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Adds git remote of application to repository
 
@@ -53,10 +53,14 @@ Options:
 		return err
 	}
 
-	return cmd.GitRemote(safeGetValue(args, "--app"), args["--remote"].(string), args["--force"].(bool))
+	app := safeGetValue(args, "--app")
+	remote := safeGetValue(args, "--remote")
+	force := args["--force"].(bool)
+
+	return cmdr.GitRemote(app, remote, force)
 }
 
-func gitRemove(argv []string) error {
+func gitRemove(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Removes git remotes of application from repository.
 
@@ -73,5 +77,5 @@ Options:
 		return err
 	}
 
-	return cmd.GitRemove(safeGetValue(args, "--app"))
+	return cmdr.GitRemove(safeGetValue(args, "--app"))
 }

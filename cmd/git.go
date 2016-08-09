@@ -10,8 +10,8 @@ const remoteCreationMsg = "Git remote %s successfully created for app %s.\n"
 const remoteDeletionMsg = "Git remotes for app %s removed.\n"
 
 // GitRemote creates a git remote for a deis app.
-func GitRemote(appID string, remote string, force bool) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) GitRemote(appID, remote string, force bool) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	remoteURL, err := git.RemoteValue(remote)
 
@@ -49,8 +49,8 @@ func GitRemote(appID string, remote string, force bool) error {
 }
 
 // GitRemove removes a application git remote from a repository
-func GitRemove(appID string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) GitRemove(appID string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err

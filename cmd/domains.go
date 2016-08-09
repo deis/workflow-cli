@@ -7,8 +7,8 @@ import (
 )
 
 // DomainsList lists domains registered with an app.
-func DomainsList(appID string, results int) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) DomainsList(appID string, results int) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -32,8 +32,8 @@ func DomainsList(appID string, results int) error {
 }
 
 // DomainsAdd adds a domain to an app.
-func DomainsAdd(appID, domain string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) DomainsAdd(appID, domain string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -54,8 +54,8 @@ func DomainsAdd(appID, domain string) error {
 }
 
 // DomainsRemove removes a domain registered with an app.
-func DomainsRemove(appID, domain string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) DomainsRemove(appID, domain string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err

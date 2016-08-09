@@ -37,8 +37,8 @@ func progress() chan bool {
 }
 
 // load loads settings file and looks up the app name
-func load(appID string) (*settings.Settings, string, error) {
-	s, err := settings.Load()
+func load(cf string, appID string) (*settings.Settings, string, error) {
+	s, err := settings.Load(cf)
 
 	if err != nil {
 		return nil, "", err

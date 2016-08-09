@@ -8,7 +8,7 @@ import (
 )
 
 // Auth routes auth commands to the specific function.
-func Auth(argv []string) error {
+func Auth(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for auth:
 
@@ -25,19 +25,19 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "auth:register":
-		return authRegister(argv)
+		return authRegister(argv, cmdr)
 	case "auth:login":
-		return authLogin(argv)
+		return authLogin(argv, cmdr)
 	case "auth:logout":
-		return authLogout(argv)
+		return authLogout(argv, cmdr)
 	case "auth:passwd":
-		return authPasswd(argv)
+		return authPasswd(argv, cmdr)
 	case "auth:whoami":
-		return authWhoami(argv)
+		return authWhoami(argv, cmdr)
 	case "auth:cancel":
-		return authCancel(argv)
+		return authCancel(argv, cmdr)
 	case "auth:regenerate":
-		return authRegenerate(argv)
+		return authRegenerate(argv, cmdr)
 	case "auth":
 		fmt.Print(usage)
 		return nil
@@ -47,7 +47,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func authRegister(argv []string) error {
+func authRegister(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Registers a new user with a Deis controller.
 
@@ -67,6 +67,7 @@ Options:
   --ssl-verify=false
     disables SSL certificate verification for API requests
 `
+
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
 
 	if err != nil {
@@ -83,10 +84,10 @@ Options:
 		sslVerify = true
 	}
 
-	return cmd.Register(controller, username, password, email, sslVerify)
+	return cmdr.Register(controller, username, password, email, sslVerify)
 }
 
-func authLogin(argv []string) error {
+func authLogin(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Logs in by authenticating against a controller.
 
@@ -120,24 +121,26 @@ Options:
 		sslVerify = true
 	}
 
-	return cmd.Login(controller, username, password, sslVerify)
+	return cmdr.Login(controller, username, password, sslVerify)
 }
 
-func authLogout(argv []string) error {
+func authLogout(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Logs out from a controller and clears the user session.
 
 Usage: deis auth:logout
+
+Options:
 `
 
 	if _, err := docopt.Parse(usage, argv, true, "", false, true); err != nil {
 		return err
 	}
 
-	return cmd.Logout()
+	return cmdr.Logout()
 }
 
-func authPasswd(argv []string) error {
+func authPasswd(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Changes the password for the current user.
 
@@ -162,10 +165,10 @@ Options:
 	password := safeGetValue(args, "--password")
 	newPassword := safeGetValue(args, "--new-password")
 
-	return cmd.Passwd(username, password, newPassword)
+	return cmdr.Passwd(username, password, newPassword)
 }
 
-func authWhoami(argv []string) error {
+func authWhoami(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Displays the currently logged in user.
 
@@ -182,10 +185,10 @@ Options:
 		return err
 	}
 
-	return cmd.Whoami(args["--all"].(bool))
+	return cmdr.Whoami(args["--all"].(bool))
 }
 
-func authCancel(argv []string) error {
+func authCancel(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Cancels and removes the current account.
 
@@ -210,10 +213,10 @@ Options:
 	password := safeGetValue(args, "--password")
 	yes := args["--yes"].(bool)
 
-	return cmd.Cancel(username, password, yes)
+	return cmdr.Cancel(username, password, yes)
 }
 
-func authRegenerate(argv []string) error {
+func authRegenerate(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Regenerates auth token, defaults to regenerating token for the current user.
 
@@ -235,5 +238,5 @@ Options:
 	username := safeGetValue(args, "--username")
 	all := args["--all"].(bool)
 
-	return cmd.Regenerate(username, all)
+	return cmdr.Regenerate(username, all)
 }

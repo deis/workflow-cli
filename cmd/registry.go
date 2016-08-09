@@ -11,8 +11,8 @@ import (
 )
 
 // RegistryList lists an app's registry information.
-func RegistryList(appID string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) RegistryList(appID string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -37,8 +37,8 @@ func RegistryList(appID string) error {
 }
 
 // RegistrySet sets an app's registry information.
-func RegistrySet(appID string, item []string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) RegistrySet(appID string, item []string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -61,12 +61,12 @@ func RegistrySet(appID string, item []string) error {
 
 	fmt.Print("done\n\n")
 
-	return RegistryList(appID)
+	return d.RegistryList(appID)
 }
 
 // RegistryUnset removes an app's registry information.
-func RegistryUnset(appID string, items []string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) RegistryUnset(appID string, items []string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -95,7 +95,7 @@ func RegistryUnset(appID string, items []string) error {
 
 	fmt.Print("done\n\n")
 
-	return RegistryList(appID)
+	return d.RegistryList(appID)
 }
 
 func parseInfos(items []string) map[string]interface{} {

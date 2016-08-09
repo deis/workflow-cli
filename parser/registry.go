@@ -6,7 +6,7 @@ import (
 )
 
 // Registry routes registry commands to their specific function
-func Registry(argv []string) error {
+func Registry(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for registry:
 
@@ -19,11 +19,11 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "registry:list":
-		return registryList(argv)
+		return registryList(argv, cmdr)
 	case "registry:set":
-		return registrySet(argv)
+		return registrySet(argv, cmdr)
 	case "registry:unset":
-		return registryUnset(argv)
+		return registryUnset(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -31,7 +31,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "registry" {
 			argv[0] = "registry:list"
-			return registryList(argv)
+			return registryList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -39,7 +39,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func registryList(argv []string) error {
+func registryList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists registry information for an application.
 
@@ -51,15 +51,14 @@ Options:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
-
 	if err != nil {
 		return err
 	}
 
-	return cmd.RegistryList(safeGetValue(args, "--app"))
+	return cmdr.RegistryList(safeGetValue(args, "--app"))
 }
 
-func registrySet(argv []string) error {
+func registrySet(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Sets registry information for an application. These credentials are the same as those used for
 'docker login' to the private registry.
@@ -87,10 +86,10 @@ Options:
 	app := safeGetValue(args, "--app")
 	info := args["<key>=<value>"].([]string)
 
-	return cmd.RegistrySet(app, info)
+	return cmdr.RegistrySet(app, info)
 }
 
-func registryUnset(argv []string) error {
+func registryUnset(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Unsets registry information for an application.
 
@@ -113,5 +112,5 @@ Options:
 	app := safeGetValue(args, "--app")
 	key := args["<key>"].([]string)
 
-	return cmd.RegistryUnset(app, key)
+	return cmdr.RegistryUnset(app, key)
 }

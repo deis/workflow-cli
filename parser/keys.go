@@ -6,7 +6,7 @@ import (
 )
 
 // Keys routes key commands to the specific function.
-func Keys(argv []string) error {
+func Keys(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for SSH keys:
 
@@ -19,11 +19,11 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "keys:list":
-		return keysList(argv)
+		return keysList(argv, cmdr)
 	case "keys:add":
-		return keyAdd(argv)
+		return keyAdd(argv, cmdr)
 	case "keys:remove":
-		return keyRemove(argv)
+		return keyRemove(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -31,7 +31,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "keys" {
 			argv[0] = "keys:list"
-			return keysList(argv)
+			return keysList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -39,7 +39,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func keysList(argv []string) error {
+func keysList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists SSH keys for the logged in user.
 
@@ -62,10 +62,10 @@ Options:
 		return err
 	}
 
-	return cmd.KeysList(results)
+	return cmdr.KeysList(results)
 }
 
-func keyAdd(argv []string) error {
+func keyAdd(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Adds SSH keys for the logged in user.
 
@@ -77,17 +77,14 @@ Arguments:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
-
 	if err != nil {
 		return err
 	}
 
-	key := safeGetValue(args, "<key>")
-
-	return cmd.KeyAdd(key)
+	return cmdr.KeyAdd(safeGetValue(args, "<key>"))
 }
 
-func keyRemove(argv []string) error {
+func keyRemove(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Removes an SSH key for the logged in user.
 
@@ -99,12 +96,9 @@ Arguments:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
-
 	if err != nil {
 		return err
 	}
 
-	key := safeGetValue(args, "<key>")
-
-	return cmd.KeyRemove(key)
+	return cmdr.KeyRemove(safeGetValue(args, "<key>"))
 }

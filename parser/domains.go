@@ -6,7 +6,7 @@ import (
 )
 
 // Domains routes domain commands to their specific function.
-func Domains(argv []string) error {
+func Domains(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for domains:
 
@@ -16,13 +16,14 @@ domains:remove        unbind a domain from an application
 
 Use 'deis help [command]' to learn more.
 `
+
 	switch argv[0] {
 	case "domains:add":
-		return domainsAdd(argv)
+		return domainsAdd(argv, cmdr)
 	case "domains:list":
-		return domainsList(argv)
+		return domainsList(argv, cmdr)
 	case "domains:remove":
-		return domainsRemove(argv)
+		return domainsRemove(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -30,7 +31,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "domains" {
 			argv[0] = "domains:list"
-			return domainsList(argv)
+			return domainsList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -38,7 +39,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func domainsAdd(argv []string) error {
+func domainsAdd(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Binds a domain to an application.
 
@@ -59,10 +60,13 @@ Options:
 		return err
 	}
 
-	return cmd.DomainsAdd(safeGetValue(args, "--app"), safeGetValue(args, "<domain>"))
+	app := safeGetValue(args, "--app")
+	domain := safeGetValue(args, "<domain>")
+
+	return cmdr.DomainsAdd(app, domain)
 }
 
-func domainsList(argv []string) error {
+func domainsList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists domains bound to an application.
 
@@ -86,11 +90,12 @@ Options:
 	if err != nil {
 		return err
 	}
+	app := safeGetValue(args, "--app")
 
-	return cmd.DomainsList(safeGetValue(args, "--app"), results)
+	return cmdr.DomainsList(app, results)
 }
 
-func domainsRemove(argv []string) error {
+func domainsRemove(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Unbinds a domain for an application.
 
@@ -111,5 +116,8 @@ Options:
 		return err
 	}
 
-	return cmd.DomainsRemove(safeGetValue(args, "--app"), safeGetValue(args, "<domain>"))
+	app := safeGetValue(args, "--app")
+	domain := safeGetValue(args, "<domain>")
+
+	return cmdr.DomainsRemove(app, domain)
 }

@@ -17,8 +17,8 @@ import (
 )
 
 // AppCreate creates an app.
-func AppCreate(id string, buildpack string, remote string, noRemote bool) error {
-	s, err := settings.Load()
+func (d DeisCmd) AppCreate(id, buildpack, remote string, noRemote bool) error {
+	s, err := settings.Load(d.ConfigFile)
 	if err != nil {
 		return err
 	}
@@ -68,8 +68,8 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 }
 
 // AppsList lists apps on the Deis controller.
-func AppsList(results int) error {
-	s, err := settings.Load()
+func (d DeisCmd) AppsList(results int) error {
+	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
 		return err
@@ -93,8 +93,8 @@ func AppsList(results int) error {
 }
 
 // AppInfo prints info about app.
-func AppInfo(appID string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) AppInfo(appID string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -124,13 +124,13 @@ func AppInfo(appID string) error {
 
 	fmt.Println()
 	// print the app processes
-	if err = PsList(app.ID, defaultLimit); err != nil {
+	if err = d.PsList(app.ID, defaultLimit); err != nil {
 		return err
 	}
 
 	fmt.Println()
 	// print the app domains
-	if err = DomainsList(app.ID, defaultLimit); err != nil {
+	if err = d.DomainsList(app.ID, defaultLimit); err != nil {
 		return err
 	}
 
@@ -140,8 +140,8 @@ func AppInfo(appID string) error {
 }
 
 // AppOpen opens an app in the default webbrowser.
-func AppOpen(appID string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) AppOpen(appID string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -164,8 +164,8 @@ func AppOpen(appID string) error {
 }
 
 // AppLogs returns the logs from an app.
-func AppLogs(appID string, lines int) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) AppLogs(appID string, lines int) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -184,8 +184,8 @@ func AppLogs(appID string, lines int) error {
 }
 
 // AppRun runs a one time command in the app.
-func AppRun(appID, command string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) AppRun(appID, command string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -209,10 +209,10 @@ func AppRun(appID, command string) error {
 }
 
 // AppDestroy destroys an app.
-func AppDestroy(appID, confirm string) error {
+func (d DeisCmd) AppDestroy(appID, confirm string) error {
 	gitSession := false
 
-	s, err := settings.Load()
+	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
 		return err
@@ -252,15 +252,15 @@ func AppDestroy(appID, confirm string) error {
 	fmt.Printf("done in %ds\n", int(time.Since(startTime).Seconds()))
 
 	if gitSession {
-		return GitRemove(appID)
+		return d.GitRemove(appID)
 	}
 
 	return nil
 }
 
 // AppTransfer transfers app ownership to another user.
-func AppTransfer(appID, username string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) AppTransfer(appID, username string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err

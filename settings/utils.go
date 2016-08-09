@@ -3,14 +3,24 @@ package settings
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 )
 
-func locateSettingsFile() string {
-	filename := os.Getenv("DEIS_PROFILE")
+var filepathRegex = regexp.MustCompile(`^.*[/\\].+\.json$`)
 
-	if filename == "" {
-		filename = "client"
+func locateSettingsFile(cf string) string {
+	if cf == "" {
+		if v, ok := os.LookupEnv("DEIS_PROFILE"); ok {
+			cf = v
+		} else {
+			cf = "client"
+		}
 	}
 
-	return filepath.Join(FindHome(), ".deis", filename+".json")
+	// if path appears to be a filepath (contains a separator and ends in .json) don't alter the path
+	if filepathRegex.MatchString(cf) {
+		return cf
+	}
+
+	return filepath.Join(FindHome(), ".deis", cf+".json")
 }

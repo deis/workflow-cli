@@ -17,8 +17,8 @@ import (
 )
 
 // ConfigList lists an app's config.
-func ConfigList(appID string, oneLine bool) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) ConfigList(appID string, oneLine bool) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -57,8 +57,8 @@ func ConfigList(appID string, oneLine bool) error {
 }
 
 // ConfigSet sets an app's config variables.
-func ConfigSet(appID string, configVars []string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) ConfigSet(appID string, configVars []string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -117,12 +117,12 @@ to set up healthchecks. This functionality has been deprecated. In the future, p
 		fmt.Print("done\n\n")
 	}
 
-	return ConfigList(appID, false)
+	return d.ConfigList(appID, false)
 }
 
 // ConfigUnset removes a config variable from an app.
-func ConfigUnset(appID string, configVars []string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) ConfigUnset(appID string, configVars []string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -151,12 +151,12 @@ func ConfigUnset(appID string, configVars []string) error {
 
 	fmt.Print("done\n\n")
 
-	return ConfigList(appID, false)
+	return d.ConfigList(appID, false)
 }
 
 // ConfigPull pulls an app's config to a file.
-func ConfigPull(appID string, interactive bool, overwrite bool) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) ConfigPull(appID string, interactive bool, overwrite bool) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -222,7 +222,7 @@ func ConfigPull(appID string, interactive bool, overwrite bool) error {
 }
 
 // ConfigPush pushes an app's config from a file.
-func ConfigPush(appID, fileName string) error {
+func (d DeisCmd) ConfigPush(appID, fileName string) error {
 	stat, err := os.Stdin.Stat()
 
 	if err != nil {
@@ -252,7 +252,7 @@ func ConfigPush(appID, fileName string) error {
 		}
 	}
 
-	return ConfigSet(appID, config)
+	return d.ConfigSet(appID, config)
 }
 
 func parseConfig(configVars []string) map[string]interface{} {

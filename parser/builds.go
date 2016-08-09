@@ -6,7 +6,7 @@ import (
 )
 
 // Builds routes build commands to their specific function.
-func Builds(argv []string) error {
+func Builds(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for builds:
 
@@ -18,9 +18,9 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "builds:list":
-		return buildsList(argv)
+		return buildsList(argv, cmdr)
 	case "builds:create":
-		return buildsCreate(argv)
+		return buildsCreate(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -28,7 +28,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "builds" {
 			argv[0] = "builds:list"
-			return buildsList(argv)
+			return buildsList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -36,7 +36,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func buildsList(argv []string) error {
+func buildsList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists build history for an application.
 
@@ -61,10 +61,10 @@ Options:
 		return err
 	}
 
-	return cmd.BuildsList(safeGetValue(args, "--app"), results)
+	return cmdr.BuildsList(safeGetValue(args, "--app"), results)
 }
 
-func buildsCreate(argv []string) error {
+func buildsCreate(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Creates a new build of an application. Imports an <image> and deploys it to Deis
 as a new release. If a Procfile is present in the current directory, it will be used
@@ -95,5 +95,5 @@ Options:
 	image := safeGetValue(args, "<image>")
 	procfile := safeGetValue(args, "--procfile")
 
-	return cmd.BuildsCreate(app, image, procfile)
+	return cmdr.BuildsCreate(app, image, procfile)
 }

@@ -6,7 +6,7 @@ import (
 )
 
 // Limits routes limits commands to their specific function
-func Limits(argv []string) error {
+func Limits(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for limits:
 
@@ -19,11 +19,11 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "limits:list":
-		return limitsList(argv)
+		return limitsList(argv, cmdr)
 	case "limits:set":
-		return limitSet(argv)
+		return limitSet(argv, cmdr)
 	case "limits:unset":
-		return limitUnset(argv)
+		return limitUnset(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -31,7 +31,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "limits" {
 			argv[0] = "limits:list"
-			return limitsList(argv)
+			return limitsList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -39,7 +39,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func limitsList(argv []string) error {
+func limitsList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists resource limits for an application.
 
@@ -56,10 +56,10 @@ Options:
 		return err
 	}
 
-	return cmd.LimitsList(safeGetValue(args, "--app"))
+	return cmdr.LimitsList(safeGetValue(args, "--app"))
 }
 
-func limitSet(argv []string) error {
+func limitSet(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Sets resource limits for an application.
 
@@ -111,10 +111,10 @@ Options:
 		limitType = "cpu"
 	}
 
-	return cmd.LimitsSet(app, limits, limitType)
+	return cmdr.LimitsSet(app, limits, limitType)
 }
 
-func limitUnset(argv []string) error {
+func limitUnset(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Unsets resource limits for an application.
 
@@ -148,5 +148,5 @@ Options:
 		limitType = "cpu"
 	}
 
-	return cmd.LimitsUnset(app, limits, limitType)
+	return cmdr.LimitsUnset(app, limits, limitType)
 }

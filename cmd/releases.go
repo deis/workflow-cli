@@ -9,8 +9,8 @@ import (
 )
 
 // ReleasesList lists an app's releases.
-func ReleasesList(appID string, results int) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) ReleasesList(appID string, results int) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -38,8 +38,8 @@ func ReleasesList(appID string, results int) error {
 }
 
 // ReleasesInfo prints info about a specific release.
-func ReleasesInfo(appID string, version int) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) ReleasesInfo(appID string, version int) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -65,8 +65,8 @@ func ReleasesInfo(appID string, version int) error {
 }
 
 // ReleasesRollback rolls an app back to a previous release.
-func ReleasesRollback(appID string, version int) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) ReleasesRollback(appID string, version int) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err

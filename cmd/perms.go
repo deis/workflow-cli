@@ -9,8 +9,8 @@ import (
 )
 
 // PermsList prints which users have permissions.
-func PermsList(appID string, admin bool, results int) error {
-	s, appID, err := permsLoad(appID, admin)
+func (d DeisCmd) PermsList(appID string, admin bool, results int) error {
+	s, appID, err := permsLoad(d.ConfigFile, appID, admin)
 
 	if err != nil {
 		return err
@@ -46,9 +46,9 @@ func PermsList(appID string, admin bool, results int) error {
 }
 
 // PermCreate adds a user to an app or makes them an administrator.
-func PermCreate(appID string, username string, admin bool) error {
+func (d DeisCmd) PermCreate(appID string, username string, admin bool) error {
 
-	s, appID, err := permsLoad(appID, admin)
+	s, appID, err := permsLoad(d.ConfigFile, appID, admin)
 
 	if err != nil {
 		return err
@@ -72,9 +72,9 @@ func PermCreate(appID string, username string, admin bool) error {
 }
 
 // PermDelete removes a user from an app or revokes admin privileges.
-func PermDelete(appID string, username string, admin bool) error {
+func (d DeisCmd) PermDelete(appID, username string, admin bool) error {
 
-	s, appID, err := permsLoad(appID, admin)
+	s, appID, err := permsLoad(d.ConfigFile, appID, admin)
 
 	if err != nil {
 		return err
@@ -97,8 +97,8 @@ func PermDelete(appID string, username string, admin bool) error {
 	return nil
 }
 
-func permsLoad(appID string, admin bool) (*settings.Settings, string, error) {
-	s, err := settings.Load()
+func permsLoad(cf, appID string, admin bool) (*settings.Settings, string, error) {
+	s, err := settings.Load(cf)
 
 	if err != nil {
 		return nil, "", err

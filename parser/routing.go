@@ -6,7 +6,7 @@ import (
 )
 
 // Routing displays all relevant commands for `deis routing`.
-func Routing(argv []string) error {
+func Routing(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for routing:
 
@@ -19,11 +19,11 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "routing:info":
-		return routingInfo(argv)
+		return routingInfo(argv, cmdr)
 	case "routing:enable":
-		return routingEnable(argv)
+		return routingEnable(argv, cmdr)
 	case "routing:disable":
-		return routingDisable(argv)
+		return routingDisable(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -31,7 +31,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "routing" {
 			argv[0] = "routing:info"
-			return routingInfo(argv)
+			return routingInfo(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -39,7 +39,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func routingInfo(argv []string) error {
+func routingInfo(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Prints info about the current application's routability.
 
@@ -51,15 +51,14 @@ Options:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
-
 	if err != nil {
 		return err
 	}
 
-	return cmd.RoutingInfo(safeGetValue(args, "--app"))
+	return cmdr.RoutingInfo(safeGetValue(args, "--app"))
 }
 
-func routingEnable(argv []string) error {
+func routingEnable(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Enables routability for an app.
 
@@ -71,15 +70,14 @@ Options:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
-
 	if err != nil {
 		return err
 	}
 
-	return cmd.RoutingEnable(safeGetValue(args, "--app"))
+	return cmdr.RoutingEnable(safeGetValue(args, "--app"))
 }
 
-func routingDisable(argv []string) error {
+func routingDisable(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Disables routability for an app.
 
@@ -96,5 +94,5 @@ Options:
 		return err
 	}
 
-	return cmd.RoutingDisable(safeGetValue(args, "--app"))
+	return cmdr.RoutingDisable(safeGetValue(args, "--app"))
 }

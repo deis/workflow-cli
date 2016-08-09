@@ -8,8 +8,8 @@ import (
 )
 
 // MaintenanceInfo tells the informations about app's maintenance status
-func MaintenanceInfo(appID string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) MaintenanceInfo(appID string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -29,8 +29,8 @@ func MaintenanceInfo(appID string) error {
 }
 
 // MaintenanceEnable turns on the maintenance for the app.
-func MaintenanceEnable(appID string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) MaintenanceEnable(appID string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -54,8 +54,8 @@ func MaintenanceEnable(appID string) error {
 }
 
 // MaintenanceDisable turns off the maintenance for the app.
-func MaintenanceDisable(appID string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) MaintenanceDisable(appID string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err

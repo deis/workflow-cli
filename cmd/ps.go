@@ -13,8 +13,8 @@ import (
 )
 
 // PsList lists an app's processes.
-func PsList(appID string, results int) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) PsList(appID string, results int) error {
+	s, appID, err := load(d.ConfigFile, appID)
 	if err != nil {
 		return err
 	}
@@ -34,8 +34,8 @@ func PsList(appID string, results int) error {
 }
 
 // PsScale scales an app's processes.
-func PsScale(appID string, targets []string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) PsScale(appID string, targets []string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
@@ -80,8 +80,8 @@ func PsScale(appID string, targets []string) error {
 }
 
 // PsRestart restarts an app's processes.
-func PsRestart(appID, target string) error {
-	s, appID, err := load(appID)
+func (d DeisCmd) PsRestart(appID, target string) error {
+	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err

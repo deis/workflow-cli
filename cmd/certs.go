@@ -15,8 +15,8 @@ import (
 )
 
 // CertsList lists certs registered with the controller.
-func CertsList(results int) error {
-	s, err := settings.Load()
+func (d DeisCmd) CertsList(results int) error {
+	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
 		return err
@@ -96,8 +96,8 @@ func CertsList(results int) error {
 }
 
 // CertAdd adds a cert to the controller.
-func CertAdd(cert string, key string, name string) error {
-	s, err := settings.Load()
+func (d DeisCmd) CertAdd(cert string, key string, name string) error {
+	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
 		return err
@@ -133,8 +133,8 @@ func doCertAdd(c *deis.Client, cert string, key string, name string) error {
 }
 
 // CertRemove deletes a cert from the controller.
-func CertRemove(name string) error {
-	s, err := settings.Load()
+func (d DeisCmd) CertRemove(name string) error {
+	s, err := settings.Load(d.ConfigFile)
 	if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
@@ -154,8 +154,8 @@ func CertRemove(name string) error {
 }
 
 // CertInfo gets info about certficiate
-func CertInfo(name string) error {
-	s, err := settings.Load()
+func (d DeisCmd) CertInfo(name string) error {
+	s, err := settings.Load(d.ConfigFile)
 	if err != nil {
 		return err
 	}
@@ -193,8 +193,8 @@ func CertInfo(name string) error {
 }
 
 // CertAttach attaches a certificate to a domain
-func CertAttach(name string, domain string) error {
-	s, err := settings.Load()
+func (d DeisCmd) CertAttach(name, domain string) error {
+	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
 		return err
@@ -214,8 +214,8 @@ func CertAttach(name string, domain string) error {
 }
 
 // CertDetach detaches a certificate from a domain
-func CertDetach(name string, domain string) error {
-	s, err := settings.Load()
+func (d DeisCmd) CertDetach(name, domain string) error {
+	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
 		return err

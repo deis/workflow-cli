@@ -6,7 +6,7 @@ import (
 )
 
 // Users routes user commands to the specific function.
-func Users(argv []string) error {
+func Users(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for users:
 
@@ -17,7 +17,7 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "users:list":
-		return usersList(argv)
+		return usersList(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -25,7 +25,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "users" {
 			argv[0] = "users:list"
-			return usersList(argv)
+			return usersList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -33,7 +33,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func usersList(argv []string) error {
+func usersList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists all registered users.
 Requires admin privilages.
@@ -46,7 +46,6 @@ Options:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
-
 	if err != nil {
 		return err
 	}
@@ -57,5 +56,5 @@ Options:
 		return err
 	}
 
-	return cmd.UsersList(results)
+	return cmdr.UsersList(results)
 }

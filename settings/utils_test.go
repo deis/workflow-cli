@@ -1,32 +1,33 @@
-// +build linux darwin
-
 package settings
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
+
+	"github.com/arschles/assert"
 )
 
-func TestChooseSettingsFileLocation(t *testing.T) {
-	os.Unsetenv("DEIS_PROFILE")
-	os.Setenv("HOME", "/home/test")
-	expected := "/home/test/.deis/client.json"
-
-	actual := locateSettingsFile()
-
-	if actual != expected {
-		t.Errorf("Expected %s, Got %s", expected, actual)
-	}
+type confgCases struct {
+	Input    string
+	Expected string
 }
 
-func TestChooseSettingsFileUsingProfile(t *testing.T) {
-	os.Setenv("DEIS_PROFILE", "testing")
-	os.Setenv("HOME", "/home/test")
-	expected := "/home/test/.deis/testing.json"
-
-	actual := locateSettingsFile()
-
-	if actual != expected {
-		t.Errorf("Expected %s, Got %s", expected, actual)
+func TestSelectSettings(t *testing.T) {
+	t.Parallel()
+	cases := []confgCases{
+		{"test", filepath.Join(FindHome(), ".deis", "test.json")},
+		{"", filepath.Join(FindHome(), ".deis", "client.json")},
+		{"~/test.json", "~/test.json"},
+		{"/opt/test.json", "/opt/test.json"},
 	}
+
+	for _, check := range cases {
+		assert.Equal(t, locateSettingsFile(check.Input), check.Expected, "case")
+	}
+
+	// Check that env variable is used.
+	location := "/test/test.json"
+	os.Setenv("DEIS_PROFILE", location)
+	assert.Equal(t, locateSettingsFile(""), location, "case")
 }

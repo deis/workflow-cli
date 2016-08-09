@@ -6,32 +6,25 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/arschles/assert"
 	"github.com/deis/workflow-cli/version"
 )
 
-const sFile string = `{"username":"t","ssl_verify":false,"controller":"http://foo.bar","token":"a","response_limit": 50}`
+const sFile string = `{"username":"t","ssl_verify":false,"controller":"http://foo.bar","token":"a"}`
 
-func createTempProfile(contents string) error {
+func createTempProfile(contents string) (string, error) {
 	name, err := ioutil.TempDir("", "client")
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	os.Unsetenv("DEIS_PROFILE")
-	SetHome(name)
-	folder := filepath.Join(name, ".deis")
-	if err = os.Mkdir(folder, 0755); err != nil {
-		return err
-	}
+	file := filepath.Join(name, "test.json")
 
-	if err = ioutil.WriteFile(filepath.Join(folder, "client.json"), []byte(contents), 0775); err != nil {
-		return err
-	}
-
-	return nil
+	return file, ioutil.WriteFile(file, []byte(contents), 0775)
 }
 
 type comparison struct {
@@ -40,12 +33,14 @@ type comparison struct {
 }
 
 func TestLoadSave(t *testing.T) {
+	t.Parallel()
 	// Load profile from file and confirm it is correctly parsed.
-	if err := createTempProfile(sFile); err != nil {
+	file, err := createTempProfile(sFile)
+	if err != nil {
 		t.Fatal(err)
 	}
 
-	s, err := Load()
+	s, err := Load(file)
 
 	if err != nil {
 		t.Fatal(err)
@@ -69,7 +64,7 @@ func TestLoadSave(t *testing.T) {
 			expected: s.Client.ControllerURL.String(),
 		},
 		{
-			key:      50,
+			key:      100,
 			expected: s.Limit,
 		},
 		{
@@ -86,7 +81,7 @@ func TestLoadSave(t *testing.T) {
 	s.Client.VerifySSL = true
 	s.Client.Token = "b"
 	s.Username = "c"
-	s.Limit = 100
+	s.Limit = 10
 
 	u, err := url.Parse("http://deis.test")
 
@@ -96,11 +91,11 @@ func TestLoadSave(t *testing.T) {
 
 	s.Client.ControllerURL = u
 
-	if err = s.Save(); err != nil {
+	if _, err = s.Save(file); err != nil {
 		t.Fatal(err)
 	}
 
-	s, err = Load()
+	s, err = Load(file)
 
 	if err != nil {
 		t.Fatal(err)
@@ -124,7 +119,7 @@ func TestLoadSave(t *testing.T) {
 			expected: s.Client.ControllerURL.String(),
 		},
 		{
-			key:      100,
+			key:      10,
 			expected: s.Limit,
 		},
 		{
@@ -149,17 +144,39 @@ func checkComparisons(tests []comparison) error {
 }
 
 func TestDeleteSettings(t *testing.T) {
-	if err := createTempProfile(""); err != nil {
+	t.Parallel()
+
+	file, err := createTempProfile("")
+	if err != nil {
 		t.Fatal(err)
 	}
 
-	if err := Delete(); err != nil {
+	if err := Delete(file); err != nil {
 		t.Fatal(err)
 	}
-
-	file := locateSettingsFile()
 
 	if _, err := os.Stat(file); err == nil {
 		t.Errorf("File %s exists, supposed to have been deleted.", file)
+	}
+
+	// Test the deleting an nonexistent settings file isn't an error.
+	if err := Delete(file); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestNotLoggedIn(t *testing.T) {
+	t.Parallel()
+
+	name, err := ioutil.TempDir("", "client")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = Load(filepath.Join(name, "test.json"))
+	assert.ExistsErr(t, err, "load error")
+	if !strings.Contains(err.Error(), "Client configuration file not found") {
+		t.Error("Expected configuration error, Got:", err.Error())
 	}
 }

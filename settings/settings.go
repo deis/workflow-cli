@@ -2,7 +2,7 @@ package settings
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -34,12 +34,13 @@ type Settings struct {
 }
 
 // Load loads a new client from a settings file.
-func Load() (*Settings, error) {
-	filename := locateSettingsFile()
+func Load(cf string) (*Settings, error) {
+	filename := locateSettingsFile(cf)
 
 	if _, err := os.Stat(filename); err != nil {
 		if os.IsNotExist(err) {
-			return nil, errors.New("Not logged in. Use 'deis login' or 'deis register' to get started.")
+			return nil, fmt.Errorf(`Client configuration file not found at: %s
+Are you logged in? Use 'deis login' or 'deis register' to get started.`, filename)
 		}
 
 		return nil, err
@@ -79,26 +80,28 @@ func Load() (*Settings, error) {
 }
 
 // Save settings to a file
-func (s *Settings) Save() error {
+func (s *Settings) Save(cf string) (string, error) {
 	settings := settingsFile{Username: s.Username, VerifySSL: s.Client.VerifySSL,
 		Controller: s.Client.ControllerURL.String(), Token: s.Client.Token, Limit: s.Limit}
 
 	settingsContents, err := json.Marshal(settings)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if err = os.MkdirAll(filepath.Join(FindHome(), "/.deis/"), 0775); err != nil {
-		return err
+		return "", err
 	}
 
-	return ioutil.WriteFile(locateSettingsFile(), settingsContents, 0775)
+	filename := locateSettingsFile(cf)
+
+	return filename, ioutil.WriteFile(filename, settingsContents, 0775)
 }
 
 // Delete user's settings file.
-func Delete() error {
-	filename := locateSettingsFile()
+func Delete(cf string) error {
+	filename := locateSettingsFile(cf)
 
 	if _, err := os.Stat(filename); err != nil {
 		if os.IsNotExist(err) {

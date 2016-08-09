@@ -6,7 +6,7 @@ import (
 )
 
 // Certs routes certs commands to their specific function.
-func Certs(argv []string) error {
+func Certs(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for certs:
 
@@ -22,17 +22,17 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "certs:list":
-		return certsList(argv)
+		return certsList(argv, cmdr)
 	case "certs:add":
-		return certAdd(argv)
+		return certAdd(argv, cmdr)
 	case "certs:remove":
-		return certRemove(argv)
+		return certRemove(argv, cmdr)
 	case "certs:info":
-		return certInfo(argv)
+		return certInfo(argv, cmdr)
 	case "certs:attach":
-		return certAttach(argv)
+		return certAttach(argv, cmdr)
 	case "certs:detach":
-		return certDetach(argv)
+		return certDetach(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -40,7 +40,7 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "certs" {
 			argv[0] = "certs:list"
-			return certsList(argv)
+			return certsList(argv, cmdr)
 		}
 
 		PrintUsage()
@@ -48,7 +48,7 @@ Use 'deis help [command]' to learn more.
 	}
 }
 
-func certsList(argv []string) error {
+func certsList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Show certificate information for an SSL application.
 
@@ -69,10 +69,10 @@ Options:
 		return err
 	}
 
-	return cmd.CertsList(results)
+	return cmdr.CertsList(results)
 }
 
-func certAdd(argv []string) error {
+func certAdd(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Binds a certificate/key pair to an application.
 
@@ -85,6 +85,8 @@ Arguments:
     The public key of the SSL certificate.
   <key>
     The private key of the SSL certificate.
+
+Options:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
@@ -96,10 +98,10 @@ Arguments:
 	cert := args["<cert>"].(string)
 	key := args["<key>"].(string)
 
-	return cmd.CertAdd(cert, key, name)
+	return cmdr.CertAdd(cert, key, name)
 }
 
-func certRemove(argv []string) error {
+func certRemove(argv []string, cmdr cmd.Commander) error {
 	usage := `
 removes a certificate/key pair from the application.
 
@@ -108,6 +110,8 @@ Usage: deis certs:remove <name> [options]
 Arguments:
   <name>
     the name of the cert to remove from the app.
+
+Options:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
@@ -115,10 +119,10 @@ Arguments:
 		return err
 	}
 
-	return cmd.CertRemove(safeGetValue(args, "<name>"))
+	return cmdr.CertRemove(safeGetValue(args, "<name>"))
 }
 
-func certInfo(argv []string) error {
+func certInfo(argv []string, cmdr cmd.Commander) error {
 	usage := `
 fetch more detailed information about a certificate
 
@@ -127,6 +131,8 @@ Usage: deis certs:info <name> [options]
 Arguments:
   <name>
     the name of the cert to get information from
+
+Options:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
@@ -134,10 +140,10 @@ Arguments:
 		return err
 	}
 
-	return cmd.CertInfo(safeGetValue(args, "<name>"))
+	return cmdr.CertInfo(safeGetValue(args, "<name>"))
 }
 
-func certAttach(argv []string) error {
+func certAttach(argv []string, cmdr cmd.Commander) error {
 	usage := `
 attach a certificate to a domain.
 
@@ -148,6 +154,8 @@ Arguments:
     name of the certificate to attach domain to
   <domain>
     common name of the domain to attach to (needs to already be in the system)
+
+Options:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
@@ -157,10 +165,10 @@ Arguments:
 
 	name := safeGetValue(args, "<name>")
 	domain := safeGetValue(args, "<domain>")
-	return cmd.CertAttach(name, domain)
+	return cmdr.CertAttach(name, domain)
 }
 
-func certDetach(argv []string) error {
+func certDetach(argv []string, cmdr cmd.Commander) error {
 	usage := `
 detach a certificate from a domain.
 
@@ -171,6 +179,8 @@ Arguments:
     name of the certificate to deatch from a domain
   <domain>
     common name of the domain to detach from
+
+Options:
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
@@ -180,5 +190,5 @@ Arguments:
 
 	name := safeGetValue(args, "<name>")
 	domain := safeGetValue(args, "<domain>")
-	return cmd.CertDetach(name, domain)
+	return cmdr.CertDetach(name, domain)
 }
