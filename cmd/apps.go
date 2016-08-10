@@ -37,10 +37,9 @@ func AppCreate(id string, buildpack string, remote string, noRemote bool) error 
 	fmt.Printf("done, created %s\n", app.ID)
 
 	if buildpack != "" {
-		configValues := api.Config{
-			Values: map[string]interface{}{
-				"BUILDPACK_URL": buildpack,
-			},
+		configValues := api.NewConfig()
+		configValues.Values = map[string]interface{}{
+			"BUILDPACK_URL": buildpack,
 		}
 		if _, err = config.Set(s.Client, app.ID, configValues); checkAPICompatibility(s.Client, err) != nil {
 			return err

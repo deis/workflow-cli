@@ -49,7 +49,7 @@ func TagsSet(appID string, tags []string) error {
 	fmt.Print("Applying tags... ")
 
 	quit := progress()
-	configObj := api.Config{}
+	configObj := api.NewConfig()
 	configObj.Tags = tagsMap
 
 	_, err = config.Set(s.Client, appID, configObj)
@@ -76,7 +76,7 @@ func TagsUnset(appID string, tags []string) error {
 
 	quit := progress()
 
-	configObj := api.Config{}
+	configObj := api.NewConfig()
 
 	tagsMap := make(map[string]interface{})
 

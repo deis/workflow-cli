@@ -49,7 +49,7 @@ func RegistrySet(appID string, item []string) error {
 	fmt.Print("Applying registry information... ")
 
 	quit := progress()
-	configObj := api.Config{}
+	configObj := api.NewConfig()
 	configObj.Registry = registryMap
 
 	_, err = config.Set(s.Client, appID, configObj)
@@ -76,7 +76,7 @@ func RegistryUnset(appID string, items []string) error {
 
 	quit := progress()
 
-	configObj := api.Config{}
+	configObj := api.NewConfig()
 
 	registryMap := make(map[string]interface{})
 

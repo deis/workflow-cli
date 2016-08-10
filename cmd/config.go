@@ -103,7 +103,8 @@ to set up healthchecks. This functionality has been deprecated. In the future, p
 	fmt.Print("Creating config... ")
 
 	quit := progress()
-	configObj := api.Config{Values: configMap}
+	configObj := api.NewConfig()
+	configObj.Values = configMap
 	configObj, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
@@ -132,7 +133,7 @@ func ConfigUnset(appID string, configVars []string) error {
 
 	quit := progress()
 
-	configObj := api.Config{}
+	configObj := api.NewConfig()
 
 	valuesMap := make(map[string]interface{})
 

@@ -50,7 +50,7 @@ func HealthchecksSet(appID, healthcheckType string, probe *api.Healthcheck) erro
 	fmt.Printf("Applying %s healthcheck... ", healthcheckType)
 
 	quit := progress()
-	configObj := api.Config{}
+	configObj := api.NewConfig()
 	configObj.Healthcheck = make(map[string]*api.Healthcheck)
 
 	configObj.Healthcheck[healthcheckType] = probe
@@ -81,7 +81,7 @@ func HealthchecksUnset(appID string, healthchecks []string) error {
 
 	quit := progress()
 
-	configObj := api.Config{}
+	configObj := api.NewConfig()
 
 	healthcheckMap := make(map[string]*api.Healthcheck)
 

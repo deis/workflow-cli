@@ -70,7 +70,7 @@ func LimitsSet(appID string, limits []string, limitType string) error {
 	fmt.Print("Applying limits... ")
 
 	quit := progress()
-	configObj := api.Config{}
+	configObj := api.NewConfig()
 
 	if limitType == "cpu" {
 		configObj.CPU = limitsMap
@@ -102,7 +102,7 @@ func LimitsUnset(appID string, limits []string, limitType string) error {
 
 	quit := progress()
 
-	configObj := api.Config{}
+	configObj := api.NewConfig()
 
 	valuesMap := make(map[string]interface{})
 
