@@ -28,12 +28,16 @@ def gcs_cmd = { String cmd ->
 	}
 }
 
-def upload_artifacts = {
+def upload_artifacts = { boolean cache ->
 	withCredentials([[$class: 'FileBinding', credentialsId: 'e80fd033-dd76-4d96-be79-6c272726fb82', variable: 'GCSKEY']]) {
 		sh "mkdir -p ${getBasePath(gcs_key)}"
 		sh "cat \"\${GCSKEY}\" > ${gcs_key}"
 		gcs_cmd 'gcloud auth activate-service-account -q --key-file /.config/key.json'
-		gcs_cmd "gsutil -mq cp -a public-read -r /upload/* ${gcs_bucket}"
+		headers = ""
+		if(!cache) {
+			headers += '-h "Cache-Control:no-cache"'
+		}
+		gcs_cmd "gsutil -mq ${headers} cp -a public-read -r /upload/* ${gcs_bucket}"
 		gcs_cmd gcs_cleanup_cmd
 	}
 }
@@ -147,7 +151,7 @@ parallel(
 					env.REVISION = git_commit.take(7)
 					make 'build-revision'
 
-					upload_artifacts()
+					upload_artifacts(true)
 			}
 		}
 	},
@@ -163,7 +167,7 @@ parallel(
 						make 'bootstrap'
 						make 'build-latest'
 
-						upload_artifacts()
+						upload_artifacts(false)
 					} else {
 						echo "Skipping build of latest artifacts because this build is not on the master branch (branch: ${git_branch})"
 					}
