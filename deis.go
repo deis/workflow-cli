@@ -128,6 +128,8 @@ Use 'git push deis master' to deploy to an application.
 		err = parser.Users(argv)
 	case "version":
 		err = parser.Version(argv)
+	case "doctor":
+		err = parser.Doctor(argv)
 	default:
 		env := os.Environ()
 		extCmd := "deis-" + command
