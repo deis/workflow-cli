@@ -262,7 +262,7 @@ Usage: deis apps:transfer <username> [options]
 
 Arguments:
   <username>
-    the user that the app will be transfered to.
+    the user that the app will be transferred to.
 
 Options:
   -a --app=<app>

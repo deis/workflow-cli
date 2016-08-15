@@ -1,4 +1,3 @@
-def workpath_linux = "/src/github.com/deis/workflow-cli"
 def windows = 'windows'
 def linux = 'linux'
 def git_commit = ''
@@ -7,58 +6,6 @@ def git_branch = ''
 def getBasePath = { String filepath ->
 	def filename = filepath.lastIndexOf(File.separator)
 	return filepath.substring(0, filename)
-}
-
-def make = { String target ->
-	try {
-		sh "make ${target} fileperms"
-	} catch(error) {
-		sh "make fileperms"
-		throw error
-	}
-}
-
-def gcs_cleanup_cmd = "sh -c 'rm -rf /upload/* /.config/*'"
-def gcs_bucket = "gs://workflow-cli"
-def gcs_key = "tmp/key.json"
-
-def gcs_cmd = { String cmd ->
-	gcs_cmd = "docker run --rm -v  ${pwd()}/tmp:/.config -v ${pwd()}/_dist:/upload google/cloud-sdk:latest "
-	try {
-		sh(gcs_cmd + cmd)
-	} catch(error) {
-		sh(gcs_cmd + gcs_cleanup_cmd)
-		throw error
-	}
-}
-
-def upload_artifacts = { boolean cache ->
-	withCredentials([[$class: 'FileBinding', credentialsId: 'e80fd033-dd76-4d96-be79-6c272726fb82', variable: 'GCSKEY']]) {
-		sh "mkdir -p ${getBasePath(gcs_key)}"
-		sh "cat \"\${GCSKEY}\" > ${gcs_key}"
-		gcs_cmd 'gcloud auth activate-service-account -q --key-file /.config/key.json'
-
-		headers  = "-h 'x-goog-meta-git-branch:${git_branch}' "
-        headers += "-h 'x-goog-meta-git-sha:${git_commit}' "
-        headers += "-h 'x-goog-meta-ci-job:${env.JOB_NAME}' "
-        headers += "-h 'x-goog-meta-ci-number:${env.BUILD_NUMBER}' "
-        headers += "-h 'x-goog-meta-ci-url:${env.BUILD_URL}'"
-		if(!cache) {
-			headers += ' -h "Cache-Control:no-cache"'
-		}
-		gcs_cmd "gsutil -mq ${headers} cp -a public-read -r /upload/* ${gcs_bucket}"
-		gcs_cmd gcs_cleanup_cmd
-	}
-}
-
-def gopath_linux = {
-	def gopath = pwd() + "/gopath"
-	env.GOPATH = gopath
-	gopath
-}
-
-def workdir_linux = { String gopath ->
-	gopath + workpath_linux
 }
 
 def sh = { String cmd ->
@@ -100,97 +47,143 @@ node(windows) {
 	}
 }
 
-node(linux) {
-	def gopath = gopath_linux()
-	def workdir = workdir_linux(gopath)
-
-	dir(workdir) {
-		stage 'Checkout Linux'
-			checkout scm
-		stage 'Install Linux'
-			bootstrap linux
-		stage 'Test Linux'
-			make 'test-cover'
-		stage 'Upload to Codeconv'
-			withCredentials([[$class: 'StringBinding', credentialsId: '995d99a7-466b-4beb-bf75-f3ba91cbbc18', variable: 'CODECOV_TOKEN']]) {
-				sh 'curl -s https://codecov.io/bash | bash'
-			}
-	}
-}
-
 stage 'Git Info'
 node(linux) {
+	checkout scm
 
-	def gopath = gopath_linux()
-	def workdir = workdir_linux(gopath)
+	// HACK: Recommended approach for getting command output is writing to and then reading a file.
+	sh 'mkdir -p tmp'
+	sh 'git describe --all > tmp/GIT_BRANCH'
+	sh 'git rev-parse HEAD > tmp/GIT_COMMIT'
+	git_branch = readFile('tmp/GIT_BRANCH').trim()
+	git_commit = readFile('tmp/GIT_COMMIT').trim()
 
-	dir(workdir) {
-		checkout scm
-
-		// HACK: Recommended approach for getting command output is writing to and then reading a file.
-		sh 'mkdir -p tmp'
-		sh 'git describe --all > tmp/GIT_BRANCH'
-		sh 'git rev-parse HEAD > tmp/GIT_COMMIT'
-		git_branch = readFile('tmp/GIT_BRANCH').trim()
-		git_commit = readFile('tmp/GIT_COMMIT').trim()
-
-		if (git_branch != "remotes/origin/master") {
-			// Determine actual PR commit, if necessary
-			sh 'git rev-parse HEAD | git log --pretty=%P -n 1 --date-order > tmp/MERGE_COMMIT_PARENTS'
-			sh 'cat tmp/MERGE_COMMIT_PARENTS'
-			merge_commit_parents = readFile('tmp/MERGE_COMMIT_PARENTS').trim()
-			if (merge_commit_parents.length() > 40) {
-				echo 'More than one merge commit parent signifies that the merge commit is not the PR commit'
-				echo "Changing git_commit from '${git_commit}' to '${merge_commit_parents.take(40)}'"
-				git_commit = merge_commit_parents.take(40)
-			} else {
-				echo 'Only one merge commit parent signifies that the merge commit is also the PR commit'
-				echo "Keeping git_commit as '${git_commit}'"
-			}
+	if (git_branch != "remotes/origin/master") {
+		// Determine actual PR commit, if necessary
+		sh 'git rev-parse HEAD | git log --pretty=%P -n 1 --date-order > tmp/MERGE_COMMIT_PARENTS'
+		sh 'cat tmp/MERGE_COMMIT_PARENTS'
+		merge_commit_parents = readFile('tmp/MERGE_COMMIT_PARENTS').trim()
+		if (merge_commit_parents.length() > 40) {
+			echo 'More than one merge commit parent signifies that the merge commit is not the PR commit'
+			echo "Changing git_commit from '${git_commit}' to '${merge_commit_parents.take(40)}'"
+			git_commit = merge_commit_parents.take(40)
+		} else {
+			echo 'Only one merge commit parent signifies that the merge commit is also the PR commit'
+			echo "Keeping git_commit as '${git_commit}'"
 		}
 	}
 }
 
+def test_image = "quay.io/deisci/workflow-cli-dev:${git_commit.take(7)}"
+def mutable_image = 'quay.io/deisci/workflow-cli-dev:latest'
+
+node(linux) {
+		stage 'Build and push test container'
+			checkout scm
+			def quayUsername = "deisci+jenkins"
+			def quayEmail = "deis+jenkins@deis.com"
+			withCredentials([[$class: 'StringBinding',
+												credentialsId: 'c67dc0a1-c8c4-4568-a73d-53ad8530ceeb',
+									 			variable: 'QUAY_PASSWORD']]) {
+
+				sh """
+					docker login -e="${quayEmail}" -u="${quayUsername}" -p="\${QUAY_PASSWORD}" quay.io
+					docker build -t ${test_image} .
+					docker push ${test_image}
+				"""
+
+				if (git_branch == "remotes/origin/master") {
+					sh """
+						docker tag ${test_image} ${mutable_image}
+						docker push ${mutable_image}
+					"""
+				}
+			}
+}
+
+
+stage 'Lint and test container'
+parallel(
+	lint: {
+		node(linux) {
+			sh "docker run --rm ${test_image} lint"
+		}
+	},
+	test: {
+		node(linux) {
+			withCredentials([[$class: 'StringBinding',
+												credentialsId: '995d99a7-466b-4beb-bf75-f3ba91cbbc18',
+												variable: 'CODECOV_TOKEN']]) {
+				sh "docker run -e CODECOV_TOKEN=\${CODECOV_TOKEN} --rm ${test_image} sh -c 'test-cover.sh && curl -s https://codecov.io/bash | bash'"
+			}
+		}
+	}
+)
+
 stage 'Build and Upload Artifacts'
+
+def gcs_bucket = "gs://workflow-cli"
+
+def upload_artifacts = { String dist_dir, boolean cache ->
+	headers  = "-h 'x-goog-meta-git-branch:${git_branch}' "
+	headers += "-h 'x-goog-meta-git-sha:${git_commit}' "
+	headers += "-h 'x-goog-meta-ci-job:${env.JOB_NAME}' "
+	headers += "-h 'x-goog-meta-ci-number:${env.BUILD_NUMBER}' "
+	headers += "-h 'x-goog-meta-ci-url:${env.BUILD_URL}'"
+	if(!cache) {
+		headers += ' -h "Cache-Control:no-cache"'
+	}
+
+	script = "sh -c 'echo \${GCS_KEY_JSON} | base64 -d - > /tmp/key.json "
+	script += "&& gcloud auth activate-service-account -q --key-file /tmp/key.json "
+	script += "&& gsutil -mq ${headers} cp -a public-read -r /upload/* ${gcs_bucket} "
+	script += "&& rm -rf /upload/*'"
+
+	withCredentials([[$class: 'StringBinding',
+										credentialsId: '6561701c-b7b4-4796-83c4-9d87946799e4',
+										variable: 'GCSKEY']]) {
+		sh "docker run ${dist_dir} -e GCS_KEY_JSON=\"\${GCSKEY}\" --rm ${test_image} ${script}"
+	}
+	sh "rm -rf ${tmp_dir}"
+}
+
+def mktmp = {
+	// Create tmp directory to store files
+	sh 'mktemp -d > tmp_dir'
+	tmp = readFile('tmp_dir').trim()
+	echo "Storing binaries in ${tmp}"
+	sh 'rm tmp_dir'
+	return tmp
+}
 
 parallel(
 	revision: {
 		node(linux) {
-			def gopath = gopath_linux()
-			def workdir = workdir_linux(gopath)
 
-			dir(workdir) {
-					checkout scm
-
-					if (git_branch != "remotes/origin/master") {
-						echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
-						env.BUILD_ARCH = "amd64"
-					}
-
-					make 'bootstrap'
-					env.REVISION = git_commit.take(7)
-					make 'build-revision'
-
-					upload_artifacts(true)
+			flags = ""
+			if (git_branch != "remotes/origin/master") {
+				echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
+				flags += "-e BUILD_ARCH=amd64"
 			}
+
+			tmp_dir = mktmp()
+			dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
+			sh "docker run ${flags} -e REVISION=${git_commit.take(7)} ${dist_dir} --rm ${test_image} make build-revision"
+
+
+			upload_artifacts(dist_dir, true)
 		}
 	},
 	latest: {
 		node(linux) {
-			def gopath = gopath_linux()
-			def workdir = workdir_linux(gopath)
+			if (git_branch == "remotes/origin/master") {
+				tmp_dir = mktmp()
+				dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
+				sh "docker run ${dist_dir} --rm ${test_image} make build-latest"
 
-			dir(workdir) {
-					checkout scm
-
-					if (git_branch == "remotes/origin/master") {
-						make 'bootstrap'
-						make 'build-latest'
-
-						upload_artifacts(false)
-					} else {
-						echo "Skipping build of latest artifacts because this build is not on the master branch (branch: ${git_branch})"
-					}
+				upload_artifacts(dist_dir, false)
+			} else {
+				echo "Skipping build of latest artifacts because this build is not on the master branch (branch: ${git_branch})"
 			}
 		}
 	}

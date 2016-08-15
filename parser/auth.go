@@ -224,9 +224,9 @@ Usage: deis auth:regenerate [options]
 
 Options:
   -u --username=<username>
-    specify user to regenerate. Requires admin privilages.
+    specify user to regenerate. Requires admin privileges.
   --all
-    regenerate token for every user. Requires admin privilages.
+    regenerate token for every user. Requires admin privileges.
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)

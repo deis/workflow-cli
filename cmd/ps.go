@@ -100,7 +100,7 @@ func (d DeisCmd) PsRestart(appID, target string) error {
 	quit <- true
 	<-quit
 	if err == deis.ErrPodNotFound {
-		return fmt.Errorf("Could not find proccess type %s in app %s", psType, appID)
+		return fmt.Errorf("Could not find process type %s in app %s", psType, appID)
 	} else if checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}

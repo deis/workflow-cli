@@ -36,7 +36,7 @@ Use 'deis help [command]' to learn more.
 func usersList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists all registered users.
-Requires admin privilages.
+Requires admin privileges.
 
 Usage: deis users:list [options]
 
