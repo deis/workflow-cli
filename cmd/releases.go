@@ -21,11 +21,11 @@ func (d DeisCmd) ReleasesList(appID string, results int) error {
 	}
 
 	releases, count, err := releases.List(s.Client, appID, results)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("=== %s Releases%s", appID, limitCount(len(releases), count))
+	d.Printf("=== %s Releases%s", appID, limitCount(len(releases), count))
 
 	w := new(tabwriter.Writer)
 
@@ -46,20 +46,20 @@ func (d DeisCmd) ReleasesInfo(appID string, version int) error {
 	}
 
 	r, err := releases.Get(s.Client, appID, version)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("=== %s Release v%d\n", appID, version)
+	d.Printf("=== %s Release v%d\n", appID, version)
 	if r.Build != "" {
-		fmt.Println("build:   ", r.Build)
+		d.Println("build:   ", r.Build)
 	}
-	fmt.Println("config:  ", r.Config)
-	fmt.Println("owner:   ", r.Owner)
-	fmt.Println("created: ", r.Created)
-	fmt.Println("summary: ", r.Summary)
-	fmt.Println("updated: ", r.Updated)
-	fmt.Println("uuid:    ", r.UUID)
+	d.Println("config:  ", r.Config)
+	d.Println("owner:   ", r.Owner)
+	d.Println("created: ", r.Created)
+	d.Println("summary: ", r.Summary)
+	d.Println("updated: ", r.Updated)
+	d.Println("uuid:    ", r.UUID)
 
 	return nil
 }
@@ -73,20 +73,20 @@ func (d DeisCmd) ReleasesRollback(appID string, version int) error {
 	}
 
 	if version == -1 {
-		fmt.Print("Rolling back one release... ")
+		d.Print("Rolling back one release... ")
 	} else {
-		fmt.Printf("Rolling back to v%d... ", version)
+		d.Printf("Rolling back to v%d... ", version)
 	}
 
-	quit := progress()
+	quit := progress(d.WOut)
 	newVersion, err := releases.Rollback(s.Client, appID, version)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("done, v%d\n", newVersion)
+	d.Printf("done, v%d\n", newVersion)
 
 	return nil
 }

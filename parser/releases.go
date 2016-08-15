@@ -37,7 +37,7 @@ Use 'deis help [command]' to learn more.
 			return releasesList(argv, cmdr)
 		}
 
-		PrintUsage()
+		PrintUsage(cmdr)
 		return nil
 	}
 }

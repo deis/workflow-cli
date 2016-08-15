@@ -19,11 +19,11 @@ func (d DeisCmd) TagsList(appID string) error {
 	}
 
 	config, err := config.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("=== %s Tags\n", appID)
+	d.Printf("=== %s Tags\n", appID)
 
 	tagMap := make(map[string]string)
 
@@ -31,7 +31,7 @@ func (d DeisCmd) TagsList(appID string) error {
 		tagMap[key] = fmt.Sprintf("%v", value)
 	}
 
-	fmt.Print(prettyprint.PrettyTabs(tagMap, 5))
+	d.Print(prettyprint.PrettyTabs(tagMap, 5))
 
 	return nil
 }
@@ -44,22 +44,25 @@ func (d DeisCmd) TagsSet(appID string, tags []string) error {
 		return err
 	}
 
-	tagsMap := parseTags(tags)
+	tagsMap, err := parseTags(tags)
+	if err != nil {
+		return err
+	}
 
-	fmt.Print("Applying tags... ")
+	d.Print("Applying tags... ")
 
-	quit := progress()
+	quit := progress(d.WOut)
 	configObj := api.Config{}
 	configObj.Tags = tagsMap
 
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 
 	return d.TagsList(appID)
 }
@@ -72,9 +75,9 @@ func (d DeisCmd) TagsUnset(appID string, tags []string) error {
 		return err
 	}
 
-	fmt.Print("Applying tags... ")
+	d.Print("Applying tags... ")
 
-	quit := progress()
+	quit := progress(d.WOut)
 
 	configObj := api.Config{}
 
@@ -89,30 +92,29 @@ func (d DeisCmd) TagsUnset(appID string, tags []string) error {
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 
 	return d.TagsList(appID)
 }
 
-func parseTags(tags []string) map[string]interface{} {
+func parseTags(tags []string) (map[string]interface{}, error) {
 	tagMap := make(map[string]interface{})
 
 	for _, tag := range tags {
 		key, value, err := parseTag(tag)
 
 		if err != nil {
-			fmt.Println(err)
-			continue
+			return nil, err
 		}
 
 		tagMap[key] = value
 	}
 
-	return tagMap
+	return tagMap, nil
 }
 
 func parseTag(tag string) (string, string, error) {

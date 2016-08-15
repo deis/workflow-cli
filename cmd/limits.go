@@ -19,15 +19,15 @@ func (d DeisCmd) LimitsList(appID string) error {
 	}
 
 	config, err := config.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("=== %s Limits\n\n", appID)
+	d.Printf("=== %s Limits\n\n", appID)
 
-	fmt.Println("--- Memory")
+	d.Println("--- Memory")
 	if len(config.Memory) == 0 {
-		fmt.Println("Unlimited")
+		d.Println("Unlimited")
 	} else {
 		memoryMap := make(map[string]string)
 
@@ -35,12 +35,12 @@ func (d DeisCmd) LimitsList(appID string) error {
 			memoryMap[key] = fmt.Sprintf("%v", value)
 		}
 
-		fmt.Print(prettyprint.PrettyTabs(memoryMap, 5))
+		d.Print(prettyprint.PrettyTabs(memoryMap, 5))
 	}
 
-	fmt.Println("\n--- CPU")
+	d.Println("\n--- CPU")
 	if len(config.CPU) == 0 {
-		fmt.Println("Unlimited")
+		d.Println("Unlimited")
 	} else {
 		cpuMap := make(map[string]string)
 
@@ -48,7 +48,7 @@ func (d DeisCmd) LimitsList(appID string) error {
 			cpuMap[key] = value.(string)
 		}
 
-		fmt.Print(prettyprint.PrettyTabs(cpuMap, 5))
+		d.Print(prettyprint.PrettyTabs(cpuMap, 5))
 	}
 
 	return nil
@@ -67,9 +67,9 @@ func (d DeisCmd) LimitsSet(appID string, limits []string, limitType string) erro
 		return err
 	}
 
-	fmt.Print("Applying limits... ")
+	d.Print("Applying limits... ")
 
-	quit := progress()
+	quit := progress(d.WOut)
 	configObj := api.Config{}
 
 	if limitType == "cpu" {
@@ -81,11 +81,11 @@ func (d DeisCmd) LimitsSet(appID string, limits []string, limitType string) erro
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 
 	return d.LimitsList(appID)
 }
@@ -98,9 +98,9 @@ func (d DeisCmd) LimitsUnset(appID string, limits []string, limitType string) er
 		return err
 	}
 
-	fmt.Print("Applying limits... ")
+	d.Print("Applying limits... ")
 
-	quit := progress()
+	quit := progress(d.WOut)
 
 	configObj := api.Config{}
 
@@ -119,11 +119,11 @@ func (d DeisCmd) LimitsUnset(appID string, limits []string, limitType string) er
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 
 	return d.LimitsList(appID)
 }

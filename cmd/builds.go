@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -23,14 +22,14 @@ func (d DeisCmd) BuildsList(appID string, results int) error {
 	}
 
 	builds, count, err := builds.List(s.Client, appID, results)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("=== %s Builds%s", appID, limitCount(len(builds), count))
+	d.Printf("=== %s Builds%s", appID, limitCount(len(builds), count))
 
 	for _, build := range builds {
-		fmt.Println(build.UUID, build.Created)
+		d.Println(build.UUID, build.Created)
 	}
 	return nil
 }
@@ -60,16 +59,16 @@ func (d DeisCmd) BuildsCreate(appID, image, procfile string) error {
 		}
 	}
 
-	fmt.Print("Creating build... ")
-	quit := progress()
+	d.Print("Creating build... ")
+	quit := progress(d.WOut)
 	_, err = builds.New(s.Client, appID, image, procfileMap)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Println("done")
+	d.Println("done")
 
 	return nil
 }

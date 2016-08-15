@@ -8,8 +8,8 @@ import (
 )
 
 // ShortcutsList displays all relevant shortcuts for the CLI.
-func ShortcutsList() error {
-	fmt.Println(sortShortcuts())
+func (d DeisCmd) ShortcutsList() error {
+	d.Println(sortShortcuts())
 
 	return nil
 }

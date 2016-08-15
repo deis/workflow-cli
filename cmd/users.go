@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/deis/controller-sdk-go/users"
 	"github.com/deis/workflow-cli/settings"
 )
@@ -20,14 +18,14 @@ func (d DeisCmd) UsersList(results int) error {
 	}
 
 	users, count, err := users.List(s.Client, results)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("=== Users%s", limitCount(len(users), count))
+	d.Printf("=== Users%s", limitCount(len(users), count))
 
 	for _, user := range users {
-		fmt.Println(user.Username)
+		d.Println(user.Username)
 	}
 	return nil
 }

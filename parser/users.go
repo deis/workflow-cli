@@ -28,7 +28,7 @@ Use 'deis help [command]' to learn more.
 			return usersList(argv, cmdr)
 		}
 
-		PrintUsage()
+		PrintUsage(cmdr)
 		return nil
 	}
 }

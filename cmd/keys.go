@@ -28,14 +28,14 @@ func (d DeisCmd) KeysList(results int) error {
 	}
 
 	keys, count, err := keys.List(s.Client, results)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("=== %s Keys%s", s.Username, limitCount(len(keys), count))
+	d.Printf("=== %s Keys%s", s.Username, limitCount(len(keys), count))
 
 	for _, key := range keys {
-		fmt.Printf("%s %s...%s\n", key.ID, key.Public[:16], key.Public[len(key.Public)-10:])
+		d.Printf("%s %s...%s\n", key.ID, key.Public[:16], key.Public[len(key.Public)-10:])
 	}
 	return nil
 }
@@ -48,14 +48,14 @@ func (d DeisCmd) KeyRemove(keyID string) error {
 		return err
 	}
 
-	fmt.Printf("Removing %s SSH Key...", keyID)
+	d.Printf("Removing %s SSH Key...", keyID)
 
-	if err = keys.Delete(s.Client, keyID); checkAPICompatibility(s.Client, err) != nil {
-		fmt.Println()
+	if err = keys.Delete(s.Client, keyID); checkAPICompatibility(s.Client, err, d.WErr) != nil {
+		d.Println()
 		return err
 	}
 
-	fmt.Println(" done")
+	d.Println(" done")
 	return nil
 }
 
@@ -70,11 +70,11 @@ func (d DeisCmd) KeyAdd(keyLocation string) error {
 	var key api.KeyCreateRequest
 
 	if keyLocation == "" {
-		ks, err := listKeys()
+		ks, err := listKeys(d.WOut)
 		if err != nil {
 			return err
 		}
-		key, err = chooseKey(ks, os.Stdin)
+		key, err = chooseKey(ks, os.Stdin, d.WOut)
 		if err != nil {
 			return err
 		}
@@ -85,29 +85,30 @@ func (d DeisCmd) KeyAdd(keyLocation string) error {
 		}
 	}
 
-	fmt.Printf("Uploading %s to deis...", filepath.Base(key.Name))
+	d.Printf("Uploading %s to deis...", filepath.Base(key.Name))
 
-	if _, err = keys.New(s.Client, key.ID, key.Public); checkAPICompatibility(s.Client, err) != nil {
-		fmt.Println()
+	if _, err = keys.New(s.Client, key.ID, key.Public); checkAPICompatibility(s.Client, err, d.WErr) != nil {
+		d.Println()
 		return err
 	}
 
-	fmt.Println(" done")
+	d.Println(" done")
 	return nil
 }
 
-func chooseKey(keys []api.KeyCreateRequest, input io.Reader) (api.KeyCreateRequest, error) {
-	fmt.Println("Found the following SSH public keys:")
+func chooseKey(keys []api.KeyCreateRequest, input io.Reader,
+	wOut io.Writer) (api.KeyCreateRequest, error) {
+	fmt.Fprintln(wOut, "Found the following SSH public keys:")
 
 	for i, key := range keys {
-		fmt.Printf("%d) %s %s\n", i+1, filepath.Base(key.Name), key.ID)
+		fmt.Fprintf(wOut, "%d) %s %s\n", i+1, filepath.Base(key.Name), key.ID)
 	}
 
-	fmt.Println("0) Enter path to pubfile (or use keys:add <key_path>)")
+	fmt.Fprintln(wOut, "0) Enter path to pubfile (or use keys:add <key_path>)")
 
 	var selected string
 
-	fmt.Print("Which would you like to use with Deis? ")
+	fmt.Fprint(wOut, "Which would you like to use with Deis? ")
 	fmt.Fscanln(input, &selected)
 
 	numSelected, err := strconv.Atoi(selected)
@@ -123,7 +124,7 @@ func chooseKey(keys []api.KeyCreateRequest, input io.Reader) (api.KeyCreateReque
 	if numSelected == 0 {
 		var filename string
 
-		fmt.Print("Enter the path to the pubkey file: ")
+		fmt.Fprint(wOut, "Enter the path to the pubkey file: ")
 		fmt.Scanln(&filename)
 
 		return getKey(filename)
@@ -132,7 +133,7 @@ func chooseKey(keys []api.KeyCreateRequest, input io.Reader) (api.KeyCreateReque
 	return keys[numSelected-1], nil
 }
 
-func listKeys() ([]api.KeyCreateRequest, error) {
+func listKeys(wOut io.Writer) ([]api.KeyCreateRequest, error) {
 	folder := filepath.Join(settings.FindHome(), ".ssh")
 	files, err := ioutil.ReadDir(folder)
 
@@ -149,7 +150,7 @@ func listKeys() ([]api.KeyCreateRequest, error) {
 			if err == nil {
 				keys = append(keys, key)
 			} else {
-				fmt.Println(err)
+				fmt.Fprintln(wOut, err)
 			}
 		}
 	}

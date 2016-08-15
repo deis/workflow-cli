@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/deis/controller-sdk-go/perms"
 	"github.com/deis/workflow-cli/pkg/git"
 	"github.com/deis/workflow-cli/settings"
@@ -28,18 +26,18 @@ func (d DeisCmd) PermsList(appID string, admin bool, results int) error {
 		users, err = perms.List(s.Client, appID)
 	}
 
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
 	if admin {
-		fmt.Printf("=== Administrators%s", limitCount(len(users), count))
+		d.Printf("=== Administrators%s", limitCount(len(users), count))
 	} else {
-		fmt.Printf("=== %s's Users\n", appID)
+		d.Printf("=== %s's Users\n", appID)
 	}
 
 	for _, user := range users {
-		fmt.Println(user)
+		d.Println(user)
 	}
 
 	return nil
@@ -55,18 +53,18 @@ func (d DeisCmd) PermCreate(appID string, username string, admin bool) error {
 	}
 
 	if admin {
-		fmt.Printf("Adding %s to system administrators... ", username)
+		d.Printf("Adding %s to system administrators... ", username)
 		err = perms.NewAdmin(s.Client, username)
 	} else {
-		fmt.Printf("Adding %s to %s collaborators... ", username, appID)
+		d.Printf("Adding %s to %s collaborators... ", username, appID)
 		err = perms.New(s.Client, appID, username)
 	}
 
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Println("done")
+	d.Println("done")
 
 	return nil
 }
@@ -81,18 +79,18 @@ func (d DeisCmd) PermDelete(appID, username string, admin bool) error {
 	}
 
 	if admin {
-		fmt.Printf("Removing %s from system administrators... ", username)
+		d.Printf("Removing %s from system administrators... ", username)
 		err = perms.DeleteAdmin(s.Client, username)
 	} else {
-		fmt.Printf("Removing %s from %s collaborators... ", username, appID)
+		d.Printf("Removing %s from %s collaborators... ", username, appID)
 		err = perms.Delete(s.Client, appID, username)
 	}
 
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Println("done")
+	d.Println("done")
 
 	return nil
 }

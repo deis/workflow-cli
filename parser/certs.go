@@ -43,7 +43,7 @@ Use 'deis help [command]' to learn more.
 			return certsList(argv, cmdr)
 		}
 
-		PrintUsage()
+		PrintUsage(cmdr)
 		return nil
 	}
 }

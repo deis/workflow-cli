@@ -19,11 +19,11 @@ func (d DeisCmd) RegistryList(appID string) error {
 	}
 
 	config, err := config.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("=== %s Registry\n", appID)
+	d.Printf("=== %s Registry\n", appID)
 
 	registryMap := make(map[string]string)
 
@@ -31,7 +31,7 @@ func (d DeisCmd) RegistryList(appID string) error {
 		registryMap[key] = fmt.Sprintf("%v", value)
 	}
 
-	fmt.Print(prettyprint.PrettyTabs(registryMap, 5))
+	d.Print(prettyprint.PrettyTabs(registryMap, 5))
 
 	return nil
 }
@@ -44,22 +44,25 @@ func (d DeisCmd) RegistrySet(appID string, item []string) error {
 		return err
 	}
 
-	registryMap := parseInfos(item)
+	registryMap, err := parseInfos(item)
+	if err != nil {
+		return err
+	}
 
-	fmt.Print("Applying registry information... ")
+	d.Print("Applying registry information... ")
 
-	quit := progress()
+	quit := progress(d.WOut)
 	configObj := api.Config{}
 	configObj.Registry = registryMap
 
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 
 	return d.RegistryList(appID)
 }
@@ -72,9 +75,9 @@ func (d DeisCmd) RegistryUnset(appID string, items []string) error {
 		return err
 	}
 
-	fmt.Print("Applying registry information... ")
+	d.Print("Applying registry information... ")
 
-	quit := progress()
+	quit := progress(d.WOut)
 
 	configObj := api.Config{}
 
@@ -89,30 +92,29 @@ func (d DeisCmd) RegistryUnset(appID string, items []string) error {
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 
 	return d.RegistryList(appID)
 }
 
-func parseInfos(items []string) map[string]interface{} {
+func parseInfos(items []string) (map[string]interface{}, error) {
 	registryMap := make(map[string]interface{})
 
 	for _, item := range items {
 		key, value, err := parseInfo(item)
 
 		if err != nil {
-			fmt.Println(err)
-			continue
+			return nil, err
 		}
 
 		registryMap[key] = value
 	}
 
-	return registryMap
+	return registryMap, nil
 }
 
 func parseInfo(item string) (string, string, error) {

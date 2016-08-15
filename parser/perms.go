@@ -34,7 +34,7 @@ Use 'deis help perms:[command]' to learn more.
 			return permsList(argv, cmdr)
 		}
 
-		PrintUsage()
+		PrintUsage(cmdr)
 		return nil
 	}
 }

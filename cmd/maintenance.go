@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/deis/controller-sdk-go/api"
 	"github.com/deis/controller-sdk-go/appsettings"
 )
@@ -16,14 +14,14 @@ func (d DeisCmd) MaintenanceInfo(appID string) error {
 	}
 
 	appSettings, err := appsettings.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
 	if *appSettings.Maintenance {
-		fmt.Println("Maintenance mode is on.")
+		d.Println("Maintenance mode is on.")
 	} else {
-		fmt.Println("Maintenance mode is off.")
+		d.Println("Maintenance mode is off.")
 	}
 	return nil
 }
@@ -36,9 +34,9 @@ func (d DeisCmd) MaintenanceEnable(appID string) error {
 		return err
 	}
 
-	fmt.Printf("Enabling maintenance mode for %s... ", appID)
+	d.Printf("Enabling maintenance mode for %s... ", appID)
 
-	quit := progress()
+	quit := progress(d.WOut)
 	b := true
 	_, err = appsettings.Set(s.Client, appID, api.AppSettings{Maintenance: &b})
 
@@ -49,7 +47,7 @@ func (d DeisCmd) MaintenanceEnable(appID string) error {
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 	return nil
 }
 
@@ -61,9 +59,9 @@ func (d DeisCmd) MaintenanceDisable(appID string) error {
 		return err
 	}
 
-	fmt.Printf("Disabling maintenance mode for %s... ", appID)
+	d.Printf("Disabling maintenance mode for %s... ", appID)
 
-	quit := progress()
+	quit := progress(d.WOut)
 	b := false
 	_, err = appsettings.Set(s.Client, appID, api.AppSettings{Maintenance: &b})
 
@@ -74,6 +72,6 @@ func (d DeisCmd) MaintenanceDisable(appID string) error {
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 	return nil
 }

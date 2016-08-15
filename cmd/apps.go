@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -23,18 +24,18 @@ func (d DeisCmd) AppCreate(id, buildpack, remote string, noRemote bool) error {
 		return err
 	}
 
-	fmt.Print("Creating Application... ")
-	quit := progress()
+	d.Print("Creating Application... ")
+	quit := progress(d.WOut)
 	app, err := apps.New(s.Client, id)
 
 	quit <- true
 	<-quit
 
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("done, created %s\n", app.ID)
+	d.Printf("done, created %s\n", app.ID)
 
 	if buildpack != "" {
 		configValues := api.Config{
@@ -42,7 +43,7 @@ func (d DeisCmd) AppCreate(id, buildpack, remote string, noRemote bool) error {
 				"BUILDPACK_URL": buildpack,
 			},
 		}
-		if _, err = config.Set(s.Client, app.ID, configValues); checkAPICompatibility(s.Client, err) != nil {
+		if _, err = config.Set(s.Client, app.ID, configValues); checkAPICompatibility(s.Client, err, d.WErr) != nil {
 			return err
 		}
 	}
@@ -57,11 +58,11 @@ func (d DeisCmd) AppCreate(id, buildpack, remote string, noRemote bool) error {
 			return err
 		}
 
-		fmt.Printf(remoteCreationMsg, remote, app.ID)
+		d.Printf(remoteCreationMsg, remote, app.ID)
 	}
 
 	if noRemote {
-		fmt.Printf("If you want to add a git remote for this app later, use `deis git:remote -a %s`\n", app.ID)
+		d.Printf("If you want to add a git remote for this app later, use `deis git:remote -a %s`\n", app.ID)
 	}
 
 	return nil
@@ -80,14 +81,14 @@ func (d DeisCmd) AppsList(results int) error {
 	}
 
 	apps, count, err := apps.List(s.Client, results)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("=== Apps%s", limitCount(len(apps), count))
+	d.Printf("=== Apps%s", limitCount(len(apps), count))
 
 	for _, app := range apps {
-		fmt.Println(app.ID)
+		d.Println(app.ID)
 	}
 	return nil
 }
@@ -101,11 +102,11 @@ func (d DeisCmd) AppInfo(appID string) error {
 	}
 
 	app, err := apps.Get(s.Client, appID)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	url, err := appURL(s, appID)
+	url, err := appURL(s, appID, d.WErr)
 	if err != nil {
 		return err
 	}
@@ -114,27 +115,27 @@ func (d DeisCmd) AppInfo(appID string) error {
 		url = fmt.Sprintf(noDomainAssignedMsg, appID)
 	}
 
-	fmt.Printf("=== %s Application\n", app.ID)
-	fmt.Println("updated: ", app.Updated)
-	fmt.Println("uuid:    ", app.UUID)
-	fmt.Println("created: ", app.Created)
-	fmt.Println("url:     ", url)
-	fmt.Println("owner:   ", app.Owner)
-	fmt.Println("id:      ", app.ID)
+	d.Printf("=== %s Application\n", app.ID)
+	d.Println("updated: ", app.Updated)
+	d.Println("uuid:    ", app.UUID)
+	d.Println("created: ", app.Created)
+	d.Println("url:     ", url)
+	d.Println("owner:   ", app.Owner)
+	d.Println("id:      ", app.ID)
 
-	fmt.Println()
+	d.Println()
 	// print the app processes
 	if err = d.PsList(app.ID, defaultLimit); err != nil {
 		return err
 	}
 
-	fmt.Println()
+	d.Println()
 	// print the app domains
 	if err = d.DomainsList(app.ID, defaultLimit); err != nil {
 		return err
 	}
 
-	fmt.Println()
+	d.Println()
 
 	return nil
 }
@@ -147,7 +148,7 @@ func (d DeisCmd) AppOpen(appID string) error {
 		return err
 	}
 
-	u, err := appURL(s, appID)
+	u, err := appURL(s, appID, d.WErr)
 	if err != nil {
 		return err
 	}
@@ -172,7 +173,7 @@ func (d DeisCmd) AppLogs(appID string, lines int) error {
 	}
 
 	logs, err := apps.Logs(s.Client, appID, lines)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
@@ -191,17 +192,17 @@ func (d DeisCmd) AppRun(appID, command string) error {
 		return err
 	}
 
-	fmt.Printf("Running '%s'...\n", command)
+	d.Printf("Running '%s'...\n", command)
 
 	out, err := apps.Run(s.Client, appID, command)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
 	if out.ReturnCode == 0 {
-		fmt.Print(out.Output)
+		d.Print(out.Output)
 	} else {
-		fmt.Fprint(os.Stderr, out.Output)
+		d.PrintErr(out.Output)
 	}
 
 	os.Exit(out.ReturnCode)
@@ -229,7 +230,7 @@ func (d DeisCmd) AppDestroy(appID, confirm string) error {
 	}
 
 	if confirm == "" {
-		fmt.Printf(` !    WARNING: Potentially Destructive Action
+		d.Printf(` !    WARNING: Potentially Destructive Action
  !    This command will destroy the application: %s
  !    To proceed, type "%s" or re-run this command with --confirm=%s
 
@@ -243,13 +244,13 @@ func (d DeisCmd) AppDestroy(appID, confirm string) error {
 	}
 
 	startTime := time.Now()
-	fmt.Printf("Destroying %s...\n", appID)
+	d.Printf("Destroying %s...\n", appID)
 
-	if err = apps.Delete(s.Client, appID); checkAPICompatibility(s.Client, err) != nil {
+	if err = apps.Delete(s.Client, appID); checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("done in %ds\n", int(time.Since(startTime).Seconds()))
+	d.Printf("done in %ds\n", int(time.Since(startTime).Seconds()))
 
 	if gitSession {
 		return d.GitRemove(appID)
@@ -266,14 +267,14 @@ func (d DeisCmd) AppTransfer(appID, username string) error {
 		return err
 	}
 
-	fmt.Printf("Transferring %s to %s... ", appID, username)
+	d.Printf("Transferring %s to %s... ", appID, username)
 
 	err = apps.Transfer(s.Client, appID, username)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Println("done")
+	d.Println("done")
 
 	return nil
 }
@@ -281,9 +282,9 @@ func (d DeisCmd) AppTransfer(appID, username string) error {
 const noDomainAssignedMsg = "No domain assigned to %s"
 
 // appURL grabs the first domain an app has and returns this.
-func appURL(s *settings.Settings, appID string) (string, error) {
+func appURL(s *settings.Settings, appID string, wErr io.Writer) (string, error) {
 	domains, _, err := domains.List(s.Client, appID, 1)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, wErr) != nil {
 		return "", err
 	}
 

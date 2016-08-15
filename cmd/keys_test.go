@@ -114,7 +114,7 @@ func TestListKeys(t *testing.T) {
 		}
 	}
 
-	keys, err := listKeys()
+	keys, err := listKeys(ioutil.Discard)
 
 	if err != nil {
 		t.Fatal(err)
@@ -151,7 +151,7 @@ func TestChooseKey(t *testing.T) {
 	}
 
 	for _, check := range checks {
-		_, err := chooseKey(testKeys, check.Reader)
+		_, err := chooseKey(testKeys, check.Reader, ioutil.Discard)
 
 		if err.Error() != check.Expected {
 			t.Errorf("Expected %s, Got %s", check.Expected, err.Error())

@@ -52,7 +52,7 @@ Use 'deis help [command]' to learn more.
 			return appsList(argv, cmdr)
 		}
 
-		PrintUsage()
+		PrintUsage(cmdr)
 		return nil
 	}
 }

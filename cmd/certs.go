@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -27,12 +28,12 @@ func (d DeisCmd) CertsList(results int) error {
 	}
 
 	certList, _, err := certs.List(s.Client, results)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
 	if len(certList) == 0 {
-		fmt.Println("No certs")
+		d.Println("No certs")
 		return nil
 	}
 
@@ -103,9 +104,9 @@ func (d DeisCmd) CertAdd(cert string, key string, name string) error {
 		return err
 	}
 
-	fmt.Print("Adding SSL endpoint... ")
-	quit := progress()
-	err = doCertAdd(s.Client, cert, key, name)
+	d.Print("Adding SSL endpoint... ")
+	quit := progress(d.WOut)
+	err = doCertAdd(s.Client, cert, key, name, d.WErr)
 	quit <- true
 	<-quit
 
@@ -113,11 +114,11 @@ func (d DeisCmd) CertAdd(cert string, key string, name string) error {
 		return err
 	}
 
-	fmt.Println("done")
+	d.Println("done")
 	return nil
 }
 
-func doCertAdd(c *deis.Client, cert string, key string, name string) error {
+func doCertAdd(c *deis.Client, cert string, key string, name string, wErr io.Writer) error {
 	certFile, err := ioutil.ReadFile(cert)
 	if err != nil {
 		return err
@@ -129,27 +130,27 @@ func doCertAdd(c *deis.Client, cert string, key string, name string) error {
 	}
 
 	_, err = certs.New(c, string(certFile), string(keyFile), name)
-	return checkAPICompatibility(c, err)
+	return checkAPICompatibility(c, err, wErr)
 }
 
 // CertRemove deletes a cert from the controller.
 func (d DeisCmd) CertRemove(name string) error {
 	s, err := settings.Load(d.ConfigFile)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("Removing %s... ", name)
-	quit := progress()
+	d.Printf("Removing %s... ", name)
+	quit := progress(d.WOut)
 
 	err = certs.Delete(s.Client, name)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Println("done")
+	d.Println("done")
 	return nil
 }
 
@@ -161,7 +162,7 @@ func (d DeisCmd) CertInfo(name string) error {
 	}
 
 	cert, err := certs.Get(s.Client, name)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
@@ -175,19 +176,19 @@ func (d DeisCmd) CertInfo(name string) error {
 		san = "N/A"
 	}
 
-	fmt.Printf("=== %s Certificate\n", cert.Name)
-	fmt.Println("Common Name(s):    ", cert.CommonName)
-	fmt.Println("Expires At:        ", cert.Expires)
-	fmt.Println("Starts At:         ", cert.Starts)
-	fmt.Println("Fingerprint:       ", cert.Fingerprint)
-	fmt.Println("Subject Alt Name:  ", san)
-	fmt.Println("Issuer:            ", cert.Issuer)
-	fmt.Println("Subject:           ", cert.Subject)
-	fmt.Println()
-	fmt.Println("Connected Domains: ", domains)
-	fmt.Println("Owner:             ", cert.Owner)
-	fmt.Println("Created:           ", cert.Created)
-	fmt.Println("Updated:           ", cert.Updated)
+	d.Printf("=== %s Certificate\n", cert.Name)
+	d.Println("Common Name(s):    ", cert.CommonName)
+	d.Println("Expires At:        ", cert.Expires)
+	d.Println("Starts At:         ", cert.Starts)
+	d.Println("Fingerprint:       ", cert.Fingerprint)
+	d.Println("Subject Alt Name:  ", san)
+	d.Println("Issuer:            ", cert.Issuer)
+	d.Println("Subject:           ", cert.Subject)
+	d.Println()
+	d.Println("Connected Domains: ", domains)
+	d.Println("Owner:             ", cert.Owner)
+	d.Println("Created:           ", cert.Created)
+	d.Println("Updated:           ", cert.Updated)
 
 	return nil
 }
@@ -200,14 +201,14 @@ func (d DeisCmd) CertAttach(name, domain string) error {
 		return err
 	}
 
-	fmt.Printf("Attaching certificate %s to domain %s... ", name, domain)
-	quit := progress()
+	d.Printf("Attaching certificate %s to domain %s... ", name, domain)
+	quit := progress(d.WOut)
 
 	err = certs.Attach(s.Client, name, domain)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) == nil {
-		fmt.Println("done")
+	if checkAPICompatibility(s.Client, err, d.WErr) == nil {
+		d.Println("done")
 	}
 
 	return err
@@ -221,16 +222,16 @@ func (d DeisCmd) CertDetach(name, domain string) error {
 		return err
 	}
 
-	fmt.Printf("Detaching certificate %s from domain %s... ", name, domain)
-	quit := progress()
+	d.Printf("Detaching certificate %s from domain %s... ", name, domain)
+	quit := progress(d.WOut)
 
 	err = certs.Detach(s.Client, name, domain)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Println("done")
+	d.Println("done")
 	return nil
 }

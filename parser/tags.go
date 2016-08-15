@@ -34,7 +34,7 @@ Use 'deis help [command]' to learn more.
 			return tagsList(argv, cmdr)
 		}
 
-		PrintUsage()
+		PrintUsage(cmdr)
 		return nil
 	}
 }

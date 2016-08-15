@@ -3,8 +3,9 @@ package parser
 import (
 	"fmt"
 	"log"
-	"os"
 	"strconv"
+
+	"github.com/deis/workflow-cli/cmd"
 )
 
 func safeGetValue(args map[string]interface{}, key string) string {
@@ -34,9 +35,9 @@ func responseLimit(limit string) (int, error) {
 }
 
 // PrintUsage runs if no matching command is found.
-func PrintUsage() {
-	fmt.Fprintln(os.Stderr, "Found no matching command, try 'deis help'")
-	fmt.Fprintln(os.Stderr, "Usage: deis <command> [<args>...]")
+func PrintUsage(cmdr cmd.Commander) {
+	cmdr.PrintErrln("Found no matching command, try 'deis help'")
+	cmdr.PrintErrln("Usage: deis <command> [<args>...]")
 }
 
 func printHelp(argv []string, usage string) bool {

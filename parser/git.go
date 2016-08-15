@@ -27,7 +27,7 @@ Use 'deis help [command]' to learn more.
 		fmt.Print(usage)
 		return nil
 	default:
-		PrintUsage()
+		PrintUsage(cmdr)
 		return nil
 	}
 }

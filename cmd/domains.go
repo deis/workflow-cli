@@ -1,10 +1,6 @@
 package cmd
 
-import (
-	"fmt"
-
-	"github.com/deis/controller-sdk-go/domains"
-)
+import "github.com/deis/controller-sdk-go/domains"
 
 // DomainsList lists domains registered with an app.
 func (d DeisCmd) DomainsList(appID string, results int) error {
@@ -19,14 +15,14 @@ func (d DeisCmd) DomainsList(appID string, results int) error {
 	}
 
 	domains, count, err := domains.List(s.Client, appID, results)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("=== %s Domains%s", appID, limitCount(len(domains), count))
+	d.Printf("=== %s Domains%s", appID, limitCount(len(domains), count))
 
 	for _, domain := range domains {
-		fmt.Println(domain.Domain)
+		d.Println(domain.Domain)
 	}
 	return nil
 }
@@ -39,17 +35,17 @@ func (d DeisCmd) DomainsAdd(appID, domain string) error {
 		return err
 	}
 
-	fmt.Printf("Adding %s to %s... ", domain, appID)
+	d.Printf("Adding %s to %s... ", domain, appID)
 
-	quit := progress()
+	quit := progress(d.WOut)
 	_, err = domains.New(s.Client, appID, domain)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Println("done")
+	d.Println("done")
 	return nil
 }
 
@@ -61,16 +57,16 @@ func (d DeisCmd) DomainsRemove(appID, domain string) error {
 		return err
 	}
 
-	fmt.Printf("Removing %s from %s... ", domain, appID)
+	d.Printf("Removing %s from %s... ", domain, appID)
 
-	quit := progress()
+	quit := progress(d.WOut)
 	err = domains.Delete(s.Client, appID, domain)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Println("done")
+	d.Println("done")
 	return nil
 }

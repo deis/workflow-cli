@@ -1,6 +1,11 @@
 package cmd
 
-import "github.com/deis/controller-sdk-go/api"
+import (
+	"fmt"
+	"io"
+
+	"github.com/deis/controller-sdk-go/api"
+)
 
 // Commander is interface definition for running commands
 type Commander interface {
@@ -64,13 +69,52 @@ type Commander interface {
 	RoutingInfo(string) error
 	RoutingEnable(string) error
 	RoutingDisable(string) error
+	ShortcutsList() error
 	TagsList(string) error
 	TagsSet(string, []string) error
 	TagsUnset(string, []string) error
 	UsersList(results int) error
+	Println(...interface{}) (int, error)
+	Print(...interface{}) (int, error)
+	Printf(string, ...interface{}) (int, error)
+	PrintErrln(...interface{}) (int, error)
+	PrintErr(...interface{}) (int, error)
+	PrintErrf(string, ...interface{}) (int, error)
 }
 
 // DeisCmd is an implementation of Commander.
 type DeisCmd struct {
 	ConfigFile string
+	WOut       io.Writer
+	WErr       io.Writer
+}
+
+// Println prints a line to an output writer.
+func (d *DeisCmd) Println(a ...interface{}) (n int, err error) {
+	return fmt.Fprintln(d.WOut, a...)
+}
+
+// Print prints a line to an output writer.
+func (d *DeisCmd) Print(a ...interface{}) (n int, err error) {
+	return fmt.Fprint(d.WOut, a...)
+}
+
+// Printf prints a line to an error writer.
+func (d *DeisCmd) Printf(s string, a ...interface{}) (n int, err error) {
+	return fmt.Fprintf(d.WOut, s, a...)
+}
+
+// PrintErrln prints a line to an error writer.
+func (d *DeisCmd) PrintErrln(a ...interface{}) (n int, err error) {
+	return fmt.Fprintln(d.WErr, a...)
+}
+
+// PrintErr prints a line to an error writer.
+func (d *DeisCmd) PrintErr(a ...interface{}) (n int, err error) {
+	return fmt.Fprint(d.WErr, a...)
+}
+
+// PrintErrf prints a line to an error writer.
+func (d *DeisCmd) PrintErrf(s string, a ...interface{}) (n int, err error) {
+	return fmt.Fprintf(d.WErr, s, a...)
 }

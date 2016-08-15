@@ -34,7 +34,7 @@ Use 'deis help [command]' to learn more.
 			return routingInfo(argv, cmdr)
 		}
 
-		PrintUsage()
+		PrintUsage(cmdr)
 		return nil
 	}
 }

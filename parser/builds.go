@@ -31,7 +31,7 @@ Use 'deis help [command]' to learn more.
 			return buildsList(argv, cmdr)
 		}
 
-		PrintUsage()
+		PrintUsage(cmdr)
 		return nil
 	}
 }

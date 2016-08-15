@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"regexp"
 	"strconv"
 	"strings"
@@ -24,11 +25,11 @@ func (d DeisCmd) PsList(appID string, results int) error {
 	}
 
 	processes, _, err := ps.List(s.Client, appID, results)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	printProcesses(appID, processes)
+	printProcesses(appID, processes, d.WOut)
 
 	return nil
 }
@@ -57,25 +58,25 @@ func (d DeisCmd) PsScale(appID string, targets []string) error {
 		}
 	}
 
-	fmt.Printf("Scaling processes... but first, %s!\n", drinkOfChoice())
+	d.Printf("Scaling processes... but first, %s!\n", drinkOfChoice())
 	startTime := time.Now()
-	quit := progress()
+	quit := progress(d.WOut)
 
 	err = ps.Scale(s.Client, appID, targetMap)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Printf("done in %ds\n", int(time.Since(startTime).Seconds()))
+	d.Printf("done in %ds\n", int(time.Since(startTime).Seconds()))
 
 	processes, _, err := ps.List(s.Client, appID, s.Limit)
 	if err != nil {
 		return err
 	}
 
-	printProcesses(appID, processes)
+	printProcesses(appID, processes, d.WOut)
 	return nil
 }
 
@@ -92,39 +93,39 @@ func (d DeisCmd) PsRestart(appID, target string) error {
 		psType, psName = parseType(target, appID)
 	}
 
-	fmt.Printf("Restarting processes... but first, %s!\n", drinkOfChoice())
+	d.Printf("Restarting processes... but first, %s!\n", drinkOfChoice())
 	startTime := time.Now()
-	quit := progress()
+	quit := progress(d.WOut)
 
 	processes, err := ps.Restart(s.Client, appID, psType, psName)
 	quit <- true
 	<-quit
 	if err == deis.ErrPodNotFound {
 		return fmt.Errorf("Could not find process type %s in app %s", psType, appID)
-	} else if checkAPICompatibility(s.Client, err) != nil {
+	} else if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
 	if len(processes) == 0 {
-		fmt.Println("Could not find any processes to restart")
+		d.Println("Could not find any processes to restart")
 	} else {
-		fmt.Printf("done in %ds\n", int(time.Since(startTime).Seconds()))
-		printProcesses(appID, processes)
+		d.Printf("done in %ds\n", int(time.Since(startTime).Seconds()))
+		printProcesses(appID, processes, d.WOut)
 	}
 
 	return nil
 }
 
-func printProcesses(appID string, processes []api.Pods) {
+func printProcesses(appID string, processes []api.Pods, wOut io.Writer) {
 	psMap := ps.ByType(processes)
 
-	fmt.Printf("=== %s Processes\n", appID)
+	fmt.Fprintf(wOut, "=== %s Processes\n", appID)
 
 	for psType, procs := range psMap {
-		fmt.Printf("--- %s:\n", psType)
+		fmt.Fprintf(wOut, "--- %s:\n", psType)
 
 		for _, proc := range procs {
-			fmt.Printf("%s %s (%s)\n", proc.Name, proc.State, proc.Release)
+			fmt.Fprintf(wOut, "%s %s (%s)\n", proc.Name, proc.State, proc.Release)
 		}
 	}
 }

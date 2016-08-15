@@ -46,7 +46,7 @@ Use 'deis help [command]' to learn more.
 			return healthchecksList(argv, cmdr)
 		}
 
-		PrintUsage()
+		PrintUsage(cmdr)
 		return nil
 	}
 }

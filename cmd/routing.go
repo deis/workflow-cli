@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/deis/controller-sdk-go/api"
 	"github.com/deis/controller-sdk-go/appsettings"
 )
@@ -16,14 +14,14 @@ func (d DeisCmd) RoutingInfo(appID string) error {
 	}
 
 	appSettings, err := appsettings.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
 	if *appSettings.Routable {
-		fmt.Println("Routing is enabled.")
+		d.Println("Routing is enabled.")
 	} else {
-		fmt.Println("Routing is disabled.")
+		d.Println("Routing is disabled.")
 	}
 	return nil
 }
@@ -36,9 +34,9 @@ func (d DeisCmd) RoutingEnable(appID string) error {
 		return err
 	}
 
-	fmt.Printf("Enabling routing for %s... ", appID)
+	d.Printf("Enabling routing for %s... ", appID)
 
-	quit := progress()
+	quit := progress(d.WOut)
 	appSettings := api.AppSettings{Routable: api.NewRoutable()}
 	_, err = appsettings.Set(s.Client, appID, appSettings)
 
@@ -49,7 +47,7 @@ func (d DeisCmd) RoutingEnable(appID string) error {
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 	return nil
 }
 
@@ -61,9 +59,9 @@ func (d DeisCmd) RoutingDisable(appID string) error {
 		return err
 	}
 
-	fmt.Printf("Disabling routing for %s... ", appID)
+	d.Printf("Disabling routing for %s... ", appID)
 
-	quit := progress()
+	quit := progress(d.WOut)
 	appSettings := api.AppSettings{Routable: api.NewRoutable()}
 	*appSettings.Routable = false
 	_, err = appsettings.Set(s.Client, appID, appSettings)
@@ -75,6 +73,6 @@ func (d DeisCmd) RoutingDisable(appID string) error {
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 	return nil
 }

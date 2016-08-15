@@ -40,7 +40,7 @@ Use 'deis help [command]' to learn more.
 			return configList(argv, cmdr)
 		}
 
-		PrintUsage()
+		PrintUsage(cmdr)
 		return nil
 	}
 }

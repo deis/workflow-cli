@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"time"
@@ -13,7 +14,7 @@ import (
 
 var defaultLimit = -1
 
-func progress() chan bool {
+func progress(wOut io.Writer) chan bool {
 	frames := []string{"...", "o..", ".o.", "..o"}
 	backspaces := strings.Repeat("\b", 3)
 	tick := time.Tick(400 * time.Millisecond)
@@ -21,14 +22,14 @@ func progress() chan bool {
 	go func() {
 		for {
 			for _, frame := range frames {
-				fmt.Print(frame)
+				fmt.Fprint(wOut, frame)
 				select {
 				case <-quit:
-					fmt.Print(backspaces)
+					fmt.Fprint(wOut, backspaces)
 					close(quit)
 					return
 				case <-tick:
-					fmt.Print(backspaces)
+					fmt.Fprint(wOut, backspaces)
 				}
 			}
 		}
@@ -75,9 +76,9 @@ func limitCount(objs, total int) string {
 
 // checkAPICompatibility handles specific behavior for certain errors,
 // such as printing an warning for the API mismatch error
-func checkAPICompatibility(c *deis.Client, err error) error {
+func checkAPICompatibility(c *deis.Client, err error, wErr io.Writer) error {
 	if err == deis.ErrAPIMismatch {
-		fmt.Printf(`!    WARNING: Client and server API versions do not match. Please consider upgrading.
+		fmt.Fprintf(wErr, `!    WARNING: Client and server API versions do not match. Please consider upgrading.
 !    Client version: %s
 !    Server version: %s
 `, deis.APIVersion, c.ControllerAPIVersion)

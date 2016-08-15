@@ -6,7 +6,7 @@ import (
 )
 
 // Shortcuts displays all relevant shortcuts for the CLI.
-func Shortcuts(argv []string) error {
+func Shortcuts(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Valid commands for shortcuts:
 
@@ -17,7 +17,7 @@ Use 'deis help [command]' to learn more.
 
 	switch argv[0] {
 	case "shortcuts:list":
-		return shortcutsList(argv)
+		return shortcutsList(argv, cmdr)
 	default:
 		if printHelp(argv, usage) {
 			return nil
@@ -25,15 +25,15 @@ Use 'deis help [command]' to learn more.
 
 		if argv[0] == "shortcuts" {
 			argv[0] = "shortcuts:list"
-			return shortcutsList(argv)
+			return shortcutsList(argv, cmdr)
 		}
 
-		PrintUsage()
+		PrintUsage(cmdr)
 		return nil
 	}
 }
 
-func shortcutsList(argv []string) error {
+func shortcutsList(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Lists all relevant shortcuts for the CLI
 
@@ -46,5 +46,5 @@ Usage: deis shortcuts:list
 		return err
 	}
 
-	return cmd.ShortcutsList()
+	return cmdr.ShortcutsList()
 }

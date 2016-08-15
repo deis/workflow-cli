@@ -38,8 +38,8 @@ func (d DeisCmd) HealthchecksList(appID, procType string) error {
 		return err
 	}
 
-	fmt.Printf("=== %s Healthchecks\n\n", appID)
-	fmt.Println(procType + ":")
+	d.Printf("=== %s Healthchecks\n\n", appID)
+	d.Println(procType + ":")
 	if healthcheck, found := config.Healthcheck[procType]; found {
 		printHealthCheck(os.Stdout, *healthcheck)
 	} else {
@@ -57,9 +57,9 @@ func (d DeisCmd) HealthchecksSet(appID, healthcheckType, procType string, probe 
 		return err
 	}
 
-	fmt.Printf("Applying %s healthcheck... ", healthcheckType)
+	d.Printf("Applying %s healthcheck... ", healthcheckType)
 
-	quit := progress()
+	quit := progress(d.WOut)
 
 	healthcheckMap := make(api.Healthchecks)
 	healthcheckMap[healthcheckType] = probe
@@ -75,7 +75,7 @@ func (d DeisCmd) HealthchecksSet(appID, healthcheckType, procType string, probe 
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 
 	return d.HealthchecksList(appID, procType)
 }
@@ -87,9 +87,9 @@ func (d DeisCmd) HealthchecksUnset(appID, procType string, healthchecks []string
 		return err
 	}
 
-	fmt.Print("Removing healthchecks... ")
+	d.Print("Removing healthchecks... ")
 
-	quit := progress()
+	quit := progress(d.WOut)
 
 	configObj := api.Config{}
 
@@ -112,7 +112,7 @@ func (d DeisCmd) HealthchecksUnset(appID, procType string, healthchecks []string
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 
 	return d.HealthchecksList(appID, procType)
 }

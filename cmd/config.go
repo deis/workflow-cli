@@ -25,7 +25,7 @@ func (d DeisCmd) ConfigList(appID string, oneLine bool) error {
 	}
 
 	config, err := config.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
@@ -37,11 +37,11 @@ func (d DeisCmd) ConfigList(appID string, oneLine bool) error {
 
 	if oneLine {
 		for _, key := range keys {
-			fmt.Printf("%s=%s ", key, config.Values[key])
+			d.Printf("%s=%s ", key, config.Values[key])
 		}
-		fmt.Println()
+		d.Println()
 	} else {
-		fmt.Printf("=== %s Config\n", appID)
+		d.Printf("=== %s Config\n", appID)
 
 		configMap := make(map[string]string)
 
@@ -50,7 +50,7 @@ func (d DeisCmd) ConfigList(appID string, oneLine bool) error {
 			configMap[key] = fmt.Sprintf("%v", config.Values[key])
 		}
 
-		fmt.Print(prettyprint.PrettyTabs(configMap, 6))
+		d.Print(prettyprint.PrettyTabs(configMap, 6))
 	}
 
 	return nil
@@ -64,7 +64,10 @@ func (d DeisCmd) ConfigSet(appID string, configVars []string) error {
 		return err
 	}
 
-	configMap := parseConfig(configVars)
+	configMap, err := parseConfig(configVars)
+	if err != nil {
+		return err
+	}
 
 	value, ok := configMap["SSH_KEY"]
 
@@ -94,27 +97,27 @@ func (d DeisCmd) ConfigSet(appID string, configVars []string) error {
 	// send them a deprecation notice.
 	for key := range configMap {
 		if strings.Contains(key, "HEALTHCHECK_") {
-			fmt.Println(`Hey there! We've noticed that you're using 'deis config:set HEALTHCHECK_URL'
+			d.Println(`Hey there! We've noticed that you're using 'deis config:set HEALTHCHECK_URL'
 to set up healthchecks. This functionality has been deprecated. In the future, please use
 'deis healthchecks' to set up application health checks. Thanks!`)
 		}
 	}
 
-	fmt.Print("Creating config... ")
+	d.Print("Creating config... ")
 
-	quit := progress()
+	quit := progress(d.WOut)
 	configObj := api.Config{Values: configMap}
 	configObj, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
 	if release, ok := configObj.Values["WORKFLOW_RELEASE"]; ok {
-		fmt.Printf("done, %s\n\n", release)
+		d.Printf("done, %s\n\n", release)
 	} else {
-		fmt.Print("done\n\n")
+		d.Print("done\n\n")
 	}
 
 	return d.ConfigList(appID, false)
@@ -128,9 +131,9 @@ func (d DeisCmd) ConfigUnset(appID string, configVars []string) error {
 		return err
 	}
 
-	fmt.Print("Removing config... ")
+	d.Print("Removing config... ")
 
-	quit := progress()
+	quit := progress(d.WOut)
 
 	configObj := api.Config{}
 
@@ -145,11 +148,11 @@ func (d DeisCmd) ConfigUnset(appID string, configVars []string) error {
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
-	fmt.Print("done\n\n")
+	d.Print("done\n\n")
 
 	return d.ConfigList(appID, false)
 }
@@ -163,7 +166,7 @@ func (d DeisCmd) ConfigPull(appID string, interactive bool, overwrite bool) erro
 	}
 
 	configVars, err := config.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err) != nil {
+	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
 		return err
 	}
 
@@ -174,7 +177,7 @@ func (d DeisCmd) ConfigPull(appID string, interactive bool, overwrite bool) erro
 	}
 
 	if (stat.Mode() & os.ModeCharDevice) == 0 {
-		fmt.Print(formatConfig(configVars.Values))
+		d.Print(formatConfig(configVars.Values))
 		return nil
 	}
 
@@ -194,7 +197,10 @@ func (d DeisCmd) ConfigPull(appID string, interactive bool, overwrite bool) erro
 		}
 		localConfigVars := strings.Split(string(contents), "\n")
 
-		configMap := parseConfig(localConfigVars[:len(localConfigVars)-1])
+		configMap, err := parseConfig(localConfigVars[:len(localConfigVars)-1])
+		if err != nil {
+			return err
+		}
 
 		for key, value := range configVars.Values {
 			localValue, ok := configMap[key]
@@ -202,7 +208,7 @@ func (d DeisCmd) ConfigPull(appID string, interactive bool, overwrite bool) erro
 			if ok {
 				if value != localValue {
 					var confirm string
-					fmt.Printf("%s: overwrite %s with %s? (y/N) ", key, localValue, value)
+					d.Printf("%s: overwrite %s with %s? (y/N) ", key, localValue, value)
 
 					fmt.Scanln(&confirm)
 
@@ -255,7 +261,7 @@ func (d DeisCmd) ConfigPush(appID, fileName string) error {
 	return d.ConfigSet(appID, config)
 }
 
-func parseConfig(configVars []string) map[string]interface{} {
+func parseConfig(configVars []string) (map[string]interface{}, error) {
 	configMap := make(map[string]interface{})
 
 	regex := regexp.MustCompile(`^([A-z_]+[A-z0-9_]*)=([\s\S]+)$`)
@@ -269,12 +275,11 @@ func parseConfig(configVars []string) map[string]interface{} {
 			captures := regex.FindStringSubmatch(config)
 			configMap[captures[1]] = captures[2]
 		} else {
-			fmt.Printf("'%s' does not match the pattern 'key=var', ex: MODE=test\n", config)
-			os.Exit(1)
+			return nil, fmt.Errorf("'%s' does not match the pattern 'key=var', ex: MODE=test\n", config)
 		}
 	}
 
-	return configMap
+	return configMap, nil
 }
 
 func formatConfig(configVars map[string]interface{}) string {

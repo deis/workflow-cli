@@ -19,7 +19,7 @@ func (d DeisCmd) GitRemote(appID, remote string, force bool) error {
 		//If git remote doesn't exist, create it without issue
 		if err == git.ErrRemoteNotFound {
 			git.CreateRemote(s.Client.ControllerURL.Host, remote, appID)
-			fmt.Printf(remoteCreationMsg, remote, appID)
+			d.Printf(remoteCreationMsg, remote, appID)
 			return nil
 		}
 
@@ -29,15 +29,15 @@ func (d DeisCmd) GitRemote(appID, remote string, force bool) error {
 	expectedURL := git.RemoteURL(s.Client.ControllerURL.Host, appID)
 
 	if remoteURL == expectedURL {
-		fmt.Printf("Remote %s already exists and is correctly configured for app %s.\n", remote, appID)
+		d.Printf("Remote %s already exists and is correctly configured for app %s.\n", remote, appID)
 		return nil
 	}
 
 	if force {
-		fmt.Printf("Deleting git remote %s.\n", remote)
+		d.Printf("Deleting git remote %s.\n", remote)
 		git.DeleteRemote(remote)
 		git.CreateRemote(s.Client.ControllerURL.Host, remote, appID)
-		fmt.Printf(remoteCreationMsg, remote, appID)
+		d.Printf(remoteCreationMsg, remote, appID)
 		return nil
 	}
 
@@ -62,6 +62,6 @@ func (d DeisCmd) GitRemove(appID string) error {
 		return err
 	}
 
-	fmt.Printf(remoteDeletionMsg, appID)
+	d.Printf(remoteDeletionMsg, appID)
 	return nil
 }
