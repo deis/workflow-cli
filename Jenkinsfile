@@ -14,7 +14,7 @@ def make = { String target ->
 	}
 }
 
-def gcs_cleanup_cmd = "sh -c 'rm -rf /.config/*'"
+def gcs_cleanup_cmd = "sh -c 'rm -rf /upload/* /.config/*'"
 def gcs_bucket = "gs://workflow-cli"
 def gcs_key = "tmp/key.json"
 
