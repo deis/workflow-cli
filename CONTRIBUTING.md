@@ -12,7 +12,7 @@ Before opening a new issue or PR against any Deis project, it's helpful to searc
 
 A consolidated view of open issues and pull requests for all Deis projects is available [here][issues].
 
-Additionally, see the [Troubleshooting][] documentation for common issues.
+Additionally, see the [Troubleshooting][https://github.com/deis/workflow/blob/master/src/troubleshooting/index.md] documentation for common issues.
 
 Our official support channels are:
 
