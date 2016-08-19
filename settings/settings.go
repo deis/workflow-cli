@@ -16,7 +16,7 @@ import (
 const DefaultResponseLimit = 100
 
 // UserAgent is the user agent used by the CLI
-var UserAgent = "Deis Client v" + version.Version
+var UserAgent = "Deis Client " + version.Version
 
 type settingsFile struct {
 	Username   string `json:"username"`

@@ -68,7 +68,7 @@ func TestLoadSave(t *testing.T) {
 			expected: s.Limit,
 		},
 		{
-			key:      "Deis Client v" + version.Version,
+			key:      "Deis Client " + version.Version,
 			expected: s.Client.UserAgent,
 		},
 	}
@@ -123,7 +123,7 @@ func TestLoadSave(t *testing.T) {
 			expected: s.Limit,
 		},
 		{
-			key:      "Deis Client v" + version.Version,
+			key:      "Deis Client " + version.Version,
 			expected: s.Client.UserAgent,
 		},
 	}
