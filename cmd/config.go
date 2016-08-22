@@ -29,17 +29,16 @@ func (d DeisCmd) ConfigList(appID string, oneLine bool) error {
 		return err
 	}
 
-	var keys []string
-	for k := range config.Values {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
+	keys := sortKeys(config.Values)
 
 	if oneLine {
-		for _, key := range keys {
-			d.Printf("%s=%s ", key, config.Values[key])
+		for i, key := range keys {
+			sep := " "
+			if i == len(keys)-1 {
+				sep = "\n"
+			}
+			d.Printf("%s=%s%s", key, config.Values[key], sep)
 		}
-		d.Println()
 	} else {
 		d.Printf("=== %s Config\n", appID)
 
@@ -285,9 +284,19 @@ func parseConfig(configVars []string) (map[string]interface{}, error) {
 func formatConfig(configVars map[string]interface{}) string {
 	var formattedConfig string
 
-	for key, value := range configVars {
-		formattedConfig += fmt.Sprintf("%s=%s\n", key, value)
+	keys := sortKeys(configVars)
+	for _, key := range keys {
+		formattedConfig += fmt.Sprintf("%s=%v\n", key, configVars[key])
 	}
 
 	return formattedConfig
+}
+
+func sortKeys(kv map[string]interface{}) []string {
+	var keys []string
+	for k := range kv {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
