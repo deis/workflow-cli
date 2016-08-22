@@ -122,9 +122,11 @@ parallel(
 
 stage 'Build and Upload Artifacts'
 
-def gcs_bucket = "gs://workflow-cli"
+def old_gcs_bucket = "gs://workflow-cli"
+def pr_gcs_bucket = "gs://workflow-cli-pr"
+def master_gcs_bucket = "gs://workflow-cli-master"
 
-def upload_artifacts = { String dist_dir, boolean cache ->
+def upload_artifacts = { String dist_dir, String auth_id, String bucket, boolean cache ->
 	headers  = "-h 'x-goog-meta-git-branch:${git_branch}' "
 	headers += "-h 'x-goog-meta-git-sha:${git_commit}' "
 	headers += "-h 'x-goog-meta-ci-job:${env.JOB_NAME}' "
@@ -136,15 +138,13 @@ def upload_artifacts = { String dist_dir, boolean cache ->
 
 	script = "sh -c 'echo \${GCS_KEY_JSON} | base64 -d - > /tmp/key.json "
 	script += "&& gcloud auth activate-service-account -q --key-file /tmp/key.json "
-	script += "&& gsutil -mq ${headers} cp -a public-read -r /upload/* ${gcs_bucket} "
-	script += "&& rm -rf /upload/*'"
+	script += "&& gsutil -mq ${headers} cp -a public-read -r /upload/* ${bucket}'"
 
 	withCredentials([[$class: 'StringBinding',
-										credentialsId: '6561701c-b7b4-4796-83c4-9d87946799e4',
+										credentialsId: auth_id,
 										variable: 'GCSKEY']]) {
 		sh "docker run ${dist_dir} -e GCS_KEY_JSON=\"\${GCSKEY}\" --rm ${test_image} ${script}"
 	}
-	sh "rm -rf ${tmp_dir}"
 }
 
 def mktmp = {
@@ -171,7 +171,14 @@ parallel(
 			sh "docker run ${flags} -e REVISION=${git_commit.take(7)} ${dist_dir} --rm ${test_image} make build-revision"
 
 
-			upload_artifacts(dist_dir, true)
+			upload_artifacts(dist_dir, '6561701c-b7b4-4796-83c4-9d87946799e4', old_gcs_bucket, true)
+			if (git_branch == "remotes/origin/master") {
+				upload_artifacts(dist_dir, '6029cf4e-eaa3-4a8e-9dc7-744d118ebe6a', master_gcs_bucket, true)
+			} else {
+				upload_artifacts(dist_dir, '6029cf4e-eaa3-4a8e-9dc7-744d118ebe6a', pr_gcs_bucket, true)
+			}
+			sh "docker run ${dist_dir} --rm ${test_image} sh -c 'rm -rf /upload/*'"
+			sh "rm -rf ${tmp_dir}"
 		}
 	},
 	latest: {
@@ -181,7 +188,10 @@ parallel(
 				dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
 				sh "docker run ${dist_dir} --rm ${test_image} make build-latest"
 
-				upload_artifacts(dist_dir, false)
+				upload_artifacts(dist_dir, '6561701c-b7b4-4796-83c4-9d87946799e4', old_gcs_bucket, false)
+				upload_artifacts(dist_dir, '6029cf4e-eaa3-4a8e-9dc7-744d118ebe6a', master_gcs_bucket, false)
+				sh "docker run ${dist_dir} --rm ${test_image} sh -c 'rm -rf /upload/*'"
+				sh "rm -rf ${tmp_dir}"
 			} else {
 				echo "Skipping build of latest artifacts because this build is not on the master branch (branch: ${git_branch})"
 			}
