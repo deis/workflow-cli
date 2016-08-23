@@ -37,25 +37,13 @@ func (d DeisCmd) PsList(appID string, results int) error {
 // PsScale scales an app's processes.
 func (d DeisCmd) PsScale(appID string, targets []string) error {
 	s, appID, err := load(d.ConfigFile, appID)
-
 	if err != nil {
 		return err
 	}
 
-	targetMap := make(map[string]int)
-	regex := regexp.MustCompile("^([a-z0-9]+)=([0-9]+)$")
-
-	for _, target := range targets {
-		if regex.MatchString(target) {
-			captures := regex.FindStringSubmatch(target)
-			targetMap[captures[1]], err = strconv.Atoi(captures[2])
-
-			if err != nil {
-				return err
-			}
-		} else {
-			return fmt.Errorf("'%s' does not match the pattern 'type=num', ex: web=2\n", target)
-		}
+	targetMap, err := parsePsTargets(targets)
+	if err != nil {
+		return err
 	}
 
 	d.Printf("Scaling processes... but first, %s!\n", drinkOfChoice())
@@ -83,7 +71,6 @@ func (d DeisCmd) PsScale(appID string, targets []string) error {
 // PsRestart restarts an app's processes.
 func (d DeisCmd) PsRestart(appID, target string) error {
 	s, appID, err := load(d.ConfigFile, appID)
-
 	if err != nil {
 		return err
 	}
@@ -151,4 +138,25 @@ func parseType(target string, appID string) (string, string) {
 	}
 
 	return psType, psName
+}
+
+func parsePsTargets(targets []string) (map[string]int, error) {
+	targetMap := make(map[string]int)
+	regex := regexp.MustCompile("^([a-z0-9]+)=([0-9]+)$")
+	var err error
+
+	for _, target := range targets {
+		if regex.MatchString(target) {
+			captures := regex.FindStringSubmatch(target)
+			targetMap[captures[1]], err = strconv.Atoi(captures[2])
+
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, fmt.Errorf("'%s' does not match the pattern 'type=num', ex: web=2\n", target)
+		}
+	}
+
+	return targetMap, nil
 }
