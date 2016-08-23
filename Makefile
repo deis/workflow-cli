@@ -19,7 +19,7 @@ IMAGE := ${REGISTRY}${IMAGE_PREFIX}/workflow-cli-dev:${REVISION}
 BUILD_OS ?=linux darwin windows
 BUILD_ARCH ?=amd64 386
 
-DEV_ENV_IMAGE := quay.io/deis/go-dev:0.16.0
+DEV_ENV_IMAGE := quay.io/deis/go-dev:0.17.0
 DEV_ENV_WORK_DIR := /go/src/${repo_path}
 DEV_ENV_PREFIX := docker run --rm -e CGO_ENABLED=0 -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR}
 DEV_ENV_PREFIX_CGO_ENABLED := docker run --rm -e CGO_ENABLED=1 -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR}
