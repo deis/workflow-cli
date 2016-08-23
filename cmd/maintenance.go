@@ -18,10 +18,10 @@ func (d DeisCmd) MaintenanceInfo(appID string) error {
 		return err
 	}
 
-	if *appSettings.Maintenance {
-		d.Println("Maintenance mode is on.")
-	} else {
+	if appSettings.Maintenance == nil || !*appSettings.Maintenance {
 		d.Println("Maintenance mode is off.")
+	} else {
+		d.Println("Maintenance mode is on.")
 	}
 	return nil
 }
@@ -47,7 +47,7 @@ func (d DeisCmd) MaintenanceEnable(appID string) error {
 		return err
 	}
 
-	d.Print("done\n\n")
+	d.Println("done")
 	return nil
 }
 
@@ -72,6 +72,6 @@ func (d DeisCmd) MaintenanceDisable(appID string) error {
 		return err
 	}
 
-	d.Print("done\n\n")
+	d.Println("done")
 	return nil
 }

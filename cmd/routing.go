@@ -18,7 +18,7 @@ func (d DeisCmd) RoutingInfo(appID string) error {
 		return err
 	}
 
-	if *appSettings.Routable {
+	if appSettings.Routable == nil || *appSettings.Routable {
 		d.Println("Routing is enabled.")
 	} else {
 		d.Println("Routing is disabled.")
@@ -47,7 +47,7 @@ func (d DeisCmd) RoutingEnable(appID string) error {
 		return err
 	}
 
-	d.Print("done\n\n")
+	d.Println("done")
 	return nil
 }
 
@@ -73,6 +73,6 @@ func (d DeisCmd) RoutingDisable(appID string) error {
 		return err
 	}
 
-	d.Print("done\n\n")
+	d.Println("done")
 	return nil
 }
