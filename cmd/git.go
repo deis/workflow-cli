@@ -18,7 +18,10 @@ func (d DeisCmd) GitRemote(appID, remote string, force bool) error {
 	if err != nil {
 		//If git remote doesn't exist, create it without issue
 		if err == git.ErrRemoteNotFound {
-			git.CreateRemote(s.Client.ControllerURL.Host, remote, appID)
+			err := git.CreateRemote(s.Client.ControllerURL.Host, remote, appID)
+			if err != nil {
+				return err
+			}
 			d.Printf(remoteCreationMsg, remote, appID)
 			return nil
 		}
@@ -35,8 +38,14 @@ func (d DeisCmd) GitRemote(appID, remote string, force bool) error {
 
 	if force {
 		d.Printf("Deleting git remote %s.\n", remote)
-		git.DeleteRemote(remote)
-		git.CreateRemote(s.Client.ControllerURL.Host, remote, appID)
+		err := git.DeleteRemote(remote)
+		if err != nil {
+			return err
+		}
+		err = git.CreateRemote(s.Client.ControllerURL.Host, remote, appID)
+		if err != nil {
+			return err
+		}
 		d.Printf(remoteCreationMsg, remote, appID)
 		return nil
 	}
