@@ -120,7 +120,7 @@ func parseTags(tags []string) (map[string]interface{}, error) {
 func parseTag(tag string) (string, string, error) {
 	parts := strings.Split(tag, "=")
 
-	if len(parts) != 2 {
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		return "", "", fmt.Errorf(`%s is invalid, Must be in format key=value
 Examples: rack=1 evironment=production`, tag)
 	}
