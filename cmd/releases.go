@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 	"text/tabwriter"
 
 	"github.com/deis/controller-sdk-go/releases"
@@ -29,7 +28,7 @@ func (d DeisCmd) ReleasesList(appID string, results int) error {
 
 	w := new(tabwriter.Writer)
 
-	w.Init(os.Stdout, 0, 8, 1, '\t', 0)
+	w.Init(d.WOut, 0, 8, 1, '\t', 0)
 	for _, r := range releases {
 		fmt.Fprintf(w, "v%d\t%s\t%s\n", r.Version, r.Created, r.Summary)
 	}
