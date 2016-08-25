@@ -120,7 +120,7 @@ func parseInfos(items []string) (map[string]interface{}, error) {
 func parseInfo(item string) (string, string, error) {
 	parts := strings.SplitN(item, "=", 2)
 
-	if len(parts) != 2 {
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		return "", "", fmt.Errorf(`%s is invalid. Must be in format key=value
 Examples: username=bob password=s3cur3pw1`, item)
 	}
