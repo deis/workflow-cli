@@ -22,9 +22,12 @@ func (d DeisCmd) UsersList(results int) error {
 		return err
 	}
 
-	d.Printf("=== Users%s", limitCount(len(users), count))
+	d.Printf("=== Users (*=admin)%s", limitCount(len(users), count))
 
 	for _, user := range users {
+		if user.IsSuperuser {
+			d.Print("*")
+		}
 		d.Println(user.Username)
 	}
 	return nil

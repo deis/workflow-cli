@@ -35,7 +35,7 @@ Use 'deis help [command]' to learn more.
 
 func usersList(argv []string, cmdr cmd.Commander) error {
 	usage := `
-Lists all registered users.
+Lists all registered users. Workflow administrators will be marked with a *.
 Requires admin privileges.
 
 Usage: deis users:list [options]
