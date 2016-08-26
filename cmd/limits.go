@@ -135,7 +135,7 @@ func parseLimits(limits []string) (map[string]interface{}, error) {
 		key, value, err := parseLimit(limit)
 
 		if err != nil {
-			return nil, fmt.Errorf("Error parsing limit %s: %s", limit, err)
+			return nil, err
 		}
 
 		limitsMap[key] = value
