@@ -46,6 +46,7 @@ Auth commands, use 'deis help auth' to learn more::
 Subcommands, use 'deis help [subcommand]' to learn more::
 
   apps          manage applications used to provide services
+  autoscale     manage autoscale for applications
   builds        manage builds created using 'git push'
   certs         manage SSL endpoints for an app
   config        manage environment variables that define app config
@@ -105,6 +106,8 @@ Use 'git push deis master' to deploy to an application.
 		err = parser.Apps(argv, &cmdr)
 	case "auth":
 		err = parser.Auth(argv, &cmdr)
+	case "autoscale":
+		err = parser.Autoscale(argv, &cmdr)
 	case "builds":
 		err = parser.Builds(argv, &cmdr)
 	case "certs":

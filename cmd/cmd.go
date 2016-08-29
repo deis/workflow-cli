@@ -17,6 +17,9 @@ type Commander interface {
 	AppRun(string, string) error
 	AppDestroy(string, string) error
 	AppTransfer(string, string) error
+	AutoscaleList(string) error
+	AutoscaleSet(string, string, int, int, int) error
+	AutoscaleUnset(string, string) error
 	Register(string, string, string, string, bool) error
 	Login(string, string, string, bool) error
 	Logout() error

@@ -1,10 +1,10 @@
-hash: b584ecc6aac6f09fe586b4a95b62259681846a8ac9eb47ba059754713bfc6f89
-updated: 2016-08-26T13:17:28.742713998-06:00
+hash: fc1c906c427535ad7403d27e07a7cc469138a59786d2e0e93d6f476053c78eaf
+updated: 2016-08-30T10:39:49.555423948-07:00
 imports:
 - name: github.com/arschles/assert
   version: fc2da9844984ce5093111298174706e14d4c0c47
 - name: github.com/deis/controller-sdk-go
-  version: c7317175524ed7546731e3b1dd1296b533596c03
+  version: 72235ec0aa14429beb569bf0b20984fc983d8aaa
   subpackages:
   - api
   - apps
@@ -16,16 +16,16 @@ imports:
   - domains
   - keys
   - perms
+  - pkg/time
   - ps
   - releases
   - users
   - whitelist
-  - pkg/time
 - name: github.com/deis/pkg
   version: 189ed6bd6b6aa6629b72c2c5472095e176eec8a6
   subpackages:
-  - time
   - prettyprint
+  - time
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
 - name: github.com/goware/urlx
@@ -39,27 +39,26 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: golang.org/x/crypto
-  version: 351dc6a5bf92a5f2ae22fadeee08eb6a45aa2d93
+  version: b13fc1fd382d01861b16b2e6474487d3d4d27f20
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
-  version: c2528b2dd8352441850638a8bb678c2ad056fd3e
+  version: 6250b412798208e6c90b03b7c4f226de5aa299e2
   subpackages:
-  - context
   - idna
 - name: golang.org/x/text
   version: d69c40b4be55797923cec7457fac7a244d91a9b6
   subpackages:
-  - secure/precis
-  - unicode/norm
   - cases
+  - internal/tag
+  - language
   - runes
   - secure/bidirule
+  - secure/precis
   - transform
-  - width
-  - language
   - unicode/bidi
-  - internal/tag
+  - unicode/norm
+  - width
 - name: gopkg.in/yaml.v2
   version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
-devImports: []
+testImports: []
