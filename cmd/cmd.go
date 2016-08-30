@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"io"
+	"time"
 
 	"github.com/deis/controller-sdk-go/api"
 )
@@ -26,7 +27,7 @@ type Commander interface {
 	Regenerate(string, bool) error
 	BuildsList(string, int) error
 	BuildsCreate(string, string, string) error
-	CertsList(int) error
+	CertsList(int, time.Time) error
 	CertAdd(string, string, string) error
 	CertRemove(string) error
 	CertInfo(string) error

@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"time"
+
 	"github.com/deis/workflow-cli/cmd"
 	docopt "github.com/docopt/docopt-go"
 )
@@ -69,7 +71,7 @@ Options:
 		return err
 	}
 
-	return cmdr.CertsList(results)
+	return cmdr.CertsList(results, time.Now())
 }
 
 func certAdd(argv []string, cmdr cmd.Commander) error {
