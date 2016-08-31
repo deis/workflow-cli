@@ -103,16 +103,16 @@ func (d DeisCmd) PsRestart(appID, target string) error {
 	return nil
 }
 
-func printProcesses(appID string, processes []api.Pods, wOut io.Writer) {
-	psMap := ps.ByType(processes)
+func printProcesses(appID string, input []api.Pods, wOut io.Writer) {
+	processes := ps.ByType(input)
 
 	fmt.Fprintf(wOut, "=== %s Processes\n", appID)
 
-	for psType, procs := range psMap {
-		fmt.Fprintf(wOut, "--- %s:\n", psType)
+	for _, process := range processes {
+		fmt.Fprintf(wOut, "--- %s:\n", process.Type)
 
-		for _, proc := range procs {
-			fmt.Fprintf(wOut, "%s %s (%s)\n", proc.Name, proc.State, proc.Release)
+		for _, pod := range process.PodsList {
+			fmt.Fprintf(wOut, "%s %s (%s)\n", pod.Name, pod.State, pod.Release)
 		}
 	}
 }

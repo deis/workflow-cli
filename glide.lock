@@ -1,10 +1,10 @@
-hash: fc1c906c427535ad7403d27e07a7cc469138a59786d2e0e93d6f476053c78eaf
-updated: 2016-08-30T10:39:49.555423948-07:00
+hash: ae9da15a1942879ff433ed75af4180370cc0ae048e2a1f9649ecebd13a18736b
+updated: 2016-08-31T09:14:33.67300823-07:00
 imports:
 - name: github.com/arschles/assert
   version: fc2da9844984ce5093111298174706e14d4c0c47
 - name: github.com/deis/controller-sdk-go
-  version: 72235ec0aa14429beb569bf0b20984fc983d8aaa
+  version: 383a9c0cdf4591127f3dad8b7b9fa48462b1f8d0
   subpackages:
   - api
   - apps
@@ -39,11 +39,11 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: golang.org/x/crypto
-  version: b13fc1fd382d01861b16b2e6474487d3d4d27f20
+  version: 055d4bfb5c396e3c3dcd9aad97c9086d48b23189
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
-  version: 6250b412798208e6c90b03b7c4f226de5aa299e2
+  version: 9bc2a3340c92c17a20edcd0080e93851ed58f5d5
   subpackages:
   - idna
 - name: golang.org/x/text
