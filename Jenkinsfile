@@ -154,18 +154,16 @@ parallel(
 	revision: {
 		node(linux) {
 
-			flags = ""
+			def flags = ""
 			if (git_branch != "remotes/origin/master") {
 				echo "Skipping build of 386 binaries to shorten CI for Pull Requests"
 				flags += "-e BUILD_ARCH=amd64"
 			}
 
-			tmp_dir = mktmp()
-			dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
+			def tmp_dir = mktmp()
+			def dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
 			sh "docker run ${flags} -e REVISION=${git_commit.take(7)} ${dist_dir} --rm ${test_image} make build-revision"
 
-
-			upload_artifacts(dist_dir, '6561701c-b7b4-4796-83c4-9d87946799e4', old_gcs_bucket, true)
 			if (git_branch == "remotes/origin/master") {
 				upload_artifacts(dist_dir, '6029cf4e-eaa3-4a8e-9dc7-744d118ebe6a', master_gcs_bucket, true)
 			} else {
@@ -178,11 +176,10 @@ parallel(
 	latest: {
 		node(linux) {
 			if (git_branch == "remotes/origin/master") {
-				tmp_dir = mktmp()
-				dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
+				def tmp_dir = mktmp()
+				def dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
 				sh "docker run ${dist_dir} --rm ${test_image} make build-latest"
 
-				upload_artifacts(dist_dir, '6561701c-b7b4-4796-83c4-9d87946799e4', old_gcs_bucket, false)
 				upload_artifacts(dist_dir, '6029cf4e-eaa3-4a8e-9dc7-744d118ebe6a', master_gcs_bucket, false)
 				sh "docker run ${dist_dir} --rm ${test_image} sh -c 'rm -rf /upload/*'"
 				sh "rm -rf ${tmp_dir}"
