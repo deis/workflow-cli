@@ -9,7 +9,7 @@ else
 endif
 
 # The latest git tag on branch
-GIT_TAG := $(shell git describe --abbrev=0 --tags)
+GIT_TAG ?= $(shell git describe --abbrev=0 --tags)
 REVISION ?= $(shell git rev-parse --short HEAD)
 
 REGISTRY ?= quay.io/
@@ -19,14 +19,7 @@ IMAGE := ${REGISTRY}${IMAGE_PREFIX}/workflow-cli-dev:${REVISION}
 BUILD_OS ?=linux darwin windows
 BUILD_ARCH ?=amd64 386
 
-DEV_ENV_IMAGE := quay.io/deis/go-dev:0.16.0
-DEV_ENV_WORK_DIR := /go/src/${repo_path}
-DEV_ENV_PREFIX := docker run --rm -e CGO_ENABLED=0 -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR}
-DEV_ENV_PREFIX_CGO_ENABLED := docker run --rm -e CGO_ENABLED=1 -v ${CURDIR}:${DEV_ENV_WORK_DIR} -w ${DEV_ENV_WORK_DIR}
-DEV_ENV_CMD := ${DEV_ENV_PREFIX} ${DEV_ENV_IMAGE}
 DIST_DIR ?= _dist
-
-GOTEST = go test --race
 
 define check-static-binary
   if file $(1) | egrep -q "(statically linked|Mach-O)"; then \
@@ -37,14 +30,11 @@ define check-static-binary
   fi
 endef
 
-bootstrap:
-	${DEV_ENV_CMD} glide install
-
-glideup:
-	${DEV_ENV_CMD} glide up
-
-build: binary-build
-	@$(call check-static-binary,deis)
+build: build-test-image
+	$(eval GO_LDFLAGS= -ldflags '-X ${repo_path}/version.Version=dev-${REVISION}')
+	docker run --rm -e GOOS=${GOOS} -v ${CURDIR}/_dist:/out ${IMAGE} go build -a -installsuffix cgo ${GO_LDFLAGS} -o /out/deis .
+	@$(call check-static-binary,_dist/deis)
+	@echo "${GOOS} binary written to _dist/deis"
 
 # This is supposed to be run within a docker container
 build-latest:
@@ -62,12 +52,6 @@ build-tag:
 	gox -verbose ${GO_LDFLAGS} -os="${BUILD_OS}" -arch="${BUILD_ARCH}" -output="${DIST_DIR}/${GIT_TAG}/deis-${GIT_TAG}-{{.OS}}-{{.Arch}}" .
 
 build-all: build-latest build-revision
-
-binary-build:
-	$(eval GO_LDFLAGS= -ldflags '-X ${repo_path}/version.Version=dev-${REVISION}')
-	${DEV_ENV_PREFIX} -e GOOS=${GOOS} ${DEV_ENV_IMAGE} go build -a -installsuffix cgo ${GO_LDFLAGS} -o deis .
-
-dist: build-all
 
 install:
 	cp deis $$GOPATH/bin

@@ -2,6 +2,7 @@ def windows = 'windows'
 def linux = 'linux'
 def git_commit = ''
 def git_branch = ''
+def git_tag = ''
 
 def getBasePath = { String filepath ->
 	def filename = filepath.lastIndexOf(File.separator)
@@ -53,6 +54,7 @@ node(linux) {
 
 	git_branch = sh(returnStdout: true, script: 'git describe --all').trim()
 	git_commit = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
+	git_tag = sh(returnStdout: true, script: 'git describe --abbrev=0 --tags').trim()
 
 	if (git_branch != "remotes/origin/master") {
 		// Determine actual PR commit, if necessary
@@ -150,6 +152,8 @@ def mktmp = {
 	return tmp
 }
 
+def version_flags = "-e REVISION=${git_commit.take(7)} -e GIT_TAG=${git_tag}"
+
 parallel(
 	revision: {
 		node(linux) {
@@ -162,7 +166,7 @@ parallel(
 
 			def tmp_dir = mktmp()
 			def dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
-			sh "docker run ${flags} -e REVISION=${git_commit.take(7)} ${dist_dir} --rm ${test_image} make build-revision"
+			sh "docker run ${flags} ${version_flags} ${dist_dir} --rm ${test_image} make build-revision"
 
 			if (git_branch == "remotes/origin/master") {
 				upload_artifacts(dist_dir, '6029cf4e-eaa3-4a8e-9dc7-744d118ebe6a', master_gcs_bucket, true)
@@ -178,7 +182,7 @@ parallel(
 			if (git_branch == "remotes/origin/master") {
 				def tmp_dir = mktmp()
 				def dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
-				sh "docker run ${dist_dir} --rm ${test_image} make build-latest"
+				sh "docker run ${dist_dir} --rm ${test_image} ${version_flags} make build-latest"
 
 				upload_artifacts(dist_dir, '6029cf4e-eaa3-4a8e-9dc7-744d118ebe6a', master_gcs_bucket, false)
 				sh "docker run ${dist_dir} --rm ${test_image} sh -c 'rm -rf /upload/*'"
