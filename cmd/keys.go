@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/deis/controller-sdk-go/api"
 	"github.com/deis/controller-sdk-go/keys"
@@ -34,9 +34,12 @@ func (d DeisCmd) KeysList(results int) error {
 
 	d.Printf("=== %s Keys%s", s.Username, limitCount(len(keys), count))
 
+	w := tabwriter.NewWriter(d.WOut, 0, 8, 1, ' ', 0)
+
 	for _, key := range keys {
-		d.Printf("%s %s...%s\n", key.ID, key.Public[:16], key.Public[len(key.Public)-10:])
+		fmt.Fprintf(w, "%s\t%s...%s\n", key.ID, key.Public[:16], key.Public[len(key.Public)-10:])
 	}
+	w.Flush()
 	return nil
 }
 
@@ -74,7 +77,7 @@ func (d DeisCmd) KeyAdd(keyLocation string) error {
 		if err != nil {
 			return err
 		}
-		key, err = chooseKey(ks, os.Stdin, d.WOut)
+		key, err = chooseKey(ks, d.WIn, d.WOut)
 		if err != nil {
 			return err
 		}
@@ -125,7 +128,7 @@ func chooseKey(keys []api.KeyCreateRequest, input io.Reader,
 		var filename string
 
 		fmt.Fprint(wOut, "Enter the path to the pubkey file: ")
-		fmt.Scanln(&filename)
+		fmt.Fscanln(input, &filename)
 
 		return getKey(filename)
 	}

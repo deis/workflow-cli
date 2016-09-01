@@ -94,6 +94,7 @@ type DeisCmd struct {
 	ConfigFile string
 	WOut       io.Writer
 	WErr       io.Writer
+	WIn        io.Reader
 }
 
 // Println prints a line to an output writer.

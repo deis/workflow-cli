@@ -17,11 +17,11 @@ import (
 // main exits with the return value of Command(os.Args[1:]), deferring all logic to
 // a func we can test.
 func main() {
-	os.Exit(Command(os.Args[1:], os.Stdout, os.Stderr))
+	os.Exit(Command(os.Args[1:], os.Stdout, os.Stderr, os.Stdin))
 }
 
 // Command routes deis commands to their proper parser.
-func Command(argv []string, wOut io.Writer, wErr io.Writer) int {
+func Command(argv []string, wOut io.Writer, wErr io.Writer, wIn io.Reader) int {
 	usage := `
 The Deis command-line client issues API calls to a Deis controller.
 
@@ -97,7 +97,7 @@ Use 'git push deis master' to deploy to an application.
 	configFlag := getConfigFlag(argv)
 	// Don't pass down config flag to parser because it isn't defined there.
 	argv = removeConfigFlag(argv)
-	cmdr := cmd.DeisCmd{ConfigFile: configFlag, WOut: wOut, WErr: wErr}
+	cmdr := cmd.DeisCmd{ConfigFile: configFlag, WOut: wOut, WErr: wErr, WIn: wIn}
 
 	// Dispatch the command, passing the argv through so subcommands can
 	// re-parse it according to their usage strings.
