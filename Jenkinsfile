@@ -121,7 +121,7 @@ def pr_gcs_bucket = "gs://workflow-cli-pr"
 def master_gcs_bucket = "gs://workflow-cli-master"
 
 def upload_artifacts = { String dist_dir, String auth_id, String bucket, boolean cache ->
-	headers  = "-h 'x-goog-meta-git-branch:${git_branch}' "
+	def headers  = "-h 'x-goog-meta-git-branch:${git_branch}' "
 	headers += "-h 'x-goog-meta-git-sha:${git_commit}' "
 	headers += "-h 'x-goog-meta-ci-job:${env.JOB_NAME}' "
 	headers += "-h 'x-goog-meta-ci-number:${env.BUILD_NUMBER}' "
@@ -130,7 +130,7 @@ def upload_artifacts = { String dist_dir, String auth_id, String bucket, boolean
 		headers += ' -h "Cache-Control:no-cache"'
 	}
 
-	script = "sh -c 'echo \${GCS_KEY_JSON} | base64 -d - > /tmp/key.json "
+	def script = "sh -c 'echo \${GCS_KEY_JSON} | base64 -d - > /tmp/key.json "
 	script += "&& gcloud auth activate-service-account -q --key-file /tmp/key.json "
 	script += "&& gsutil -mq ${headers} cp -a public-read -r /upload/* ${bucket}'"
 
@@ -144,7 +144,7 @@ def upload_artifacts = { String dist_dir, String auth_id, String bucket, boolean
 def mktmp = {
 	// Create tmp directory to store files
 	sh 'mktemp -d > tmp_dir'
-	tmp = readFile('tmp_dir').trim()
+	def tmp = readFile('tmp_dir').trim()
 	echo "Storing binaries in ${tmp}"
 	sh 'rm tmp_dir'
 	return tmp
