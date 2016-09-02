@@ -90,6 +90,7 @@ type Commander interface {
 	PrintErrln(...interface{}) (int, error)
 	PrintErr(...interface{}) (int, error)
 	PrintErrf(string, ...interface{}) (int, error)
+	Version(bool) error
 }
 
 // DeisCmd is an implementation of Commander.

@@ -149,7 +149,7 @@ Use 'git push deis master' to deploy to an application.
 	case "users":
 		err = parser.Users(argv, &cmdr)
 	case "version":
-		err = parser.Version(argv)
+		err = parser.Version(argv, &cmdr)
 	case "whitelist":
 		err = parser.Whitelist(argv, &cmdr)
 	default:

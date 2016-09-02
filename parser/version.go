@@ -1,26 +1,25 @@
 package parser
 
 import (
-	"fmt"
-
-	"github.com/deis/workflow-cli/version"
+	"github.com/deis/workflow-cli/cmd"
 	docopt "github.com/docopt/docopt-go"
 )
 
 // Version displays the client version
-func Version(argv []string) error {
+func Version(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Displays the client version.
 
-Usage: deis version
+Usage: deis version [options]
 
-Use 'deis help [command]' to learn more.
+Options:
+  -a --all
+    list api and controller versions
 `
-	if _, err := docopt.Parse(usage, argv, true, "", false, true); err != nil {
+	args, err := docopt.Parse(usage, argv, true, "", false, true)
+	if err != nil {
 		return err
 	}
 
-	fmt.Println(version.Version)
-
-	return nil
+	return cmdr.Version(args["--all"].(bool))
 }
