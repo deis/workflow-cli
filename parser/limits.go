@@ -91,7 +91,7 @@ Arguments:
 Options:
   -a --app=<app>
     the uniquely identifiable name for the application.
-  -c --cpu
+  --cpu
     limits CPU.
   -m --memory
     limits memory. [default: true]
@@ -128,7 +128,7 @@ Arguments:
 Options:
   -a --app=<app>
     the uniquely identifiable name for the application.
-  -c --cpu
+  --cpu
     limits cpu shares.
   -m --memory
     limits memory. [default: true]
