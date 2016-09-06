@@ -110,7 +110,16 @@ parallel(
 			withCredentials([[$class: 'StringBinding',
 												credentialsId: '995d99a7-466b-4beb-bf75-f3ba91cbbc18',
 												variable: 'CODECOV_TOKEN']]) {
-				sh "docker run -e CODECOV_TOKEN=\${CODECOV_TOKEN} --rm ${test_image} sh -c 'test-cover.sh && curl -s https://codecov.io/bash | bash'"
+				def codecov = "codecov -Z -C ${git_commit} "
+				if (git_branch == "remotes/origin/master") {
+					codecov += "-B master"
+				} else {
+					def branch_name = env.BRANCH_NAME
+					def branch_index = branch_name.indexOf('-')
+					def pr = branch_name.substring(branch_index+1, branch_name.length())
+					codecov += "-P ${pr}"
+				}
+				sh "docker run -e CODECOV_TOKEN=\${CODECOV_TOKEN} --rm ${test_image} sh -c 'test-cover.sh &&  ${codecov}'"
 			}
 		}
 	}
@@ -182,7 +191,7 @@ parallel(
 			if (git_branch == "remotes/origin/master") {
 				def tmp_dir = mktmp()
 				def dist_dir = "-e DIST_DIR=/upload -v ${tmp_dir}:/upload"
-				sh "docker run ${dist_dir} --rm ${test_image} ${version_flags} make build-latest"
+				sh "docker run ${dist_dir} ${version_flags} --rm ${test_image} make build-latest"
 
 				upload_artifacts(dist_dir, '6029cf4e-eaa3-4a8e-9dc7-744d118ebe6a', master_gcs_bucket, false)
 				sh "docker run ${dist_dir} --rm ${test_image} sh -c 'rm -rf /upload/*'"
