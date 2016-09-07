@@ -11,7 +11,7 @@ import (
 )
 
 // TagsList lists an app's tags.
-func (d DeisCmd) TagsList(appID string) error {
+func (d *DeisCmd) TagsList(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -19,7 +19,7 @@ func (d DeisCmd) TagsList(appID string) error {
 	}
 
 	config, err := config.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -37,7 +37,7 @@ func (d DeisCmd) TagsList(appID string) error {
 }
 
 // TagsSet sets an app's tags.
-func (d DeisCmd) TagsSet(appID string, tags []string) error {
+func (d *DeisCmd) TagsSet(appID string, tags []string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -58,7 +58,7 @@ func (d DeisCmd) TagsSet(appID string, tags []string) error {
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -68,7 +68,7 @@ func (d DeisCmd) TagsSet(appID string, tags []string) error {
 }
 
 // TagsUnset removes an app's tags.
-func (d DeisCmd) TagsUnset(appID string, tags []string) error {
+func (d *DeisCmd) TagsUnset(appID string, tags []string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -92,7 +92,7 @@ func (d DeisCmd) TagsUnset(appID string, tags []string) error {
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

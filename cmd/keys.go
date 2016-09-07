@@ -16,7 +16,7 @@ import (
 )
 
 // KeysList lists a user's keys.
-func (d DeisCmd) KeysList(results int) error {
+func (d *DeisCmd) KeysList(results int) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -28,7 +28,7 @@ func (d DeisCmd) KeysList(results int) error {
 	}
 
 	keys, count, err := keys.List(s.Client, results)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -44,7 +44,7 @@ func (d DeisCmd) KeysList(results int) error {
 }
 
 // KeyRemove removes keys.
-func (d DeisCmd) KeyRemove(keyID string) error {
+func (d *DeisCmd) KeyRemove(keyID string) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -53,7 +53,7 @@ func (d DeisCmd) KeyRemove(keyID string) error {
 
 	d.Printf("Removing %s SSH Key...", keyID)
 
-	if err = keys.Delete(s.Client, keyID); checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if err = keys.Delete(s.Client, keyID); d.checkAPICompatibility(s.Client, err) != nil {
 		d.Println()
 		return err
 	}
@@ -63,7 +63,7 @@ func (d DeisCmd) KeyRemove(keyID string) error {
 }
 
 // KeyAdd adds keys.
-func (d DeisCmd) KeyAdd(keyLocation string) error {
+func (d *DeisCmd) KeyAdd(keyLocation string) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -90,7 +90,7 @@ func (d DeisCmd) KeyAdd(keyLocation string) error {
 
 	d.Printf("Uploading %s to deis...", filepath.Base(key.Name))
 
-	if _, err = keys.New(s.Client, key.ID, key.Public); checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if _, err = keys.New(s.Client, key.ID, key.Public); d.checkAPICompatibility(s.Client, err) != nil {
 		d.Println()
 		return err
 	}

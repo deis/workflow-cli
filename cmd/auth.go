@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"io"
 	"strings"
 	"syscall"
 
@@ -14,7 +13,7 @@ import (
 )
 
 // Register creates a account on a Deis controller.
-func (d DeisCmd) Register(controller string, username string, password string, email string,
+func (d *DeisCmd) Register(controller string, username string, password string, email string,
 	sslVerify bool) error {
 
 	c, err := deis.New(sslVerify, controller, "")
@@ -32,7 +31,7 @@ func (d DeisCmd) Register(controller string, username string, password string, e
 	// Set user agent for temporary client.
 	c.UserAgent = settings.UserAgent
 
-	if err = c.CheckConnection(); checkAPICompatibility(c, err, d.WErr) != nil {
+	if err = c.CheckConnection(); d.checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -66,7 +65,7 @@ func (d DeisCmd) Register(controller string, username string, password string, e
 
 	c.Token = ""
 
-	if checkAPICompatibility(c, err, d.WErr) != nil {
+	if d.checkAPICompatibility(c, err) != nil {
 		d.PrintErr("Registration failed: ")
 		return err
 	}
@@ -74,32 +73,31 @@ func (d DeisCmd) Register(controller string, username string, password string, e
 	d.Printf("Registered %s\n", username)
 
 	s := settings.Settings{Client: c}
-	return doLogin(d.ConfigFile, s, username, password, d.WOut, d.WErr)
+	return d.doLogin(s, username, password)
 }
 
-func doLogin(cf string, s settings.Settings, username, password string,
-	wOut io.Writer, wErr io.Writer) error {
+func (d *DeisCmd) doLogin(s settings.Settings, username, password string) error {
 	token, err := auth.Login(s.Client, username, password)
-	if checkAPICompatibility(s.Client, err, wErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
 	s.Client.Token = token
 	s.Username = username
 
-	filename, err := s.Save(cf)
+	filename, err := s.Save(d.ConfigFile)
 
 	if err != nil {
 		return nil
 	}
 
-	fmt.Fprintf(wOut, "Logged in as %s\n", username)
-	fmt.Fprintf(wOut, "Configuration file written to %s\n", filename)
+	d.Printf("Logged in as %s\n", username)
+	d.Printf("Configuration file written to %s\n", filename)
 	return nil
 }
 
 // Login to a Deis controller.
-func (d DeisCmd) Login(controller string, username string, password string, sslVerify bool) error {
+func (d *DeisCmd) Login(controller string, username string, password string, sslVerify bool) error {
 	c, err := deis.New(sslVerify, controller, "")
 
 	if err != nil {
@@ -109,7 +107,7 @@ func (d DeisCmd) Login(controller string, username string, password string, sslV
 	// Set user agent for temporary client.
 	c.UserAgent = settings.UserAgent
 
-	if err = c.CheckConnection(); checkAPICompatibility(c, err, d.WErr) != nil {
+	if err = c.CheckConnection(); d.checkAPICompatibility(c, err) != nil {
 		return err
 	}
 
@@ -129,11 +127,11 @@ func (d DeisCmd) Login(controller string, username string, password string, sslV
 	}
 
 	s := settings.Settings{Client: c}
-	return doLogin(d.ConfigFile, s, username, password, d.WOut, d.WErr)
+	return d.doLogin(s, username, password)
 }
 
 // Logout from a Deis controller.
-func (d DeisCmd) Logout() error {
+func (d *DeisCmd) Logout() error {
 	if err := settings.Delete(d.ConfigFile); err != nil {
 		return err
 	}
@@ -143,7 +141,7 @@ func (d DeisCmd) Logout() error {
 }
 
 // Passwd changes a user's password.
-func (d DeisCmd) Passwd(username, password, newPassword string) error {
+func (d *DeisCmd) Passwd(username, password, newPassword string) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -178,7 +176,7 @@ func (d DeisCmd) Passwd(username, password, newPassword string) error {
 	}
 
 	err = auth.Passwd(s.Client, username, password, newPassword)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		d.PrintErr("Password change failed: ")
 		return err
 	}
@@ -188,7 +186,7 @@ func (d DeisCmd) Passwd(username, password, newPassword string) error {
 }
 
 // Cancel deletes a user's account.
-func (d DeisCmd) Cancel(username, password string, yes bool) error {
+func (d *DeisCmd) Cancel(username, password string, yes bool) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -234,7 +232,7 @@ func (d DeisCmd) Cancel(username, password string, yes bool) error {
 	err = auth.Delete(s.Client, username)
 	if err == deis.ErrConflict {
 		return fmt.Errorf("%s still has applications associated with it. Transfer ownership or delete them first", username)
-	} else if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	} else if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -251,7 +249,7 @@ func (d DeisCmd) Cancel(username, password string, yes bool) error {
 
 // Whoami prints the logged in user. If all is true, it fetches info from the controller to know
 // more about the user.
-func (d DeisCmd) Whoami(all bool) error {
+func (d *DeisCmd) Whoami(all bool) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -271,7 +269,7 @@ func (d DeisCmd) Whoami(all bool) error {
 }
 
 // Regenerate regenenerates a user's token.
-func (d DeisCmd) Regenerate(username string, all bool) error {
+func (d *DeisCmd) Regenerate(username string, all bool) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -279,7 +277,7 @@ func (d DeisCmd) Regenerate(username string, all bool) error {
 	}
 
 	token, err := auth.Regenerate(s.Client, username, all)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

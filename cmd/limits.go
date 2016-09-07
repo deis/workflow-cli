@@ -11,7 +11,7 @@ import (
 )
 
 // LimitsList lists an app's limits.
-func (d DeisCmd) LimitsList(appID string) error {
+func (d *DeisCmd) LimitsList(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -19,7 +19,7 @@ func (d DeisCmd) LimitsList(appID string) error {
 	}
 
 	config, err := config.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -55,7 +55,7 @@ func (d DeisCmd) LimitsList(appID string) error {
 }
 
 // LimitsSet sets an app's limits.
-func (d DeisCmd) LimitsSet(appID string, limits []string, limitType string) error {
+func (d *DeisCmd) LimitsSet(appID string, limits []string, limitType string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -81,7 +81,7 @@ func (d DeisCmd) LimitsSet(appID string, limits []string, limitType string) erro
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -91,7 +91,7 @@ func (d DeisCmd) LimitsSet(appID string, limits []string, limitType string) erro
 }
 
 // LimitsUnset removes an app's limits.
-func (d DeisCmd) LimitsUnset(appID string, limits []string, limitType string) error {
+func (d *DeisCmd) LimitsUnset(appID string, limits []string, limitType string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -119,7 +119,7 @@ func (d DeisCmd) LimitsUnset(appID string, limits []string, limitType string) er
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

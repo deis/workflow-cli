@@ -8,7 +8,7 @@ import (
 )
 
 // ReleasesList lists an app's releases.
-func (d DeisCmd) ReleasesList(appID string, results int) error {
+func (d *DeisCmd) ReleasesList(appID string, results int) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -20,7 +20,7 @@ func (d DeisCmd) ReleasesList(appID string, results int) error {
 	}
 
 	releases, count, err := releases.List(s.Client, appID, results)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -37,7 +37,7 @@ func (d DeisCmd) ReleasesList(appID string, results int) error {
 }
 
 // ReleasesInfo prints info about a specific release.
-func (d DeisCmd) ReleasesInfo(appID string, version int) error {
+func (d *DeisCmd) ReleasesInfo(appID string, version int) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -45,7 +45,7 @@ func (d DeisCmd) ReleasesInfo(appID string, version int) error {
 	}
 
 	r, err := releases.Get(s.Client, appID, version)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -64,7 +64,7 @@ func (d DeisCmd) ReleasesInfo(appID string, version int) error {
 }
 
 // ReleasesRollback rolls an app back to a previous release.
-func (d DeisCmd) ReleasesRollback(appID string, version int) error {
+func (d *DeisCmd) ReleasesRollback(appID string, version int) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -81,7 +81,7 @@ func (d DeisCmd) ReleasesRollback(appID string, version int) error {
 	newVersion, err := releases.Rollback(s.Client, appID, version)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

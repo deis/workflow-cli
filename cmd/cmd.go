@@ -96,6 +96,7 @@ type Commander interface {
 // DeisCmd is an implementation of Commander.
 type DeisCmd struct {
 	ConfigFile string
+	Warned     bool
 	WOut       io.Writer
 	WErr       io.Writer
 	WIn        io.Reader

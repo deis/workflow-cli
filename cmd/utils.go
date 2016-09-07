@@ -76,12 +76,15 @@ func limitCount(objs, total int) string {
 
 // checkAPICompatibility handles specific behavior for certain errors,
 // such as printing an warning for the API mismatch error
-func checkAPICompatibility(c *deis.Client, err error, wErr io.Writer) error {
+func (d *DeisCmd) checkAPICompatibility(c *deis.Client, err error) error {
 	if err == deis.ErrAPIMismatch {
-		fmt.Fprintf(wErr, `!    WARNING: Client and server API versions do not match. Please consider upgrading.
+		if !d.Warned {
+			d.PrintErrf(`!    WARNING: Client and server API versions do not match. Please consider upgrading.
 !    Client version: %s
 !    Server version: %s
 `, deis.APIVersion, c.ControllerAPIVersion)
+			d.Warned = true
+		}
 
 		// API mismatch isn't fatal, so after warning continue on.
 		return nil

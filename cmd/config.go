@@ -17,7 +17,7 @@ import (
 )
 
 // ConfigList lists an app's config.
-func (d DeisCmd) ConfigList(appID string, oneLine bool) error {
+func (d *DeisCmd) ConfigList(appID string, oneLine bool) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -25,7 +25,7 @@ func (d DeisCmd) ConfigList(appID string, oneLine bool) error {
 	}
 
 	config, err := config.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -56,7 +56,7 @@ func (d DeisCmd) ConfigList(appID string, oneLine bool) error {
 }
 
 // ConfigSet sets an app's config variables.
-func (d DeisCmd) ConfigSet(appID string, configVars []string) error {
+func (d *DeisCmd) ConfigSet(appID string, configVars []string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -109,7 +109,7 @@ to set up healthchecks. This functionality has been deprecated. In the future, p
 	configObj, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -123,7 +123,7 @@ to set up healthchecks. This functionality has been deprecated. In the future, p
 }
 
 // ConfigUnset removes a config variable from an app.
-func (d DeisCmd) ConfigUnset(appID string, configVars []string) error {
+func (d *DeisCmd) ConfigUnset(appID string, configVars []string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -147,7 +147,7 @@ func (d DeisCmd) ConfigUnset(appID string, configVars []string) error {
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -157,7 +157,7 @@ func (d DeisCmd) ConfigUnset(appID string, configVars []string) error {
 }
 
 // ConfigPull pulls an app's config to a file.
-func (d DeisCmd) ConfigPull(appID string, interactive bool, overwrite bool) error {
+func (d *DeisCmd) ConfigPull(appID string, interactive bool, overwrite bool) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -165,7 +165,7 @@ func (d DeisCmd) ConfigPull(appID string, interactive bool, overwrite bool) erro
 	}
 
 	configVars, err := config.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -227,7 +227,7 @@ func (d DeisCmd) ConfigPull(appID string, interactive bool, overwrite bool) erro
 }
 
 // ConfigPush pushes an app's config from a file.
-func (d DeisCmd) ConfigPush(appID, fileName string) error {
+func (d *DeisCmd) ConfigPush(appID, fileName string) error {
 	stat, err := os.Stdin.Stat()
 
 	if err != nil {

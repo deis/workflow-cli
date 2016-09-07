@@ -7,7 +7,7 @@ import (
 )
 
 // PermsList prints which users have permissions.
-func (d DeisCmd) PermsList(appID string, admin bool, results int) error {
+func (d *DeisCmd) PermsList(appID string, admin bool, results int) error {
 	s, appID, err := permsLoad(d.ConfigFile, appID, admin)
 
 	if err != nil {
@@ -26,7 +26,7 @@ func (d DeisCmd) PermsList(appID string, admin bool, results int) error {
 		users, err = perms.List(s.Client, appID)
 	}
 
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -44,7 +44,7 @@ func (d DeisCmd) PermsList(appID string, admin bool, results int) error {
 }
 
 // PermCreate adds a user to an app or makes them an administrator.
-func (d DeisCmd) PermCreate(appID string, username string, admin bool) error {
+func (d *DeisCmd) PermCreate(appID string, username string, admin bool) error {
 
 	s, appID, err := permsLoad(d.ConfigFile, appID, admin)
 
@@ -60,7 +60,7 @@ func (d DeisCmd) PermCreate(appID string, username string, admin bool) error {
 		err = perms.New(s.Client, appID, username)
 	}
 
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -70,7 +70,7 @@ func (d DeisCmd) PermCreate(appID string, username string, admin bool) error {
 }
 
 // PermDelete removes a user from an app or revokes admin privileges.
-func (d DeisCmd) PermDelete(appID, username string, admin bool) error {
+func (d *DeisCmd) PermDelete(appID, username string, admin bool) error {
 
 	s, appID, err := permsLoad(d.ConfigFile, appID, admin)
 
@@ -86,7 +86,7 @@ func (d DeisCmd) PermDelete(appID, username string, admin bool) error {
 		err = perms.Delete(s.Client, appID, username)
 	}
 
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

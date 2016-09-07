@@ -10,7 +10,7 @@ import (
 )
 
 // BuildsList lists an app's builds.
-func (d DeisCmd) BuildsList(appID string, results int) error {
+func (d *DeisCmd) BuildsList(appID string, results int) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -22,7 +22,7 @@ func (d DeisCmd) BuildsList(appID string, results int) error {
 	}
 
 	builds, count, err := builds.List(s.Client, appID, results)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -35,7 +35,7 @@ func (d DeisCmd) BuildsList(appID string, results int) error {
 }
 
 // BuildsCreate creates a build for an app.
-func (d DeisCmd) BuildsCreate(appID, image, procfile string) error {
+func (d *DeisCmd) BuildsCreate(appID, image, procfile string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -64,7 +64,7 @@ func (d DeisCmd) BuildsCreate(appID, image, procfile string) error {
 	_, err = builds.New(s.Client, appID, image, procfileMap)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

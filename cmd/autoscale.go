@@ -6,7 +6,7 @@ import (
 )
 
 // AutoscaleList tells the informations about app's autoscale status
-func (d DeisCmd) AutoscaleList(appID string) error {
+func (d *DeisCmd) AutoscaleList(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -14,7 +14,7 @@ func (d DeisCmd) AutoscaleList(appID string) error {
 	}
 
 	appSettings, err := appsettings.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -33,7 +33,7 @@ func (d DeisCmd) AutoscaleList(appID string) error {
 }
 
 // AutoscaleSet sets autoscale options for the app.
-func (d DeisCmd) AutoscaleSet(appID string, processType string, min int, max int, CPUPercent int) error {
+func (d *DeisCmd) AutoscaleSet(appID string, processType string, min int, max int, CPUPercent int) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -64,7 +64,7 @@ func (d DeisCmd) AutoscaleSet(appID string, processType string, min int, max int
 }
 
 // AutoscaleUnset removes autoscale for the app.
-func (d DeisCmd) AutoscaleUnset(appID string, processType string) error {
+func (d *DeisCmd) AutoscaleUnset(appID string, processType string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {

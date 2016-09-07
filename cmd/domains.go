@@ -3,7 +3,7 @@ package cmd
 import "github.com/deis/controller-sdk-go/domains"
 
 // DomainsList lists domains registered with an app.
-func (d DeisCmd) DomainsList(appID string, results int) error {
+func (d *DeisCmd) DomainsList(appID string, results int) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -15,7 +15,7 @@ func (d DeisCmd) DomainsList(appID string, results int) error {
 	}
 
 	domains, count, err := domains.List(s.Client, appID, results)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -28,7 +28,7 @@ func (d DeisCmd) DomainsList(appID string, results int) error {
 }
 
 // DomainsAdd adds a domain to an app.
-func (d DeisCmd) DomainsAdd(appID, domain string) error {
+func (d *DeisCmd) DomainsAdd(appID, domain string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -41,7 +41,7 @@ func (d DeisCmd) DomainsAdd(appID, domain string) error {
 	_, err = domains.New(s.Client, appID, domain)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -50,7 +50,7 @@ func (d DeisCmd) DomainsAdd(appID, domain string) error {
 }
 
 // DomainsRemove removes a domain registered with an app.
-func (d DeisCmd) DomainsRemove(appID, domain string) error {
+func (d *DeisCmd) DomainsRemove(appID, domain string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -63,7 +63,7 @@ func (d DeisCmd) DomainsRemove(appID, domain string) error {
 	err = domains.Delete(s.Client, appID, domain)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

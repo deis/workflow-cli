@@ -6,7 +6,7 @@ import (
 )
 
 // RoutingInfo provides information about the status of app routing.
-func (d DeisCmd) RoutingInfo(appID string) error {
+func (d *DeisCmd) RoutingInfo(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -14,7 +14,7 @@ func (d DeisCmd) RoutingInfo(appID string) error {
 	}
 
 	appSettings, err := appsettings.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -27,7 +27,7 @@ func (d DeisCmd) RoutingInfo(appID string) error {
 }
 
 // RoutingEnable enables an app from being exposed by the router.
-func (d DeisCmd) RoutingEnable(appID string) error {
+func (d *DeisCmd) RoutingEnable(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -52,7 +52,7 @@ func (d DeisCmd) RoutingEnable(appID string) error {
 }
 
 // RoutingDisable disables an app from being exposed by the router.
-func (d DeisCmd) RoutingDisable(appID string) error {
+func (d *DeisCmd) RoutingDisable(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {

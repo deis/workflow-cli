@@ -7,7 +7,7 @@ import (
 )
 
 // Version prints the various CLI versions.
-func (d DeisCmd) Version(all bool) error {
+func (d *DeisCmd) Version(all bool) error {
 	if !all {
 		d.Println(version.Version)
 		return nil

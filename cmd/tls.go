@@ -3,7 +3,7 @@ package cmd
 import "github.com/deis/controller-sdk-go/tls"
 
 // TLSInfo prints info about the TLS settings for the given app.
-func (d DeisCmd) TLSInfo(appID string) error {
+func (d *DeisCmd) TLSInfo(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -11,7 +11,7 @@ func (d DeisCmd) TLSInfo(appID string) error {
 	}
 
 	tls, err := tls.Info(s.Client, appID)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -22,7 +22,7 @@ func (d DeisCmd) TLSInfo(appID string) error {
 }
 
 // TLSEnable enables the router to enforce https-only requests to the application.
-func (d DeisCmd) TLSEnable(appID string) error {
+func (d *DeisCmd) TLSEnable(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -35,7 +35,7 @@ func (d DeisCmd) TLSEnable(appID string) error {
 	_, err = tls.Enable(s.Client, appID)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -44,7 +44,7 @@ func (d DeisCmd) TLSEnable(appID string) error {
 }
 
 // TLSDisable disables the router to enforce https-only requests to the application.
-func (d DeisCmd) TLSDisable(appID string) error {
+func (d *DeisCmd) TLSDisable(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -57,7 +57,7 @@ func (d DeisCmd) TLSDisable(appID string) error {
 	_, err = tls.Disable(s.Client, appID)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"strings"
 	"time"
@@ -18,7 +17,7 @@ import (
 const dateFormat = "2 Jan 2006"
 
 // CertsList lists certs registered with the controller.
-func (d DeisCmd) CertsList(results int, now time.Time) error {
+func (d *DeisCmd) CertsList(results int, now time.Time) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -30,7 +29,7 @@ func (d DeisCmd) CertsList(results int, now time.Time) error {
 	}
 
 	certList, _, err := certs.List(s.Client, results)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -99,7 +98,7 @@ func (d DeisCmd) CertsList(results int, now time.Time) error {
 }
 
 // CertAdd adds a cert to the controller.
-func (d DeisCmd) CertAdd(cert string, key string, name string) error {
+func (d *DeisCmd) CertAdd(cert string, key string, name string) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -108,7 +107,7 @@ func (d DeisCmd) CertAdd(cert string, key string, name string) error {
 
 	d.Print("Adding SSL endpoint... ")
 	quit := progress(d.WOut)
-	err = doCertAdd(s.Client, cert, key, name, d.WErr)
+	err = d.doCertAdd(s.Client, cert, key, name)
 	quit <- true
 	<-quit
 
@@ -120,7 +119,7 @@ func (d DeisCmd) CertAdd(cert string, key string, name string) error {
 	return nil
 }
 
-func doCertAdd(c *deis.Client, cert string, key string, name string, wErr io.Writer) error {
+func (d *DeisCmd) doCertAdd(c *deis.Client, cert string, key string, name string) error {
 	certFile, err := ioutil.ReadFile(cert)
 	if err != nil {
 		return err
@@ -132,13 +131,13 @@ func doCertAdd(c *deis.Client, cert string, key string, name string, wErr io.Wri
 	}
 
 	_, err = certs.New(c, string(certFile), string(keyFile), name)
-	return checkAPICompatibility(c, err, wErr)
+	return d.checkAPICompatibility(c, err)
 }
 
 // CertRemove deletes a cert from the controller.
-func (d DeisCmd) CertRemove(name string) error {
+func (d *DeisCmd) CertRemove(name string) error {
 	s, err := settings.Load(d.ConfigFile)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -148,7 +147,7 @@ func (d DeisCmd) CertRemove(name string) error {
 	err = certs.Delete(s.Client, name)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -157,14 +156,14 @@ func (d DeisCmd) CertRemove(name string) error {
 }
 
 // CertInfo gets info about certficiate
-func (d DeisCmd) CertInfo(name string) error {
+func (d *DeisCmd) CertInfo(name string) error {
 	s, err := settings.Load(d.ConfigFile)
 	if err != nil {
 		return err
 	}
 
 	cert, err := certs.Get(s.Client, name)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -201,7 +200,7 @@ func (d DeisCmd) CertInfo(name string) error {
 }
 
 // CertAttach attaches a certificate to a domain
-func (d DeisCmd) CertAttach(name, domain string) error {
+func (d *DeisCmd) CertAttach(name, domain string) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -214,7 +213,7 @@ func (d DeisCmd) CertAttach(name, domain string) error {
 	err = certs.Attach(s.Client, name, domain)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) == nil {
+	if d.checkAPICompatibility(s.Client, err) == nil {
 		d.Println("done")
 	}
 
@@ -222,7 +221,7 @@ func (d DeisCmd) CertAttach(name, domain string) error {
 }
 
 // CertDetach detaches a certificate from a domain
-func (d DeisCmd) CertDetach(name, domain string) error {
+func (d *DeisCmd) CertDetach(name, domain string) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -235,7 +234,7 @@ func (d DeisCmd) CertDetach(name, domain string) error {
 	err = certs.Detach(s.Client, name, domain)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

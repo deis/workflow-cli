@@ -14,7 +14,7 @@ import (
 )
 
 // PsList lists an app's processes.
-func (d DeisCmd) PsList(appID string, results int) error {
+func (d *DeisCmd) PsList(appID string, results int) error {
 	s, appID, err := load(d.ConfigFile, appID)
 	if err != nil {
 		return err
@@ -25,7 +25,7 @@ func (d DeisCmd) PsList(appID string, results int) error {
 	}
 
 	processes, _, err := ps.List(s.Client, appID, results)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -35,7 +35,7 @@ func (d DeisCmd) PsList(appID string, results int) error {
 }
 
 // PsScale scales an app's processes.
-func (d DeisCmd) PsScale(appID string, targets []string) error {
+func (d *DeisCmd) PsScale(appID string, targets []string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 	if err != nil {
 		return err
@@ -53,7 +53,7 @@ func (d DeisCmd) PsScale(appID string, targets []string) error {
 	err = ps.Scale(s.Client, appID, targetMap)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -69,7 +69,7 @@ func (d DeisCmd) PsScale(appID string, targets []string) error {
 }
 
 // PsRestart restarts an app's processes.
-func (d DeisCmd) PsRestart(appID, target string) error {
+func (d *DeisCmd) PsRestart(appID, target string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 	if err != nil {
 		return err
@@ -89,7 +89,7 @@ func (d DeisCmd) PsRestart(appID, target string) error {
 	<-quit
 	if err == deis.ErrPodNotFound {
 		return fmt.Errorf("Could not find process type %s in app %s", psType, appID)
-	} else if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	} else if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

@@ -6,7 +6,7 @@ import (
 )
 
 // UsersList lists users registered with the controller.
-func (d DeisCmd) UsersList(results int) error {
+func (d *DeisCmd) UsersList(results int) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -18,7 +18,7 @@ func (d DeisCmd) UsersList(results int) error {
 	}
 
 	users, count, err := users.List(s.Client, results)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

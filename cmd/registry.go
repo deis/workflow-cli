@@ -11,7 +11,7 @@ import (
 )
 
 // RegistryList lists an app's registry information.
-func (d DeisCmd) RegistryList(appID string) error {
+func (d *DeisCmd) RegistryList(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -19,7 +19,7 @@ func (d DeisCmd) RegistryList(appID string) error {
 	}
 
 	config, err := config.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -37,7 +37,7 @@ func (d DeisCmd) RegistryList(appID string) error {
 }
 
 // RegistrySet sets an app's registry information.
-func (d DeisCmd) RegistrySet(appID string, item []string) error {
+func (d *DeisCmd) RegistrySet(appID string, item []string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -58,7 +58,7 @@ func (d DeisCmd) RegistrySet(appID string, item []string) error {
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -68,7 +68,7 @@ func (d DeisCmd) RegistrySet(appID string, item []string) error {
 }
 
 // RegistryUnset removes an app's registry information.
-func (d DeisCmd) RegistryUnset(appID string, items []string) error {
+func (d *DeisCmd) RegistryUnset(appID string, items []string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -92,7 +92,7 @@ func (d DeisCmd) RegistryUnset(appID string, items []string) error {
 	_, err = config.Set(s.Client, appID, configObj)
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

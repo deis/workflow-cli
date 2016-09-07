@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"time"
@@ -18,7 +17,7 @@ import (
 )
 
 // AppCreate creates an app.
-func (d DeisCmd) AppCreate(id, buildpack, remote string, noRemote bool) error {
+func (d *DeisCmd) AppCreate(id, buildpack, remote string, noRemote bool) error {
 	s, err := settings.Load(d.ConfigFile)
 	if err != nil {
 		return err
@@ -31,7 +30,7 @@ func (d DeisCmd) AppCreate(id, buildpack, remote string, noRemote bool) error {
 	quit <- true
 	<-quit
 
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -43,7 +42,7 @@ func (d DeisCmd) AppCreate(id, buildpack, remote string, noRemote bool) error {
 				"BUILDPACK_URL": buildpack,
 			},
 		}
-		if _, err = config.Set(s.Client, app.ID, configValues); checkAPICompatibility(s.Client, err, d.WErr) != nil {
+		if _, err = config.Set(s.Client, app.ID, configValues); d.checkAPICompatibility(s.Client, err) != nil {
 			return err
 		}
 	}
@@ -69,7 +68,7 @@ func (d DeisCmd) AppCreate(id, buildpack, remote string, noRemote bool) error {
 }
 
 // AppsList lists apps on the Deis controller.
-func (d DeisCmd) AppsList(results int) error {
+func (d *DeisCmd) AppsList(results int) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -81,7 +80,7 @@ func (d DeisCmd) AppsList(results int) error {
 	}
 
 	apps, count, err := apps.List(s.Client, results)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -94,7 +93,7 @@ func (d DeisCmd) AppsList(results int) error {
 }
 
 // AppInfo prints info about app.
-func (d DeisCmd) AppInfo(appID string) error {
+func (d *DeisCmd) AppInfo(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -102,11 +101,11 @@ func (d DeisCmd) AppInfo(appID string) error {
 	}
 
 	app, err := apps.Get(s.Client, appID)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
-	url, err := appURL(s, appID, d.WErr)
+	url, err := d.appURL(s, appID)
 	if err != nil {
 		return err
 	}
@@ -141,14 +140,14 @@ func (d DeisCmd) AppInfo(appID string) error {
 }
 
 // AppOpen opens an app in the default webbrowser.
-func (d DeisCmd) AppOpen(appID string) error {
+func (d *DeisCmd) AppOpen(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
 	}
 
-	u, err := appURL(s, appID, d.WErr)
+	u, err := d.appURL(s, appID)
 	if err != nil {
 		return err
 	}
@@ -165,7 +164,7 @@ func (d DeisCmd) AppOpen(appID string) error {
 }
 
 // AppLogs returns the logs from an app.
-func (d DeisCmd) AppLogs(appID string, lines int) error {
+func (d *DeisCmd) AppLogs(appID string, lines int) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -173,7 +172,7 @@ func (d DeisCmd) AppLogs(appID string, lines int) error {
 	}
 
 	logs, err := apps.Logs(s.Client, appID, lines)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -185,7 +184,7 @@ func (d DeisCmd) AppLogs(appID string, lines int) error {
 }
 
 // AppRun runs a one time command in the app.
-func (d DeisCmd) AppRun(appID, command string) error {
+func (d *DeisCmd) AppRun(appID, command string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -195,7 +194,7 @@ func (d DeisCmd) AppRun(appID, command string) error {
 	d.Printf("Running '%s'...\n", command)
 
 	out, err := apps.Run(s.Client, appID, command)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -210,7 +209,7 @@ func (d DeisCmd) AppRun(appID, command string) error {
 }
 
 // AppDestroy destroys an app.
-func (d DeisCmd) AppDestroy(appID, confirm string) error {
+func (d *DeisCmd) AppDestroy(appID, confirm string) error {
 	gitSession := false
 
 	s, err := settings.Load(d.ConfigFile)
@@ -246,7 +245,7 @@ func (d DeisCmd) AppDestroy(appID, confirm string) error {
 	startTime := time.Now()
 	d.Printf("Destroying %s...\n", appID)
 
-	if err = apps.Delete(s.Client, appID); checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if err = apps.Delete(s.Client, appID); d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -260,7 +259,7 @@ func (d DeisCmd) AppDestroy(appID, confirm string) error {
 }
 
 // AppTransfer transfers app ownership to another user.
-func (d DeisCmd) AppTransfer(appID, username string) error {
+func (d *DeisCmd) AppTransfer(appID, username string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -270,7 +269,7 @@ func (d DeisCmd) AppTransfer(appID, username string) error {
 	d.Printf("Transferring %s to %s... ", appID, username)
 
 	err = apps.Transfer(s.Client, appID, username)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -282,9 +281,9 @@ func (d DeisCmd) AppTransfer(appID, username string) error {
 const noDomainAssignedMsg = "No domain assigned to %s"
 
 // appURL grabs the first domain an app has and returns this.
-func appURL(s *settings.Settings, appID string, wErr io.Writer) (string, error) {
+func (d *DeisCmd) appURL(s *settings.Settings, appID string) (string, error) {
 	domains, _, err := domains.List(s.Client, appID, 1)
-	if checkAPICompatibility(s.Client, err, wErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return "", err
 	}
 

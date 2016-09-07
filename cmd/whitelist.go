@@ -7,7 +7,7 @@ import (
 )
 
 // WhitelistList lists the addresses whitelisted for app
-func (d DeisCmd) WhitelistList(appID string) error {
+func (d *DeisCmd) WhitelistList(appID string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -15,7 +15,7 @@ func (d DeisCmd) WhitelistList(appID string) error {
 	}
 
 	whitelist, err := whitelist.List(s.Client, appID)
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -28,7 +28,7 @@ func (d DeisCmd) WhitelistList(appID string) error {
 }
 
 // WhitelistAdd adds the addresses to the app's Whitelist.
-func (d DeisCmd) WhitelistAdd(appID, IPs string) error {
+func (d *DeisCmd) WhitelistAdd(appID, IPs string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -41,7 +41,7 @@ func (d DeisCmd) WhitelistAdd(appID, IPs string) error {
 	_, err = whitelist.Add(s.Client, appID, strings.Split(IPs, ","))
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 
@@ -50,7 +50,7 @@ func (d DeisCmd) WhitelistAdd(appID, IPs string) error {
 }
 
 // WhitelistRemove deletes the addresses from the app's Whitelist.
-func (d DeisCmd) WhitelistRemove(appID, IPs string) error {
+func (d *DeisCmd) WhitelistRemove(appID, IPs string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -63,7 +63,7 @@ func (d DeisCmd) WhitelistRemove(appID, IPs string) error {
 	err = whitelist.Delete(s.Client, appID, strings.Split(IPs, ","))
 	quit <- true
 	<-quit
-	if checkAPICompatibility(s.Client, err, d.WErr) != nil {
+	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
 

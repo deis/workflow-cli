@@ -26,7 +26,7 @@ func printHealthCheck(out io.Writer, healthcheck api.Healthchecks) {
 }
 
 // HealthchecksList lists an app's healthchecks.
-func (d DeisCmd) HealthchecksList(appID, procType string) error {
+func (d *DeisCmd) HealthchecksList(appID, procType string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (d DeisCmd) HealthchecksList(appID, procType string) error {
 }
 
 // HealthchecksSet sets an app's healthchecks.
-func (d DeisCmd) HealthchecksSet(appID, healthcheckType, procType string, probe *api.Healthcheck) error {
+func (d *DeisCmd) HealthchecksSet(appID, healthcheckType, procType string, probe *api.Healthcheck) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -81,7 +81,7 @@ func (d DeisCmd) HealthchecksSet(appID, healthcheckType, procType string, probe 
 }
 
 // HealthchecksUnset removes an app's healthchecks.
-func (d DeisCmd) HealthchecksUnset(appID, procType string, healthchecks []string) error {
+func (d *DeisCmd) HealthchecksUnset(appID, procType string, healthchecks []string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 	if err != nil {
 		return err
