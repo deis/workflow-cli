@@ -63,6 +63,45 @@ v1	2014-01-01T00:00:00UTC	nazgul created initial release
 `, "output")
 }
 
+func TestReleasesListLimit(t *testing.T) {
+	t.Parallel()
+	cf, server, err := testutil.NewTestServerAndClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer server.Close()
+	var b bytes.Buffer
+	cmdr := DeisCmd{WOut: &b, ConfigFile: cf}
+
+	server.Mux.HandleFunc("/v2/apps/numenor/releases/", func(w http.ResponseWriter, r *http.Request) {
+		testutil.SetHeaders(w)
+		fmt.Fprintf(w, `{
+			"count": 2,
+			"next": null,
+			"previous": null,
+			"results": [
+			{
+					"uuid": "c4aed81c-d1ca-4ff1-ab89-d2151264e1a3",
+					"app": "numenor",
+					"owner": "nazgul",
+					"created": "2016-08-22T17:40:16Z",
+					"updated": "2016-08-22T17:40:16Z",
+					"version": 2,
+					"summary": "khamul added ANGMAR",
+					"config": "3bb816b1-4fde-4b06-8afe-acd12f58a266",
+					"build": null
+				}
+			]
+		}`)
+	})
+
+	err = cmdr.ReleasesList("numenor", 1)
+	assert.NoErr(t, err)
+	assert.Equal(t, b.String(), `=== numenor Releases (1 of 2)
+v2	2016-08-22T17:40:16Z	khamul added ANGMAR
+`, "output")
+}
+
 func TestReleasesInfo(t *testing.T) {
 	t.Parallel()
 	cf, server, err := testutil.NewTestServerAndClient()
