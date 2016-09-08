@@ -103,7 +103,7 @@ func TestUsersListLimit(t *testing.T) {
 		}`)
 	})
 
-	err = cmdr.UsersList(-1)
+	err = cmdr.UsersList(1)
 	assert.NoErr(t, err)
 
 	assert.Equal(t, b.String(), `=== Users (*=admin) (1 of 2)
