@@ -66,8 +66,8 @@ func TestRemoteExists(t *testing.T) {
 
 	assert.NoErr(t, os.Chdir(dir))
 
-	assert.NoErr(t, git.Init())
-	assert.NoErr(t, git.CreateRemote("localhost", "deis", "appname"))
+	assert.NoErr(t, git.Init(git.DefaultCmd))
+	assert.NoErr(t, git.CreateRemote(git.DefaultCmd, "localhost", "deis", "appname"))
 
 	var b bytes.Buffer
 	cmdr := DeisCmd{WOut: &b, ConfigFile: cf}

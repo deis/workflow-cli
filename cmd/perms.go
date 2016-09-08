@@ -103,7 +103,7 @@ func permsLoad(cf, appID string, admin bool) (*settings.Settings, string, error)
 	}
 
 	if !admin && appID == "" {
-		appID, err = git.DetectAppName(s.Client.ControllerURL.Host)
+		appID, err = git.DetectAppName(git.DefaultCmd, s.Client.ControllerURL.Host)
 
 		if err != nil {
 			return nil, "", err

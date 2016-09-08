@@ -13,12 +13,12 @@ const remoteDeletionMsg = "Git remotes for app %s removed.\n"
 func (d *DeisCmd) GitRemote(appID, remote string, force bool) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
-	remoteURL, err := git.RemoteValue(remote)
+	remoteURL, err := git.RemoteURL(git.DefaultCmd, remote)
 
 	if err != nil {
 		//If git remote doesn't exist, create it without issue
 		if err == git.ErrRemoteNotFound {
-			err := git.CreateRemote(s.Client.ControllerURL.Host, remote, appID)
+			err := git.CreateRemote(git.DefaultCmd, s.Client.ControllerURL.Host, remote, appID)
 			if err != nil {
 				return err
 			}
@@ -29,7 +29,7 @@ func (d *DeisCmd) GitRemote(appID, remote string, force bool) error {
 		return err
 	}
 
-	expectedURL := git.RemoteURL(s.Client.ControllerURL.Host, appID)
+	expectedURL := git.RepositoryURL(s.Client.ControllerURL.Host, appID)
 
 	if remoteURL == expectedURL {
 		d.Printf("Remote %s already exists and is correctly configured for app %s.\n", remote, appID)
@@ -38,11 +38,11 @@ func (d *DeisCmd) GitRemote(appID, remote string, force bool) error {
 
 	if force {
 		d.Printf("Deleting git remote %s.\n", remote)
-		err := git.DeleteRemote(remote)
+		err := git.DeleteRemote(git.DefaultCmd, remote)
 		if err != nil {
 			return err
 		}
-		err = git.CreateRemote(s.Client.ControllerURL.Host, remote, appID)
+		err = git.CreateRemote(git.DefaultCmd, s.Client.ControllerURL.Host, remote, appID)
 		if err != nil {
 			return err
 		}
@@ -65,7 +65,7 @@ func (d *DeisCmd) GitRemove(appID string) error {
 		return err
 	}
 
-	err = git.DeleteAppRemotes(s.Client.ControllerURL.Host, appID)
+	err = git.DeleteAppRemotes(git.DefaultCmd, s.Client.ControllerURL.Host, appID)
 
 	if err != nil {
 		return err

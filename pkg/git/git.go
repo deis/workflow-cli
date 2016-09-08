@@ -7,14 +7,36 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
 )
 
-// ErrRemoteNotFound is returned when the remote cannot be found in git
-var ErrRemoteNotFound = errors.New("Could not find remote matching app in 'git remote -v'")
+var (
+	// ErrRemoteNotFound is returned when the remote cannot be found in git
+	ErrRemoteNotFound = errors.New("Could not find remote matching app in 'git remote -v'")
+	// ErrInvalidRepositoryList is an error returned if git returns unparsible output
+	ErrInvalidRepositoryList = errors.New("Invalid output in 'git remote -v'")
+)
+
+// Cmd is a method the exeutes the given git command and returns the output or the error.
+type Cmd func(cmd []string) (string, error)
+
+// remote defines a git remote's name and its url.
+type remote struct {
+	Name string
+	URL  string
+}
+
+// DefaultCmd is an implementation of Cmd that calls git.
+func DefaultCmd(cmd []string) (string, error) {
+	out, err := exec.Command("git", cmd...).Output()
+	if err != nil {
+		return string(out), gitError(err.(*exec.ExitError), cmd)
+	}
+
+	return string(out), nil
+}
 
 func gitError(err *exec.ExitError, cmd []string) error {
-	msg := fmt.Sprintf("Error when running '%s'\n", strings.Join(cmd, " "))
+	msg := fmt.Sprintf("Error when running 'git %s'\n", strings.Join(cmd, " "))
 	out := string(err.Stderr)
 	if out != "" {
 		msg += strings.TrimSpace(out)
@@ -24,35 +46,27 @@ func gitError(err *exec.ExitError, cmd []string) error {
 }
 
 // CreateRemote adds a git remote in the current directory.
-func CreateRemote(host, remote, appID string) error {
-	cmd := []string{"git", "remote", "add", remote, RemoteURL(host, appID)}
-	if _, err := exec.Command(cmd[0], cmd[1:]...).Output(); err != nil {
-		return gitError(err.(*exec.ExitError), cmd)
-	}
-
-	return nil
+func CreateRemote(cmd Cmd, host, name, appID string) error {
+	_, err := cmd([]string{"remote", "add", name, RepositoryURL(host, appID)})
+	return err
 }
 
 // Init creates a new git repository in the local directory.
-func Init() error {
-	cmd := []string{"git", "init"}
-	if _, err := exec.Command(cmd[0], cmd[1:]...).Output(); err != nil {
-		return gitError(err.(*exec.ExitError), cmd)
-	}
-
-	return nil
+func Init(cmd Cmd) error {
+	_, err := cmd([]string{"init"})
+	return err
 }
 
 // DeleteAppRemotes removes all git remotes corresponding to an app in the repository.
-func DeleteAppRemotes(host, appID string) error {
-	names, err := remoteNamesFromAppID(host, appID)
+func DeleteAppRemotes(cmd Cmd, host, appID string) error {
+	names, err := remoteNamesFromAppID(cmd, host, appID)
 
 	if err != nil {
 		return err
 	}
 
 	for _, name := range names {
-		if err := DeleteRemote(name); err != nil {
+		if err := DeleteRemote(cmd, name); err != nil {
 			return err
 		}
 	}
@@ -61,50 +75,36 @@ func DeleteAppRemotes(host, appID string) error {
 }
 
 // DeleteRemote removes a remote from the repository
-func DeleteRemote(name string) error {
-	cmd := []string{"git", "remote", "remove", name}
-	if _, err := exec.Command(cmd[0], cmd[1:]...).Output(); err != nil {
-		return gitError(err.(*exec.ExitError), cmd)
-	}
-
-	return nil
+func DeleteRemote(cmd Cmd, name string) error {
+	_, err := cmd([]string{"remote", "remove", name})
+	return err
 }
 
 // remoteNamesFromAppID returns the git remote names for an app
-func remoteNamesFromAppID(host, appID string) ([]string, error) {
-	cmd := []string{"git", "remote", "-v"}
-	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
-
+func remoteNamesFromAppID(cmd Cmd, host, appID string) ([]string, error) {
+	remotes, err := getRemotes(cmd)
 	if err != nil {
-		return []string{}, gitError(err.(*exec.ExitError), cmd)
+		return nil, err
 	}
 
-	remotes := []string{}
+	var matchedRemotes []string
 
-lines:
-	for _, line := range strings.Split(string(out), "\n") {
-		if strings.Contains(line, RemoteURL(host, appID)) {
-			name := strings.Split(line, "\t")[0]
-			// git remote -v can show duplicate remotes, so don't add a remote if it already has been added
-			for _, remote := range remotes {
-				if remote == name {
-					continue lines
-				}
-			}
-			remotes = append(remotes, name)
+	for _, r := range remotes {
+		if r.URL == RepositoryURL(host, appID) {
+			matchedRemotes = append(matchedRemotes, r.Name)
 		}
 	}
 
-	if len(remotes) == 0 {
-		return remotes, ErrRemoteNotFound
+	if len(matchedRemotes) == 0 {
+		return nil, ErrRemoteNotFound
 	}
 
-	return remotes, nil
+	return matchedRemotes, nil
 }
 
 // DetectAppName detects if there is deis remote in git.
-func DetectAppName(host string) (string, error) {
-	remote, err := findRemote(host)
+func DetectAppName(cmd Cmd, host string) (string, error) {
+	remote, err := findRemote(cmd, host)
 
 	// Don't return an error if remote can't be found, return directory name instead.
 	if err != nil {
@@ -116,30 +116,28 @@ func DetectAppName(host string) (string, error) {
 	return strings.Split(ss[len(ss)-1], ".")[0], nil
 }
 
-func findRemote(host string) (string, error) {
-	cmd := []string{"git", "remote", "-v"}
-	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
+// findRemote finds a remote name the uses a workflow git repository.
+func findRemote(cmd Cmd, host string) (string, error) {
+	remotes, err := getRemotes(cmd)
 	if err != nil {
-		return "", gitError(err.(*exec.ExitError), cmd)
+		return "", err
 	}
 
-	// Strip off any trailing :port number after the host name.
-	host = strings.Split(host, ":")[0]
-	builderHost := getBuilderHostname(host)
+	// strip port from controller url and use it to find builder hostname
+	builderHost := getBuilderHostname(strings.Split(host, ":")[0])
 
-	for _, line := range strings.Split(string(out), "\n") {
-		for _, remote := range strings.Split(line, " ") {
-			if strings.Contains(remote, host) || strings.Contains(remote, builderHost) {
-				return strings.Split(remote, "\t")[1], nil
-			}
+	// search for builder hostname in remote url
+	for _, r := range remotes {
+		if strings.Contains(r.URL, builderHost) {
+			return r.URL, nil
 		}
 	}
 
 	return "", ErrRemoteNotFound
 }
 
-// RemoteURL returns the git URL of app.
-func RemoteURL(host, appID string) string {
+// RepositoryURL returns the git repository of an app.
+func RepositoryURL(host, appID string) string {
 	// Strip off any trailing :port number after the host name.
 	host = strings.Split(host, ":")[0]
 	return fmt.Sprintf("ssh://git@%s:2222/%s.git", getBuilderHostname(host), appID)
@@ -152,18 +150,43 @@ func getBuilderHostname(host string) string {
 	return strings.Join(hostTokens, ".")
 }
 
-// RemoteValue gets the url that a git remote is set to.
-func RemoteValue(name string) (string, error) {
-	cmd := []string{"git", "remote", "get-url", name}
-	out, err := exec.Command(cmd[0], cmd[1:]...).Output()
-
+// RemoteURL retrives the url that a git remote is set to.
+func RemoteURL(cmd Cmd, name string) (string, error) {
+	remotes, err := getRemotes(cmd)
 	if err != nil {
-		// get the return code of the program and see if it equals not found
-		if err.(*exec.ExitError).Sys().(syscall.WaitStatus).ExitStatus() == 128 {
-			return "", ErrRemoteNotFound
-		}
-		return "", gitError(err.(*exec.ExitError), cmd)
+		return "", err
 	}
 
-	return strings.Trim(string(out), "\n"), nil
+	for _, r := range remotes {
+		if r.Name == name {
+			return r.URL, nil
+		}
+	}
+
+	return "", ErrRemoteNotFound
+}
+
+// getRemotes retrives all the git remotes from a repository
+func getRemotes(cmd Cmd) ([]remote, error) {
+	out, err := cmd([]string{"remote", "-v"})
+	if err != nil {
+		return nil, err
+	}
+
+	var remotes []remote
+
+	for _, line := range strings.Split(out, "\n") {
+		// git remote -v contains both push and fetch remotes.
+		// They're generally identical, and deis only cares about push.
+		if strings.HasSuffix(line, "(push)") {
+			parts := strings.Split(line, "\t")
+			if len(parts) < 2 {
+				return remotes, ErrInvalidRepositoryList
+			}
+
+			remotes = append(remotes, remote{Name: parts[0], URL: strings.Split(parts[1], " ")[0]})
+		}
+	}
+
+	return remotes, nil
 }

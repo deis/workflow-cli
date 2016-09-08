@@ -40,8 +40,8 @@ func TestLoad(t *testing.T) {
 	assert.NoErr(t, err)
 	assert.Equal(t, appID, filepath.Base(name), "app")
 
-	assert.NoErr(t, git.Init())
-	assert.NoErr(t, git.CreateRemote(host, "deis", "testing"))
+	assert.NoErr(t, git.Init(git.DefaultCmd))
+	assert.NoErr(t, git.CreateRemote(git.DefaultCmd, host, "deis", "testing"))
 
 	_, appID, err = load(filename, "")
 	assert.NoErr(t, err)

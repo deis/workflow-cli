@@ -48,7 +48,7 @@ func (d *DeisCmd) AppCreate(id, buildpack, remote string, noRemote bool) error {
 	}
 
 	if !noRemote {
-		if err = git.CreateRemote(s.Client.ControllerURL.Host, remote, app.ID); err != nil {
+		if err = git.CreateRemote(git.DefaultCmd, s.Client.ControllerURL.Host, remote, app.ID); err != nil {
 			if strings.Contains(err.Error(), fmt.Sprintf("fatal: remote %s already exists.", remote)) {
 				msg := "A git remote with the name %s already exists. To overwrite this remote run:\n"
 				msg += "deis git:remote --force --remote %s --app %s"
@@ -219,7 +219,7 @@ func (d *DeisCmd) AppDestroy(appID, confirm string) error {
 	}
 
 	if appID == "" {
-		appID, err = git.DetectAppName(s.Client.ControllerURL.Host)
+		appID, err = git.DetectAppName(git.DefaultCmd, s.Client.ControllerURL.Host)
 
 		if err != nil {
 			return err
