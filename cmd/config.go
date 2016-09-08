@@ -252,6 +252,8 @@ func (d DeisCmd) ConfigPush(appID, fileName string) error {
 	config := []string{}
 
 	for _, configVar := range file {
+		// If file has CRLF encoding, the default on windows, strip the CR
+		configVar = strings.Trim(configVar, "\r")
 		if len(configVar) > 0 {
 			config = append(config, configVar)
 		}
