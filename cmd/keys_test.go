@@ -270,7 +270,7 @@ func TestKeysListLimit(t *testing.T) {
 		}`)
 	})
 
-	err = cmdr.KeysList(-1)
+	err = cmdr.KeysList(1)
 	assert.NoErr(t, err)
 	assert.Equal(t, b.String(), `=== test Keys (1 of 2)
 cpike@starfleet.ufp ssh-rsa abc cpik...rfleet.ufp
