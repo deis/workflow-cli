@@ -22,11 +22,11 @@ func TestPermsListUsers(t *testing.T) {
 		testutil.SetHeaders(w)
 
 		fmt.Fprintf(w, `{
-			"users": [
-                "baz",
-                "bar"
-            ]
-		}`)
+  "users": [
+    "baz",
+    "bar"
+  ]
+}`)
 	})
 
 	var b bytes.Buffer
@@ -53,10 +53,10 @@ func TestPermsListUsersLimit(t *testing.T) {
 		testutil.SetHeaders(w)
 
 		fmt.Fprintf(w, `{
-			"users": [
-                "baz"
-            ]
-		}`)
+  "users": [
+    "baz"
+  ]
+}`)
 	})
 
 	var b bytes.Buffer
@@ -82,20 +82,20 @@ func TestPermsListAdmins(t *testing.T) {
 		testutil.SetHeaders(w)
 
 		fmt.Fprintf(w, `{
-            "count": 2,
-            "next": null,
-            "previous": null,
-			"results": [
-                {
-                    "username": "fred",
-                    "is_superuser": true
-                },
-                {
-                    "username": "bob",
-                    "is_superuser": true
-                }
-            ]
-		}`)
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "username": "fred",
+      "is_superuser": true
+    },
+    {
+      "username": "bob",
+      "is_superuser": true
+    }
+]
+}`)
 	})
 
 	var b bytes.Buffer
@@ -122,16 +122,16 @@ func TestPermsListAdminsLimit(t *testing.T) {
 		testutil.SetHeaders(w)
 
 		fmt.Fprintf(w, `{
-            "count": 2,
-            "next": null,
-            "previous": null,
-			"results": [
-                {
-                    "username": "fred",
-                    "is_superuser": true
-                }
-            ]
-		}`)
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "username": "fred",
+      "is_superuser": true
+    }
+  ]
+}`)
 	})
 
 	var b bytes.Buffer
