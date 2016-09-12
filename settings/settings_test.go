@@ -91,6 +91,14 @@ func TestLoadSave(t *testing.T) {
 
 	s.Client.ControllerURL = u
 
+	// Create a tempdir and set as HOME.
+	dir, err := ioutil.TempDir("", "deishome")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+	SetHome(dir)
+
 	if _, err = s.Save(file); err != nil {
 		t.Fatal(err)
 	}
