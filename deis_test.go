@@ -3,6 +3,8 @@ package main
 import (
 	"reflect"
 	"testing"
+
+	"github.com/arschles/assert"
 )
 
 func TestHelpReformatting(t *testing.T) {
@@ -81,4 +83,51 @@ func TestReplaceShortcutUnchanged(t *testing.T) {
 	if expected != actual {
 		t.Errorf("Expected %s, Got %s", expected, actual)
 	}
+}
+
+func TestGetConfigFlag(t *testing.T) {
+	t.Parallel()
+
+	expected := "the-config-flag"
+	argv := []string{
+		"lorem",
+		"ipsum",
+		"--config=" + expected,
+	}
+	actual := getConfigFlag(argv)
+	assert.Equal(t, actual, expected, "config-flag")
+
+	argv = []string{
+		"lorem",
+		"ipsum",
+		"-c",
+		expected,
+	}
+	actual = getConfigFlag(argv)
+	assert.Equal(t, actual, expected, "config-flag")
+}
+
+func TestRemoveConfigFlag(t *testing.T) {
+	t.Parallel()
+	expected := []string{
+		"lorem",
+		"ipsum",
+	}
+
+	argv := []string{
+		"lorem",
+		"ipsum",
+		"--config=the-config-flag",
+	}
+	actual := removeConfigFlag(argv)
+	assert.Equal(t, actual, expected, "args")
+
+	argv = []string{
+		"lorem",
+		"ipsum",
+		"-c",
+		"the-config-flag",
+	}
+	actual = removeConfigFlag(argv)
+	assert.Equal(t, actual, expected, "args")
 }
