@@ -241,6 +241,42 @@ cpike@1701.ncc.starfleet.ufp ssh-rsa 123 cpik...rfleet.ufp
 `, "output")
 }
 
+func TestKeysListLimit(t *testing.T) {
+	t.Parallel()
+	cf, server, err := testutil.NewTestServerAndClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer server.Close()
+	var b bytes.Buffer
+	cmdr := DeisCmd{WOut: &b, ConfigFile: cf}
+
+	server.Mux.HandleFunc("/v2/keys/", func(w http.ResponseWriter, r *http.Request) {
+		testutil.SetHeaders(w)
+		fmt.Fprintf(w, `{
+			"count": 2,
+			"next": null,
+			"previous": null,
+			"results": [
+				{
+					"created": "2014-01-01T00:00:00UTC",
+					"id": "cpike@starfleet.ufp",
+					"owner": "cpike",
+					"public": "ssh-rsa abc cpike@starfleet.ufp",
+					"updated": "2014-01-01T00:00:00UTC",
+					"uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
+				}
+			]
+		}`)
+	})
+
+	err = cmdr.KeysList(1)
+	assert.NoErr(t, err)
+	assert.Equal(t, b.String(), `=== test Keys (1 of 2)
+cpike@starfleet.ufp ssh-rsa abc cpik...rfleet.ufp
+`, "output")
+}
+
 func TestKeyRemove(t *testing.T) {
 	t.Parallel()
 	cf, server, err := testutil.NewTestServerAndClient()

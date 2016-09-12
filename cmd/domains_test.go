@@ -55,6 +55,42 @@ foo
 `, "output")
 }
 
+func TestDomainsListLimit(t *testing.T) {
+	t.Parallel()
+	cf, server, err := testutil.NewTestServerAndClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer server.Close()
+	var b bytes.Buffer
+	cmdr := DeisCmd{WOut: &b, ConfigFile: cf}
+
+	server.Mux.HandleFunc("/v2/apps/foo/domains/", func(w http.ResponseWriter, r *http.Request) {
+		testutil.SetHeaders(w)
+		fmt.Fprintf(w, `{
+    "count": 2,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "app": "foo",
+            "created": "2014-01-01T00:00:00UTC",
+            "domain": "example.example.com",
+            "owner": "test",
+            "updated": "2014-01-01T00:00:00UTC"
+        }
+    ]
+}`)
+	})
+
+	err = cmdr.DomainsList("foo", 1)
+	assert.NoErr(t, err)
+
+	assert.Equal(t, b.String(), `=== foo Domains (1 of 2)
+example.example.com
+`, "output")
+}
+
 func TestDomainsAdd(t *testing.T) {
 	t.Parallel()
 	cf, server, err := testutil.NewTestServerAndClient()
