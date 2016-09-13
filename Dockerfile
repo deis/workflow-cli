@@ -1,4 +1,4 @@
-FROM quay.io/deis/go-dev:0.17.0
+FROM quay.io/deis/go-dev:0.19.0
 # This Dockerfile is used to bundle the source and all dependencies into an image for testing.
 
 RUN echo "deb http://packages.cloud.google.com/apt cloud-sdk-jessie main" \
