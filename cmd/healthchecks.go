@@ -1,27 +1,23 @@
 package cmd
 
 import (
-	"fmt"
-	"io"
-	"os"
-
 	"github.com/deis/controller-sdk-go/api"
 	"github.com/deis/controller-sdk-go/config"
 )
 
-func printHealthCheck(out io.Writer, healthcheck api.Healthchecks) {
-	fmt.Fprintln(out, "--- Liveness")
+func (d *DeisCmd) printHealthCheck(healthcheck api.Healthchecks) {
+	d.Println("--- Liveness")
 	if livenessProbe, found := healthcheck["livenessProbe"]; found {
-		fmt.Fprintln(out, livenessProbe)
+		d.Println(livenessProbe)
 	} else {
-		fmt.Fprintln(out, "No liveness probe configured.")
+		d.Println("No liveness probe configured.")
 	}
 
-	fmt.Fprintln(out, "\n--- Readiness")
+	d.Println("\n--- Readiness")
 	if readinessProbe, found := healthcheck["readinessProbe"]; found {
-		fmt.Fprintln(out, readinessProbe)
+		d.Println(readinessProbe)
 	} else {
-		fmt.Fprintln(out, "No readiness probe configured.")
+		d.Println("No readiness probe configured.")
 	}
 }
 
@@ -41,9 +37,9 @@ func (d *DeisCmd) HealthchecksList(appID, procType string) error {
 	d.Printf("=== %s Healthchecks\n\n", appID)
 	d.Println(procType + ":")
 	if healthcheck, found := config.Healthcheck[procType]; found {
-		printHealthCheck(os.Stdout, *healthcheck)
+		d.printHealthCheck(*healthcheck)
 	} else {
-		printHealthCheck(os.Stdout, api.Healthchecks{})
+		d.printHealthCheck(api.Healthchecks{})
 	}
 
 	return nil
