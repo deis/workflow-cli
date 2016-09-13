@@ -20,7 +20,7 @@ COPY glide.lock /go/src/github.com/deis/workflow-cli/
 
 WORKDIR /go/src/github.com/deis/workflow-cli
 
-RUN glide install --strip-vcs --strip-vendor
+RUN glide install --strip-vendor
 
 COPY ./_scripts /usr/local/bin
 
