@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"log"
 	"strconv"
 
@@ -40,10 +39,10 @@ func PrintUsage(cmdr cmd.Commander) {
 	cmdr.PrintErrln("Usage: deis <command> [<args>...]")
 }
 
-func printHelp(argv []string, usage string) bool {
+func printHelp(argv []string, usage string, cmdr cmd.Commander) bool {
 	if len(argv) > 1 {
 		if argv[1] == "--help" || argv[1] == "-h" {
-			fmt.Print(usage)
+			cmdr.Print(usage)
 			return true
 		}
 	}

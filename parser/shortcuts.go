@@ -19,7 +19,7 @@ Use 'deis help [command]' to learn more.
 	case "shortcuts:list":
 		return shortcutsList(argv, cmdr)
 	default:
-		if printHelp(argv, usage) {
+		if printHelp(argv, usage, cmdr) {
 			return nil
 		}
 

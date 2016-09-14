@@ -25,7 +25,7 @@ Use 'deis help [command]' to learn more.
 	case "maintenance:off":
 		return maintenanceDisable(argv, cmdr)
 	default:
-		if printHelp(argv, usage) {
+		if printHelp(argv, usage, cmdr) {
 			return nil
 		}
 

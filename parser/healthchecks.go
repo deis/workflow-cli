@@ -37,7 +37,7 @@ Use 'deis help [command]' to learn more.
 	case "healthchecks:unset":
 		return healthchecksUnset(argv, cmdr)
 	default:
-		if printHelp(argv, usage) {
+		if printHelp(argv, usage, cmdr) {
 			return nil
 		}
 

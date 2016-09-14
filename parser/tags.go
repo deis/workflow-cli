@@ -25,7 +25,7 @@ Use 'deis help [command]' to learn more.
 	case "tags:unset":
 		return tagsUnset(argv, cmdr)
 	default:
-		if printHelp(argv, usage) {
+		if printHelp(argv, usage, cmdr) {
 			return nil
 		}
 

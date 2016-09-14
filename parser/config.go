@@ -31,7 +31,7 @@ Use 'deis help [command]' to learn more.
 	case "config:push":
 		return configPush(argv, cmdr)
 	default:
-		if printHelp(argv, usage) {
+		if printHelp(argv, usage, cmdr) {
 			return nil
 		}
 
