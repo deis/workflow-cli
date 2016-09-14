@@ -57,6 +57,9 @@ func TestConfig(t *testing.T) {
 		{
 			args: []string{"config:push"},
 		},
+		{
+			args: []string{"config"},
+		},
 	}
 
 	for _, c := range cases {

@@ -73,6 +73,9 @@ func TestApps(t *testing.T) {
 		{
 			args: []string{"apps:transfer", "test-user"},
 		},
+		{
+			args: []string{"apps"},
+		},
 	}
 
 	cf, server, err := testutil.NewTestServerAndClient()

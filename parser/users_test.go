@@ -58,6 +58,9 @@ func TestUsers(t *testing.T) {
 		{
 			args: []string{"users:list"},
 		},
+		{
+			args: []string{"users"},
+		},
 	}
 
 	for _, c := range cases {

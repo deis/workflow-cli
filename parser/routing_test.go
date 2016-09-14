@@ -43,6 +43,9 @@ func TestRouting(t *testing.T) {
 		{
 			args: []string{"routing:disable"},
 		},
+		{
+			args: []string{"routing"},
+		},
 	}
 
 	for _, c := range cases {

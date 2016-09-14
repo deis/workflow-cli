@@ -43,6 +43,9 @@ func TestTags(t *testing.T) {
 		{
 			args: []string{"tags:unset", "environ"},
 		},
+		{
+			args: []string{"tags"},
+		},
 	}
 
 	for _, c := range cases {

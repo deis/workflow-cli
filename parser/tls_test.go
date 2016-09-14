@@ -43,6 +43,9 @@ func TestTLS(t *testing.T) {
 		{
 			args: []string{"tls:disable"},
 		},
+		{
+			args: []string{"tls"},
+		},
 	}
 
 	for _, c := range cases {

@@ -43,6 +43,9 @@ func TestPs(t *testing.T) {
 		{
 			args: []string{"ps:scale", "web", "5"},
 		},
+		{
+			args: []string{"ps"},
+		},
 	}
 
 	for _, c := range cases {

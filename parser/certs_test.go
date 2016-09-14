@@ -65,6 +65,9 @@ func TestCerts(t *testing.T) {
 		{
 			args: []string{"certs:detach", "name", "example.com"},
 		},
+		{
+			args: []string{"certs"},
+		},
 	}
 
 	for _, c := range cases {

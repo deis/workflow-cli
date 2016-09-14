@@ -36,6 +36,9 @@ func TestGit(t *testing.T) {
 		{
 			args: []string{"git:remove"},
 		},
+		{
+			args: []string{"git"},
+		},
 	}
 
 	for _, c := range cases {

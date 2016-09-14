@@ -43,6 +43,9 @@ func TestRegistry(t *testing.T) {
 		{
 			args: []string{"registry:unset", "username"},
 		},
+		{
+			args: []string{"registry"},
+		},
 	}
 
 	for _, c := range cases {

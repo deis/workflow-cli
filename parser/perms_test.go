@@ -43,6 +43,9 @@ func TestPerms(t *testing.T) {
 		{
 			args: []string{"perms:delete", "test-user"},
 		},
+		{
+			args: []string{"perms"},
+		},
 	}
 
 	for _, c := range cases {

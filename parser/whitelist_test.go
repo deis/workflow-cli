@@ -43,6 +43,9 @@ func TestWhitelist(t *testing.T) {
 		{
 			args: []string{"whitelist:remove", "1.2.3.4"},
 		},
+		{
+			args: []string{"whitelist"},
+		},
 	}
 
 	for _, c := range cases {

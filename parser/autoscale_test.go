@@ -43,6 +43,9 @@ func TestAutoscale(t *testing.T) {
 		{
 			args: []string{"autoscale:unset", "web/cmd"},
 		},
+		{
+			args: []string{"autoscale"},
+		},
 	}
 
 	for _, c := range cases {

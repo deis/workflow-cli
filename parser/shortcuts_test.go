@@ -29,6 +29,9 @@ func TestShortcuts(t *testing.T) {
 		{
 			args: []string{"shortcuts:list"},
 		},
+		{
+			args: []string{"shortcuts"},
+		},
 	}
 
 	for _, c := range cases {

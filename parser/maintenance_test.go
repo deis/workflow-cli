@@ -43,6 +43,9 @@ func TestMaintenance(t *testing.T) {
 		{
 			args: []string{"maintenance:off"},
 		},
+		{
+			args: []string{"maintenance"},
+		},
 	}
 
 	for _, c := range cases {

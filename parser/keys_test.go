@@ -43,6 +43,9 @@ func TestKeys(t *testing.T) {
 		{
 			args: []string{"keys:remove", "key"},
 		},
+		{
+			args: []string{"keys"},
+		},
 	}
 
 	for _, c := range cases {

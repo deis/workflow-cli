@@ -46,6 +46,9 @@ func TestAuth(t *testing.T) {
 		{
 			args: []string{"auth:regenerate"},
 		},
+		{
+			args: []string{"auth"},
+		},
 	}
 
 	for _, c := range cases {

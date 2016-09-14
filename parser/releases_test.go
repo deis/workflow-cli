@@ -46,6 +46,9 @@ func TestReleases(t *testing.T) {
 		{
 			args: []string{"releases:rollback", "v1"},
 		},
+		{
+			args: []string{"releases"},
+		},
 	}
 
 	for _, c := range cases {

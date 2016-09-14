@@ -49,6 +49,9 @@ func TestLimits(t *testing.T) {
 		{
 			args: []string{"limits:unset", "--cpu", "web"},
 		},
+		{
+			args: []string{"limits"},
+		},
 	}
 
 	for _, c := range cases {

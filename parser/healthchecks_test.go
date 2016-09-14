@@ -53,6 +53,9 @@ func TestHealthchecks(t *testing.T) {
 		{
 			args: []string{"healthchecks:unset", "liveness"},
 		},
+		{
+			args: []string{"healthchecks"},
+		},
 	}
 
 	for _, c := range cases {
