@@ -62,6 +62,9 @@ func TestApps(t *testing.T) {
 			args: []string{"apps:logs"},
 		},
 		{
+			args: []string{"apps:logs", "--lines=1"},
+		},
+		{
 			args: []string{"apps:run", "ls"},
 		},
 		{

@@ -41,6 +41,9 @@ func TestReleases(t *testing.T) {
 			args: []string{"releases:info", "v1"},
 		},
 		{
+			args: []string{"releases:rollback"},
+		},
+		{
 			args: []string{"releases:rollback", "v1"},
 		},
 	}

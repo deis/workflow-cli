@@ -41,7 +41,13 @@ func TestLimits(t *testing.T) {
 			args: []string{"limits:set", "web=1G"},
 		},
 		{
+			args: []string{"limits:set", "--cpu", "web=1"},
+		},
+		{
 			args: []string{"limits:unset", "web"},
+		},
+		{
+			args: []string{"limits:unset", "--cpu", "web"},
 		},
 	}
 

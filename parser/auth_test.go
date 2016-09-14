@@ -29,6 +29,9 @@ func TestAuth(t *testing.T) {
 			args: []string{"auth:login", server.Server.URL},
 		},
 		{
+			args: []string{"auth:login", server.Server.URL, "--ssl-verify=true"},
+		},
+		{
 			args: []string{"auth:logout"},
 		},
 		{

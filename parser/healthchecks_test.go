@@ -42,6 +42,15 @@ func TestHealthchecks(t *testing.T) {
 			args: []string{"healthchecks:set", "liveness", "httpGet", "80"},
 		},
 		{
+			args: []string{"healthchecks:set", "liveness", "httpGet", "80", "--header=test-header:test-value"},
+		},
+		{
+			args: []string{"healthchecks:set", "liveness", "exec", "ls"},
+		},
+		{
+			args: []string{"healthchecks:set", "liveness", "tcpSocket", "80"},
+		},
+		{
 			args: []string{"healthchecks:unset", "liveness"},
 		},
 	}
