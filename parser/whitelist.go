@@ -83,9 +83,6 @@ Options:
 		return err
 	}
 
-	if err != nil {
-		return err
-	}
 	app := safeGetValue(args, "--app")
 
 	return cmdr.WhitelistList(app)
