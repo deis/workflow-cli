@@ -28,7 +28,7 @@ Use 'deis help [command]' to learn more.
 	case "releases:rollback":
 		return releasesRollback(argv, cmdr)
 	default:
-		if printHelp(argv, usage, cmdr) {
+		if printHelp(argv, usage) {
 			return nil
 		}
 

@@ -25,7 +25,7 @@ Use 'deis help [command]' to learn more.
 	case "whitelist:remove":
 		return whitelistRemove(argv, cmdr)
 	default:
-		if printHelp(argv, usage, cmdr) {
+		if printHelp(argv, usage) {
 			return nil
 		}
 

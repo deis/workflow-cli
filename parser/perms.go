@@ -25,7 +25,7 @@ Use 'deis help perms:[command]' to learn more.
 	case "perms:delete":
 		return permDelete(argv, cmdr)
 	default:
-		if printHelp(argv, usage, cmdr) {
+		if printHelp(argv, usage) {
 			return nil
 		}
 

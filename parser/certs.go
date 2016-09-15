@@ -36,7 +36,7 @@ Use 'deis help [command]' to learn more.
 	case "certs:detach":
 		return certDetach(argv, cmdr)
 	default:
-		if printHelp(argv, usage, cmdr) {
+		if printHelp(argv, usage) {
 			return nil
 		}
 

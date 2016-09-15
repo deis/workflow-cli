@@ -43,7 +43,7 @@ Use 'deis help [command]' to learn more.
 	case "apps:transfer":
 		return appTransfer(argv, cmdr)
 	default:
-		if printHelp(argv, usage, cmdr) {
+		if printHelp(argv, usage) {
 			return nil
 		}
 

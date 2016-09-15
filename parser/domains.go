@@ -25,7 +25,7 @@ Use 'deis help [command]' to learn more.
 	case "domains:remove":
 		return domainsRemove(argv, cmdr)
 	default:
-		if printHelp(argv, usage, cmdr) {
+		if printHelp(argv, usage) {
 			return nil
 		}
 

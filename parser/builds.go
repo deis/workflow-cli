@@ -22,7 +22,7 @@ Use 'deis help [command]' to learn more.
 	case "builds:create":
 		return buildsCreate(argv, cmdr)
 	default:
-		if printHelp(argv, usage, cmdr) {
+		if printHelp(argv, usage) {
 			return nil
 		}
 

@@ -1,11 +1,6 @@
 package parser
 
-import (
-	"bytes"
-	"testing"
-
-	"github.com/deis/workflow-cli/pkg/testutil"
-)
+import "testing"
 
 func TestSafeGet(t *testing.T) {
 	t.Parallel()
@@ -59,29 +54,21 @@ func TestSafeGetInt(t *testing.T) {
 func TestPrintHelp(t *testing.T) {
 	t.Parallel()
 
-	cf, server, err := testutil.NewTestServerAndClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer server.Close()
-	var b bytes.Buffer
-	cmdr := FakeDeisCmd{WOut: &b, ConfigFile: cf}
-
 	usage := ""
 
-	if !printHelp([]string{"ps", "--help"}, usage, cmdr) {
+	if !printHelp([]string{"ps", "--help"}, usage) {
 		t.Error("Expected true")
 	}
 
-	if !printHelp([]string{"ps", "-h"}, usage, cmdr) {
+	if !printHelp([]string{"ps", "-h"}, usage) {
 		t.Error("Expected true")
 	}
 
-	if printHelp([]string{"ps"}, usage, cmdr) {
+	if printHelp([]string{"ps"}, usage) {
 		t.Error("Expected false")
 	}
 
-	if printHelp([]string{"ps", "--foo"}, usage, cmdr) {
+	if printHelp([]string{"ps", "--foo"}, usage) {
 		t.Error("Expected false")
 	}
 }
