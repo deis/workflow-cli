@@ -26,7 +26,7 @@ func TestCertsList(t *testing.T) {
 	server.Mux.HandleFunc("/v2/certs/", func(w http.ResponseWriter, r *http.Request) {
 		testutil.SetHeaders(w)
 		fmt.Fprintf(w, `{
-			"count": 2,
+			"count": 4,
 			"next": null,
 			"previous": null,
 			"results": [
@@ -102,6 +102,53 @@ func TestCertsList(t *testing.T) {
 	assert.NoErr(t, err)
 
 	assert.Equal(t, b.String(), "No certs\n", "output")
+}
+
+func TestCertsListLimit(t *testing.T) {
+	t.Parallel()
+	cf, server, err := testutil.NewTestServerAndClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer server.Close()
+	var b bytes.Buffer
+	cmdr := DeisCmd{WOut: &b, ConfigFile: cf}
+
+	server.Mux.HandleFunc("/v2/certs/", func(w http.ResponseWriter, r *http.Request) {
+		testutil.SetHeaders(w)
+		fmt.Fprintf(w, `{
+			"count": 4,
+			"next": null,
+			"previous": null,
+			"results": [
+				{
+					"name": "test-example-com",
+					"common_name": "test.example.com",
+					"san": [
+						"test.com",
+						"example.com"
+					],
+					"domains": [
+						"test.com",
+						"example.com"
+					],
+					"created": "2016-06-09T00:00:00UTC",
+					"updated": "2016-06-09T00:00:00UTC",
+					"expires": "2014-11-10T00:00:00UTC",
+					"fingerprint": "12:34:56:78:90"
+				}
+			]
+		}`)
+	})
+
+	err = cmdr.CertsList(1, time.Date(2016, time.June, 9, 0, 0, 0, 0, time.UTC))
+	assert.NoErr(t, err)
+
+	assert.Equal(t, b.String(), `        Name       |   Common Name    |    SubjectAltName    |        Expires        |   Fingerprint   |       Domains        |  Updated   |  Created    
++------------------+------------------+----------------------+-----------------------+-----------------+----------------------+------------+------------+
+  test-example-com | test.example.com | test.com,example.com | 10 Nov 2014 (expired) | 12:34[...]78:90 | test.com,example.com | 9 Jun 2016 | 9 Jun 2016  
+`, "output")
+
 }
 
 func TestCertsInfo(t *testing.T) {

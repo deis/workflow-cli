@@ -87,13 +87,13 @@ func AssertBody(t *testing.T, expected interface{}, req *http.Request) {
 // StripProgress strips the output from the progress method
 func StripProgress(input string) string {
 	first := strings.Index(input, "\b")
-	// If /b charecter not part of string
+	// If \b charecter not part of string
 	if first == -1 {
 		return input
 	}
 	last := strings.LastIndex(input, "\b")
 
-	// return string without /b or the charecters it deletes.
+	// return string without \b or the characters it deletes.
 	return input[:first-(last-first+1)] + input[last+1:]
 }
 
