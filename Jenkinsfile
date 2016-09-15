@@ -99,13 +99,10 @@ node(linux) {
 
 
 stage 'Lint and test container'
-parallel(
-	lint: {
+// TODO: re-parallelize these tasks when race condition is fixed.
 		node(linux) {
 			sh "docker run --rm ${test_image} lint"
 		}
-	},
-	test: {
 		node(linux) {
 			withCredentials([[$class: 'StringBinding',
 												credentialsId: '995d99a7-466b-4beb-bf75-f3ba91cbbc18',
@@ -122,8 +119,6 @@ parallel(
 				sh "docker run -e CODECOV_TOKEN=\${CODECOV_TOKEN} --rm ${test_image} sh -c 'test-cover.sh &&  ${codecov}'"
 			}
 		}
-	}
-)
 
 stage 'Build and Upload Artifacts'
 
