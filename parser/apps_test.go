@@ -47,6 +47,14 @@ func (d FakeDeisCmd) AppTransfer(string, string) error {
 func TestApps(t *testing.T) {
 	t.Parallel()
 
+	cf, server, err := testutil.NewTestServerAndClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer server.Close()
+	var b bytes.Buffer
+	cmdr := FakeDeisCmd{WOut: &b, ConfigFile: cf}
+
 	// cases defines the arguments and expected return of the call.
 	// if expected is "", it defaults to args[0].
 	cases := []struct {
@@ -94,14 +102,6 @@ func TestApps(t *testing.T) {
 			expected: "apps:list",
 		},
 	}
-
-	cf, server, err := testutil.NewTestServerAndClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer server.Close()
-	var b bytes.Buffer
-	cmdr := FakeDeisCmd{WOut: &b, ConfigFile: cf}
 
 	// For each case, check that calling the route with the arguments
 	// returns the expected error, which is args[0] if not provided.
