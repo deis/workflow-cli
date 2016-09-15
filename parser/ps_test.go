@@ -57,6 +57,10 @@ func TestPs(t *testing.T) {
 			args:     []string{"ps:list"},
 			expected: "",
 		},
+		{
+			args:     []string{"ps"},
+			expected: "ps:list",
+		},
 	}
 
 	// For each case, check that calling the route with the arguments
