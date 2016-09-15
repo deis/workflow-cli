@@ -2,22 +2,26 @@ package parser
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
 	"github.com/arschles/assert"
 	"github.com/deis/workflow-cli/pkg/testutil"
 )
 
+// Create fake implementations of each method that return the argument
+// we expect to have called the function (as an error to satisfy the interface).
+
 func (d FakeDeisCmd) KeysList(int) error {
-	return nil
+	return errors.New("keys:list")
 }
 
 func (d FakeDeisCmd) KeyRemove(string) error {
-	return nil
+	return errors.New("keys:remove")
 }
 
 func (d FakeDeisCmd) KeyAdd(string) error {
-	return nil
+	return errors.New("keys:add")
 }
 
 func TestKeys(t *testing.T) {
@@ -31,25 +35,40 @@ func TestKeys(t *testing.T) {
 	var b bytes.Buffer
 	cmdr := FakeDeisCmd{WOut: &b, ConfigFile: cf}
 
+	// cases defines the arguments and expected return of the call.
+	// if expected is "", it defaults to args[0].
 	cases := []struct {
-		args []string
+		args     []string
+		expected string
 	}{
 		{
-			args: []string{"keys:list"},
+			args:     []string{"keys:list"},
+			expected: "",
 		},
 		{
-			args: []string{"keys:add", "key"},
+			args:     []string{"keys:add", "key"},
+			expected: "",
 		},
 		{
-			args: []string{"keys:remove", "key"},
+			args:     []string{"keys:remove", "key"},
+			expected: "",
 		},
 		{
-			args: []string{"keys"},
+			args:     []string{"keys"},
+			expected: "keys:list",
 		},
 	}
 
+	// For each case, check that calling the route with the arguments
+	// returns the expected error, which is args[0] if not provided.
 	for _, c := range cases {
+		var expected string
+		if c.expected == "" {
+			expected = c.args[0]
+		} else {
+			expected = c.expected
+		}
 		err = Keys(c.args, cmdr)
-		assert.NoErr(t, err)
+		assert.Err(t, errors.New(expected), err)
 	}
 }
