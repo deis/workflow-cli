@@ -16,6 +16,7 @@ REGISTRY ?= quay.io/
 IMAGE_PREFIX ?= deisci
 IMAGE := ${REGISTRY}${IMAGE_PREFIX}/workflow-cli-dev:${REVISION}
 
+CGO_ENABLED ?=0
 BUILD_OS ?=linux darwin windows
 BUILD_ARCH ?=amd64 386
 
