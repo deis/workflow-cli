@@ -51,7 +51,7 @@ type Commander interface {
 	HealthchecksUnset(string, string, []string) error
 	KeysList(int) error
 	KeyRemove(string) error
-	KeyAdd(string) error
+	KeyAdd(string, string) error
 	LimitsList(string) error
 	LimitsSet(string, []string, string) error
 	LimitsUnset(string, []string, string) error

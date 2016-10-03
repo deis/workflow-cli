@@ -69,9 +69,13 @@ func keyAdd(argv []string, cmdr cmd.Commander) error {
 	usage := `
 Adds SSH keys for the logged in user.
 
-Usage: deis keys:add [<key>]
+Usage: deis keys:add [<name>] [<key>]
+
+<name> and <key> can be used in either order and are both optional
 
 Arguments:
+  <name>
+    name of the SSH key
   <key>
     a local file path to an SSH public key used to push application code.
 `
@@ -81,7 +85,7 @@ Arguments:
 		return err
 	}
 
-	return cmdr.KeyAdd(safeGetValue(args, "<key>"))
+	return cmdr.KeyAdd(safeGetValue(args, "<name>"), safeGetValue(args, "<key>"))
 }
 
 func keyRemove(argv []string, cmdr cmd.Commander) error {

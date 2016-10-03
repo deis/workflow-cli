@@ -330,15 +330,54 @@ func TestKeyAdd(t *testing.T) {
 
 	out := fmt.Sprintf("Uploading %s to deis... done\n", filepath.Base(keyFile.Name()))
 
-	err = cmdr.KeyAdd(keyFile.Name())
+	err = cmdr.KeyAdd("", keyFile.Name())
 	assert.NoErr(t, err)
 	assert.Equal(t, testutil.StripProgress(b.String()), out, "output")
 
 	b.Reset()
 	cmdr.WIn = strings.NewReader("0\n" + keyFile.Name())
-	err = cmdr.KeyAdd("")
+	err = cmdr.KeyAdd("", "")
 	assert.NoErr(t, err)
 	assert.Equal(t, testutil.StripProgress(b.String()), `Found the following SSH public keys:
 0) Enter path to pubfile (or use keys:add <key_path>)
 Which would you like to use with Deis? Enter the path to the pubkey file: `+out, "output")
+}
+
+func TestKeyAddName(t *testing.T) {
+	// Set temp home dir so no unknown files are listed.
+	name, err := ioutil.TempDir("", "deis-key")
+	assert.NoErr(t, err)
+	settings.SetHome(name)
+	folder := filepath.Join(name, ".ssh")
+	err = os.Mkdir(folder, 0755)
+	assert.NoErr(t, err)
+
+	cf, server, err := testutil.NewTestServerAndClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer server.Close()
+	var b bytes.Buffer
+	cmdr := DeisCmd{WOut: &b, ConfigFile: cf}
+
+	keyFile, err := ioutil.TempFile("", "deis-cli-unit-test-ssh-key")
+	assert.NoErr(t, err)
+	// generate with one name but used another in the add
+	toWrite := []byte("ssh-rsa abc test@example.com")
+	_, err = keyFile.Write(toWrite)
+	assert.NoErr(t, err)
+	keyFile.Close()
+
+	server.Mux.HandleFunc("/v2/keys/", func(w http.ResponseWriter, r *http.Request) {
+		testutil.SetHeaders(w)
+		testutil.AssertBody(t, api.KeyCreateRequest{ID: "deis-test-key", Public: string(toWrite)}, r)
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprintf(w, "{}")
+	})
+
+	out := fmt.Sprintf("Uploading %s to deis... done\n", filepath.Base(keyFile.Name()))
+
+	err = cmdr.KeyAdd("deis-test-key", keyFile.Name())
+	assert.NoErr(t, err)
+	assert.Equal(t, testutil.StripProgress(b.String()), out, "output")
 }

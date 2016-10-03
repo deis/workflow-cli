@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -63,7 +64,7 @@ func (d *DeisCmd) KeyRemove(keyID string) error {
 }
 
 // KeyAdd adds keys.
-func (d *DeisCmd) KeyAdd(keyLocation string) error {
+func (d *DeisCmd) KeyAdd(name string, keyLocation string) error {
 	s, err := settings.Load(d.ConfigFile)
 
 	if err != nil {
@@ -71,6 +72,16 @@ func (d *DeisCmd) KeyAdd(keyLocation string) error {
 	}
 
 	var key api.KeyCreateRequest
+
+	// check if name is the key
+	if name != "" && keyLocation == "" {
+		// detect of name is a file
+		_, err := os.Stat(name)
+		if err == nil {
+			keyLocation = name
+			name = ""
+		}
+	}
 
 	if keyLocation == "" {
 		ks, err := listKeys(d.WOut)
@@ -86,6 +97,11 @@ func (d *DeisCmd) KeyAdd(keyLocation string) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	// if name is provided by user then overwrite that in the key object
+	if name != "" {
+		key.ID = name
 	}
 
 	d.Printf("Uploading %s to deis...", filepath.Base(key.Name))

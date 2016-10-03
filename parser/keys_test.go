@@ -20,7 +20,7 @@ func (d FakeDeisCmd) KeyRemove(string) error {
 	return errors.New("keys:remove")
 }
 
-func (d FakeDeisCmd) KeyAdd(string) error {
+func (d FakeDeisCmd) KeyAdd(string, string) error {
 	return errors.New("keys:add")
 }
 
@@ -46,7 +46,7 @@ func TestKeys(t *testing.T) {
 			expected: "",
 		},
 		{
-			args:     []string{"keys:add", "key"},
+			args:     []string{"keys:add", "name", "key"},
 			expected: "",
 		},
 		{
