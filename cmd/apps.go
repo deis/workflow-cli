@@ -1,11 +1,16 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	deis "github.com/deis/controller-sdk-go"
 	"github.com/deis/controller-sdk-go/api"
 	"github.com/deis/controller-sdk-go/apps"
 	"github.com/deis/controller-sdk-go/config"
@@ -14,6 +19,7 @@ import (
 	"github.com/deis/workflow-cli/pkg/logging"
 	"github.com/deis/workflow-cli/pkg/webbrowser"
 	"github.com/deis/workflow-cli/settings"
+	"github.com/gorilla/websocket"
 )
 
 // AppCreate creates an app.
@@ -189,6 +195,72 @@ func (d *DeisCmd) AppLogs(appID string, lines int) error {
 	return nil
 }
 
+// Run a one-time command in your app. This will start a kubernetes job with the
+// same container image and environment as the rest of the app.
+// This is a local implementation, to be ported to controller-sdk-go once it
+// becomes more solid.
+func Run(c *deis.Client, appID string, command string) (api.AppRunResponse, error) {
+	apiReq := api.AppRunRequest{Command: command}
+	body, err := json.Marshal(apiReq)
+	if err != nil {
+		return api.AppRunResponse{}, err
+	}
+
+	url := *c.ControllerURL
+	path := fmt.Sprintf("/v2/apps/%s/ptys/", appID)
+
+	if strings.Contains(path, "?") {
+		parts := strings.Split(path, "?")
+		url.Path = parts[0]
+		url.RawQuery = parts[1]
+	} else {
+		url.Path = path
+	}
+
+	urlString := url.String()
+	urlString = strings.Replace(urlString, "https://", "wss://", 1)
+	urlString = strings.Replace(urlString, "http://", "ws://", 1)
+
+	req, err := http.NewRequest("POST", urlString, bytes.NewBuffer(body))
+	if err != nil {
+		return api.AppRunResponse{}, err
+	}
+
+	dialer := websocket.Dialer{}
+	conn, _, err := dialer.Dial(urlString, req.Header)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	message := []byte("hello, world!")
+	err = conn.WriteMessage(websocket.TextMessage, message)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Send: %s\n", message)
+
+	_, msg, err := conn.ReadMessage()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("Receive: %s\n", msg)
+
+	// res, reqErr := c.Request("POST", u, body)
+	// if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
+	// 	return api.AppRunResponse{}, reqErr
+	// }
+	//
+	// arr := api.AppRunResponse{}
+	//
+	// if err = json.NewDecoder(res.Body).Decode(&arr); err != nil {
+	// 	return api.AppRunResponse{}, err
+	// }
+	//
+	// return arr, reqErr
+
+	return api.AppRunResponse{}, nil
+}
+
 // AppRun runs a one time command in the app.
 func (d *DeisCmd) AppRun(appID, command string) error {
 	s, appID, err := load(d.ConfigFile, appID)
@@ -199,7 +271,8 @@ func (d *DeisCmd) AppRun(appID, command string) error {
 
 	d.Printf("Running '%s'...\n", command)
 
-	out, err := apps.Run(s.Client, appID, command)
+	// out, err := apps.Run(s.Client, appID, command)
+	out, err := Run(s.Client, appID, command)
 	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}
