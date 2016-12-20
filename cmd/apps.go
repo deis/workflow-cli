@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	deis "github.com/deis/controller-sdk-go"
@@ -231,19 +233,42 @@ func Run(c *deis.Client, appID string, command string) (api.AppRunResponse, erro
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer conn.Close()
 
-	message := []byte("hello, world!")
-	err = conn.WriteMessage(websocket.TextMessage, message)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Send: %s\n", message)
+	var wg sync.WaitGroup
 
-	_, msg, err := conn.ReadMessage()
-	if err != nil {
-		log.Fatal(err)
+	sendFromStdin := func() {
+		stdin := bufio.NewReader(os.Stdin)
+		for {
+			message, err := stdin.ReadString('\n')
+			if err != nil {
+				log.Fatal(err)
+				wg.Done()
+			}
+			err = conn.WriteMessage(websocket.TextMessage, []byte(message))
+			if err != nil {
+				log.Fatal(err)
+				wg.Done()
+			}
+		}
 	}
-	fmt.Printf("Receive: %s\n", msg)
+
+	recvToStdout := func() {
+		for {
+			_, msg, err := conn.ReadMessage()
+			if err != nil {
+				log.Fatal(err)
+				wg.Done()
+			}
+			fmt.Printf("Receive: %s\n", msg)
+		}
+	}
+
+	wg.Add(1)
+	go sendFromStdin()
+	wg.Add(1)
+	go recvToStdout()
+	wg.Wait()
 
 	// res, reqErr := c.Request("POST", u, body)
 	// if reqErr != nil && !deis.IsErrAPIMismatch(reqErr) {
