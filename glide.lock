@@ -27,20 +27,26 @@ imports:
   subpackages:
   - prettyprint
   - time
+- name: github.com/docker/docker
+  version: b9f10c951893f9a00865890a5232e85d770c1087
+  subpackages:
+  - pkg/term
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
+- name: github.com/gorilla/websocket
+  version: 3ab3a8b8831546bd18fd182c20687ca853b2bb13
 - name: github.com/goware/urlx
-  version: 8bb4a2e4339f55b15164907177e96e9faf885504
+  version: 86bdc24560383254e8b977da31a823eddf904409
 - name: github.com/mattn/go-runewidth
-  version: 737072b4e32b7a5018b4a7125da8d12de90e8045
+  version: d6bea18f789704b5f83375793155289da36a3c7f
 - name: github.com/olekukonko/tablewriter
   version: bdcc175572fd7abece6c831e643891b9331bc9e7
 - name: github.com/PuerkitoBio/purell
-  version: 0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4
+  version: 1d5d1cfad45d42ec5f81fa8ef23de09cebc6dcc3
 - name: github.com/PuerkitoBio/urlesc
-  version: 5bd2802263f21d8788851d5305584c82a5c75d7e
+  version: 5fa9ff0392746aeae1c4b37fcc42c65afa7a9587
 - name: golang.org/x/crypto
-  version: 9a6f0a01987842989747adff311d80750ba25530
+  version: 1f22c0103821b9390939b6776727195525381532
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
@@ -48,16 +54,6 @@ imports:
   subpackages:
   - context
   - idna
-- name: golang.org/x/sys
-  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
-  subpackages:
-  - unix
-- name: golang.org/x/text
-  version: 47a200a05c8b3fd1b698571caecbb68beb2611ec
-  subpackages:
-  - transform
-  - unicode/norm
-  - width
 - name: gopkg.in/yaml.v2
-  version: a5b47d31c556af34a302ce5d659e6fea44d90de0
+  version: a83829b6f1293c91addabc89d0571c246397bbf4
 testImports: []

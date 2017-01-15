@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -203,10 +201,6 @@ func (d *DeisCmd) AppLogs(appID string, lines int) error {
 // becomes more solid.
 func Run(c *deis.Client, appID string, command string) (api.AppRunResponse, error) {
 	apiReq := api.AppRunRequest{Command: command}
-	body, err := json.Marshal(apiReq)
-	if err != nil {
-		return api.AppRunResponse{}, err
-	}
 
 	url := *c.ControllerURL
 	path := fmt.Sprintf("/v2/apps/%s/ptys/", appID)
@@ -223,9 +217,13 @@ func Run(c *deis.Client, appID string, command string) (api.AppRunResponse, erro
 	urlString = strings.Replace(urlString, "https://", "wss://", 1)
 	urlString = strings.Replace(urlString, "http://", "ws://", 1)
 
-	req, err := http.NewRequest("POST", urlString, bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", urlString, nil)
 	if err != nil {
 		return api.AppRunResponse{}, err
+	}
+
+	if c.Token != "" {
+		req.Header.Add("Authorization", "token "+c.Token)
 	}
 
 	dialer := websocket.Dialer{}
@@ -234,6 +232,8 @@ func Run(c *deis.Client, appID string, command string) (api.AppRunResponse, erro
 		log.Fatal(err)
 	}
 	defer conn.Close()
+
+	conn.WriteJSON(apiReq)
 
 	var wg sync.WaitGroup
 
