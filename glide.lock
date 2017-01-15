@@ -1,8 +1,8 @@
-hash: df0e54f151fe59020aeb6596445430c9185644ffe1650c9c80f020f04bffb60f
-updated: 2017-01-09T11:54:15.635074917-08:00
+hash: dc97d014020764f0f29fcfba4048702d1189a64bbe142a1805e1d18483991a0b
+updated: 2017-02-04T19:49:47.574458189-07:00
 imports:
 - name: github.com/arschles/assert
-  version: bb58b908265b5931732079df03f2818bf2167ba0
+  version: 6882f85ccdc7c1822b146d1a6b0c2c48f91b5140
 - name: github.com/deis/controller-sdk-go
   version: 9520b6c460202f376856d042ac4864ee951cdf3a
   subpackages:
@@ -23,30 +23,30 @@ imports:
   - users
   - whitelist
 - name: github.com/deis/pkg
-  version: 28bd07fbcbec5aaaaeda05d362d8ff81f55f4f6c
+  version: 00e55bded444eea7fadff398f93152e962a0c338
   subpackages:
   - prettyprint
   - time
 - name: github.com/docker/docker
-  version: b9f10c951893f9a00865890a5232e85d770c1087
+  version: 0f5c9d301b9b1cca66b3ea0f9dec3b5317d3686d
   subpackages:
   - pkg/term
 - name: github.com/docopt/docopt-go
   version: 784ddc588536785e7299f7272f39101f7faccc3f
 - name: github.com/gorilla/websocket
-  version: 3ab3a8b8831546bd18fd182c20687ca853b2bb13
+  version: c36f2fe5c330f0ac404b616b96c438b8616b1aaf
 - name: github.com/goware/urlx
-  version: 86bdc24560383254e8b977da31a823eddf904409
+  version: 8bb4a2e4339f55b15164907177e96e9faf885504
 - name: github.com/mattn/go-runewidth
   version: d6bea18f789704b5f83375793155289da36a3c7f
 - name: github.com/olekukonko/tablewriter
-  version: bdcc175572fd7abece6c831e643891b9331bc9e7
+  version: febf2d34b54a69ce7530036c7503b1c9fbfdf0bb
 - name: github.com/PuerkitoBio/purell
-  version: 1d5d1cfad45d42ec5f81fa8ef23de09cebc6dcc3
+  version: 0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4
 - name: github.com/PuerkitoBio/urlesc
-  version: 5fa9ff0392746aeae1c4b37fcc42c65afa7a9587
+  version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: golang.org/x/crypto
-  version: 1f22c0103821b9390939b6776727195525381532
+  version: 641ab6b32049cabca26c30bf27baaae445bf4175
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
@@ -54,6 +54,16 @@ imports:
   subpackages:
   - context
   - idna
+- name: golang.org/x/sys
+  version: d75a52659825e75fff6158388dddc6a5b04f9ba5
+  subpackages:
+  - unix
+- name: golang.org/x/text
+  version: 47a200a05c8b3fd1b698571caecbb68beb2611ec
+  subpackages:
+  - transform
+  - unicode/norm
+  - width
 - name: gopkg.in/yaml.v2
-  version: a83829b6f1293c91addabc89d0571c246397bbf4
+  version: eca94c41d994ae2215d455ce578ae6e2dc6ee516
 testImports: []
