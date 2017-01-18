@@ -11,6 +11,7 @@ endif
 # The latest git tag on branch
 GIT_TAG ?= $(shell git describe --abbrev=0 --tags)
 REVISION ?= $(shell git rev-parse --short HEAD)
+DOCKER_BUILD_FLAGS ?= --no-cache
 
 REGISTRY ?= quay.io/
 IMAGE_PREFIX ?= deisci
