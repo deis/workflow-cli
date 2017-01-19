@@ -212,6 +212,8 @@ Arguments:
     the shell command to run inside the container.
 
 Options:
+  -i --image=<image>
+    the docker image to use, defaults to current release image
   -a --app=<app>
     the uniquely identifiable name for the application.
 `
@@ -223,9 +225,10 @@ Options:
 	}
 
 	app := safeGetValue(args, "--app")
+	image := safeGetValue(args, "--image")
 	command := strings.Join(args["<command>"].([]string), " ")
 
-	return cmdr.AppRun(app, command)
+	return cmdr.AppRun(app, image, command)
 }
 
 func appDestroy(argv []string, cmdr cmd.Commander) error {

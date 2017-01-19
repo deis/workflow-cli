@@ -190,7 +190,7 @@ func (d *DeisCmd) AppLogs(appID string, lines int) error {
 }
 
 // AppRun runs a one time command in the app.
-func (d *DeisCmd) AppRun(appID, command string) error {
+func (d *DeisCmd) AppRun(appID, image string, command string) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -199,7 +199,7 @@ func (d *DeisCmd) AppRun(appID, command string) error {
 
 	d.Printf("Running '%s'...\n", command)
 
-	out, err := apps.Run(s.Client, appID, command)
+	out, err := apps.Run(s.Client, appID, image, command)
 	if d.checkAPICompatibility(s.Client, err) != nil {
 		return err
 	}

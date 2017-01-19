@@ -32,7 +32,7 @@ func (d FakeDeisCmd) AppLogs(string, int) error {
 	return errors.New("apps:logs")
 }
 
-func (d FakeDeisCmd) AppRun(string, string) error {
+func (d FakeDeisCmd) AppRun(string, string, string) error {
 	return errors.New("apps:run")
 }
 
@@ -87,6 +87,10 @@ func TestApps(t *testing.T) {
 		},
 		{
 			args:     []string{"apps:run", "ls"},
+			expected: "",
+		},
+		{
+			args:     []string{"apps:run", "--image=x:y", "ls"},
 			expected: "",
 		},
 		{
