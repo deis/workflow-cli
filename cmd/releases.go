@@ -59,6 +59,7 @@ func (d *DeisCmd) ReleasesInfo(appID string, version int) error {
 	d.Println("summary: ", r.Summary)
 	d.Println("updated: ", r.Updated)
 	d.Println("uuid:    ", r.UUID)
+	d.Println("deployed: ", r.Deployed)
 
 	return nil
 }

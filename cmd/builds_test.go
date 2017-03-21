@@ -55,7 +55,8 @@ func TestBuildsList(t *testing.T) {
 					"procfile": {},
 					"sha": "",
 					"updated": "",
-					"uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
+					"uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
+					"deploy_now": true,
 				},
 				{
 					"app": "",
@@ -66,7 +67,8 @@ func TestBuildsList(t *testing.T) {
 					"procfile": {},
 					"sha": "",
 					"updated": "",
-					"uuid": "c4aed81c-d1ca-4ff1-ab89-d2151264e1a3"
+					"uuid": "c4aed81c-d1ca-4ff1-ab89-d2151264e1a3",
+					"deploy_now": true
 				}
 			]
 		}`)
@@ -106,7 +108,8 @@ func TestBuildsListLimit(t *testing.T) {
                     "procfile": {},
                     "sha": "",
                     "updated": "",
-                    "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
+                    "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
+                    "deploy_now": true
                 }
             ]
         }`)

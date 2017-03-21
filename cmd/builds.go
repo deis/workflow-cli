@@ -61,7 +61,7 @@ func (d *DeisCmd) BuildsCreate(appID, image, procfile string) error {
 
 	d.Print("Creating build... ")
 	quit := progress(d.WOut)
-	_, err = builds.New(s.Client, appID, image, procfileMap)
+	_, err = builds.New(s.Client, appID, image, procfileMap, true)
 	quit <- true
 	<-quit
 	if d.checkAPICompatibility(s.Client, err) != nil {
