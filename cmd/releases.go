@@ -64,6 +64,29 @@ func (d *DeisCmd) ReleasesInfo(appID string, version int) error {
 	return nil
 }
 
+// ReleasesDeploy deploys a  release.
+func (d *DeisCmd) ReleasesDeploy(appID string, version int) error {
+	s, appID, err := load(d.ConfigFile, appID)
+
+	if err != nil {
+		return err
+	}
+
+	d.Printf("Deploying v%d... ", version)
+
+	quit := progress(d.WOut)
+	newVersion, err := releases.Deploy(s.Client, appID, version)
+	quit <- true
+	<-quit
+	if d.checkAPICompatibility(s.Client, err) != nil {
+		return err
+	}
+
+	d.Printf("done, v%d\n", newVersion)
+
+	return nil
+}
+
 // ReleasesRollback rolls an app back to a previous release.
 func (d *DeisCmd) ReleasesRollback(appID string, version int) error {
 	s, appID, err := load(d.ConfigFile, appID)

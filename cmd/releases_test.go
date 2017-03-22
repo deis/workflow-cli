@@ -144,6 +144,28 @@ deployed: true
 `, "output")
 }
 
+func TestReleasesDeploy(t *testing.T) {
+	t.Parallel()
+	cf, server, err := testutil.NewTestServerAndClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer server.Close()
+	var b bytes.Buffer
+	cmdr := DeisCmd{WOut: &b, ConfigFile: cf}
+
+	server.Mux.HandleFunc("/v2/apps/numenor/releases/deploy/", func(w http.ResponseWriter, r *http.Request) {
+		testutil.SetHeaders(w)
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		assert.Equal(t, body, []byte{}, "body")
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprintf(w, `{"version": 5}`)
+	})
+
 func TestReleasesRollback(t *testing.T) {
 	t.Parallel()
 	cf, server, err := testutil.NewTestServerAndClient()
