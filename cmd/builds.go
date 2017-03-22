@@ -35,7 +35,7 @@ func (d *DeisCmd) BuildsList(appID string, results int) error {
 }
 
 // BuildsCreate creates a build for an app.
-func (d *DeisCmd) BuildsCreate(appID, image, procfile string) error {
+func (d *DeisCmd) BuildsCreate(appID, image, procfile string, deploy_now bool) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
@@ -61,7 +61,7 @@ func (d *DeisCmd) BuildsCreate(appID, image, procfile string) error {
 
 	d.Print("Creating build... ")
 	quit := progress(d.WOut)
-	_, err = builds.New(s.Client, appID, image, procfileMap, true)
+	_, err = builds.New(s.Client, appID, image, procfileMap, deploy_now)
 	quit <- true
 	<-quit
 	if d.checkAPICompatibility(s.Client, err) != nil {

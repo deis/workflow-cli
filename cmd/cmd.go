@@ -29,7 +29,7 @@ type Commander interface {
 	Whoami(bool) error
 	Regenerate(string, bool) error
 	BuildsList(string, int) error
-	BuildsCreate(string, string, string) error
+	BuildsCreate(string, string, string, bool) error
 	CertsList(int, time.Time) error
 	CertAdd(string, string, string) error
 	CertRemove(string) error

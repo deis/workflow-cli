@@ -13,7 +13,7 @@ func (d FakeDeisCmd) BuildsList(string, int) error {
 	return errors.New("builds:list")
 }
 
-func (d FakeDeisCmd) BuildsCreate(string, string, string) error {
+func (d FakeDeisCmd) BuildsCreate(string, string, string, bool) error {
 	return errors.New("builds:create")
 }
 

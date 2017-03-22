@@ -147,7 +147,7 @@ func TestBuildsCreate(t *testing.T) {
 		fmt.Fprintf(w, "{}")
 	})
 
-	err = cmdr.BuildsCreate("enterprise", "ncc/1701:A", "")
+	err = cmdr.BuildsCreate("enterprise", "ncc/1701:A", "", true)
 	assert.NoErr(t, err)
 	assert.Equal(t, testutil.StripProgress(b.String()), "Creating build... done\n", "output")
 
@@ -168,7 +168,7 @@ func TestBuildsCreate(t *testing.T) {
 
 	err = cmdr.BuildsCreate("bradbury", "nx/72307:latest", `web: ./drive
 warp: ./warp 8
-`)
+`, true)
 	assert.NoErr(t, err)
 	assert.Equal(t, testutil.StripProgress(b.String()), "Creating build... done\n", "output")
 
@@ -192,7 +192,7 @@ warp: ./warp 8
 `), os.ModePerm)
 	assert.NoErr(t, err)
 
-	err = cmdr.BuildsCreate("franklin", "nx/326:latest", "")
+	err = cmdr.BuildsCreate("franklin", "nx/326:latest", "", true)
 	assert.NoErr(t, err)
 	assert.Equal(t, testutil.StripProgress(b.String()), "Creating build... done\n", "output")
 
