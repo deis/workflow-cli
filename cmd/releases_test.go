@@ -165,6 +165,7 @@ func TestReleasesDeploy(t *testing.T) {
 		w.WriteHeader(http.StatusCreated)
 		fmt.Fprintf(w, `{"version": 5}`)
 	})
+}
 
 func TestReleasesRollback(t *testing.T) {
 	t.Parallel()
