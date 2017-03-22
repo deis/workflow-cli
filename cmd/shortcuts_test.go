@@ -17,6 +17,7 @@ open -> apps:open
 passwd -> auth:passwd
 pull -> builds:create
 register -> auth:register
+deploy -> releases:deploy
 rollback -> releases:rollback
 run -> apps:run
 scale -> ps:scale
