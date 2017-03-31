@@ -42,6 +42,15 @@ func (d *DeisCmd) BuildsCreate(appID, image, procfile string, deploy_now bool) e
 		return err
 	}
 
+	config, err := config.List(s.Client, appID)
+	if d.checkAPICompatibility(s.Client, err) != nil {
+		return err
+	}
+
+	if val, ok := config["DEIS_DEPLOY_NOW"]; ok {
+		deploy_now = val
+	}
+
 	procfileMap := make(map[string]string)
 
 	if procfile != "" {
