@@ -48,7 +48,7 @@ node(windows) {
 	}
 }
 
-stage 'Git Info'
+stage 'Git Info2'
 node(linux) {
 	checkout scm
 
