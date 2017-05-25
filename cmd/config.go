@@ -244,7 +244,7 @@ func (d *DeisCmd) ConfigPush(appID, fileName string) error {
 
 	var contents []byte
 
-	if (stat.Mode() & os.ModeCharDevice) == 0 {
+	if (stat.Mode()&os.ModeNamedPipe) == 0 && stat.Size() > 0 {
 		buffer := new(bytes.Buffer)
 		buffer.ReadFrom(os.Stdin)
 		contents = buffer.Bytes()
