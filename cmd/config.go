@@ -243,17 +243,28 @@ func (d *DeisCmd) ConfigPush(appID, fileName string) error {
 	}
 
 	var contents []byte
-
-	if (stat.Mode()&os.ModeNamedPipe) == 0 && stat.Size() > 0 {
-		buffer := new(bytes.Buffer)
-		buffer.ReadFrom(os.Stdin)
-		contents = buffer.Bytes()
-	} else {
+	d.Print("os - ModeCharDevice: ")
+	d.Println(os.ModeCharDevice)
+	d.Print("os - ModeNamedPipe: ")
+	d.Println(os.ModeNamedPipe)
+	d.Print("stat - Mode: ")
+	d.Println(stat.Mode())
+	d.Print("stat - Size: ")
+	d.Println(stat.Size())
+	d.Print("stat - Flag: ")
+	d.Println(stat.Mode()&os.ModeNamedPipe == 0)
+	if stat.Size() <= 0 || stat.Mode()&os.ModeNamedPipe == 0 {
+		d.Println("NOT STDIN!")
 		contents, err = ioutil.ReadFile(fileName)
 
 		if err != nil {
 			return err
 		}
+	} else {
+		d.Println("STDIN!")
+		buffer := new(bytes.Buffer)
+		buffer.ReadFrom(os.Stdin)
+		contents = buffer.Bytes()
 	}
 
 	file := strings.Split(string(contents), "\n")
