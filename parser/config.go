@@ -176,9 +176,11 @@ Usage: deis config:push [options]
 
 Options:
   -a --app=<app>
-    the uniquely identifiable name for the application.
+    The uniquely identifiable name for the application.
   -p <path>, --path=<path>
-    a path leading to an environment file [default: .env]
+    A path leading to an environment file [default: .no-file]
+  -v --verbose
+    Show debug output
 `
 
 	args, err := docopt.Parse(usage, argv, true, "", false, true)
@@ -189,6 +191,7 @@ Options:
 
 	app := safeGetValue(args, "--app")
 	path := safeGetValue(args, "--path")
+	verbose := args["--verbose"].(bool)
 
-	return cmdr.ConfigPush(app, path)
+	return cmdr.ConfigPush(app, path, verbose)
 }
