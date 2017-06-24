@@ -59,6 +59,30 @@ func (d *DeisCmd) ReleasesInfo(appID string, version int) error {
 	d.Println("summary: ", r.Summary)
 	d.Println("updated: ", r.Updated)
 	d.Println("uuid:    ", r.UUID)
+	d.Println("deployed: ", r.Deployed)
+
+	return nil
+}
+
+// ReleasesDeploy deploys a  release.
+func (d *DeisCmd) ReleasesDeploy(appID string, version int) error {
+	s, appID, err := load(d.ConfigFile, appID)
+
+	if err != nil {
+		return err
+	}
+
+	d.Printf("Deploying v%d... ", version)
+
+	quit := progress(d.WOut)
+	newVersion, err := releases.Deploy(s.Client, appID, version)
+	quit <- true
+	<-quit
+	if d.checkAPICompatibility(s.Client, err) != nil {
+		return err
+	}
+
+	d.Printf("done, v%d\n", newVersion)
 
 	return nil
 }

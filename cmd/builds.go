@@ -35,11 +35,20 @@ func (d *DeisCmd) BuildsList(appID string, results int) error {
 }
 
 // BuildsCreate creates a build for an app.
-func (d *DeisCmd) BuildsCreate(appID, image, procfile string) error {
+func (d *DeisCmd) BuildsCreate(appID, image, procfile string, deploy_now bool) error {
 	s, appID, err := load(d.ConfigFile, appID)
 
 	if err != nil {
 		return err
+	}
+
+	config, err := config.List(s.Client, appID)
+	if d.checkAPICompatibility(s.Client, err) != nil {
+		return err
+	}
+
+	if val, ok := config["DEIS_DEPLOY_NOW"]; ok {
+		deploy_now = val
 	}
 
 	procfileMap := make(map[string]string)
@@ -61,7 +70,7 @@ func (d *DeisCmd) BuildsCreate(appID, image, procfile string) error {
 
 	d.Print("Creating build... ")
 	quit := progress(d.WOut)
-	_, err = builds.New(s.Client, appID, image, procfileMap)
+	_, err = builds.New(s.Client, appID, image, procfileMap, deploy_now)
 	quit <- true
 	<-quit
 	if d.checkAPICompatibility(s.Client, err) != nil {

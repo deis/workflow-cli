@@ -15,6 +15,7 @@ Valid commands for releases:
 
 releases:list        list an application's release history
 releases:info        print information about a specific release
+releases:deploy      deploy a release
 releases:rollback    return to a previous release
 
 Use 'deis help [command]' to learn more.
@@ -25,6 +26,8 @@ Use 'deis help [command]' to learn more.
 		return releasesList(argv, cmdr)
 	case "releases:info":
 		return releasesInfo(argv, cmdr)
+	case "releases:deploy":
+		return releasesRollback(argv, cmdr)
 	case "releases:rollback":
 		return releasesRollback(argv, cmdr)
 	default:
@@ -99,6 +102,37 @@ Options:
 	app := safeGetValue(args, "--app")
 
 	return cmdr.ReleasesInfo(app, version)
+}
+
+func releasesDeploy(argv []string, cmdr cmd.Commander) error {
+	usage := `
+Deploy a release.
+
+Usage: deis releases:deploy <version> [options]
+
+Arguments:
+  <version>
+    the release of the application, such as 'v1'.
+
+Options:
+  -a --app=<app>
+    the uniquely identifiable name of the application.
+`
+
+	args, err := docopt.Parse(usage, argv, true, "", false, true)
+	if err != nil {
+		return err
+	}
+
+	version, err = versionFromString(args["<version>"].(string))
+
+	if err != nil {
+		return err
+	}
+
+	app := safeGetValue(args, "--app")
+
+	return cmdr.ReleasesDeploy(app, version)
 }
 
 func releasesRollback(argv []string, cmdr cmd.Commander) error {

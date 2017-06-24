@@ -55,7 +55,8 @@ func TestBuildsList(t *testing.T) {
 					"procfile": {},
 					"sha": "",
 					"updated": "",
-					"uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
+					"uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
+					"deploy_now": true,
 				},
 				{
 					"app": "",
@@ -66,7 +67,8 @@ func TestBuildsList(t *testing.T) {
 					"procfile": {},
 					"sha": "",
 					"updated": "",
-					"uuid": "c4aed81c-d1ca-4ff1-ab89-d2151264e1a3"
+					"uuid": "c4aed81c-d1ca-4ff1-ab89-d2151264e1a3",
+					"deploy_now": true
 				}
 			]
 		}`)
@@ -106,7 +108,8 @@ func TestBuildsListLimit(t *testing.T) {
                     "procfile": {},
                     "sha": "",
                     "updated": "",
-                    "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75"
+                    "uuid": "de1bf5b5-4a72-4f94-a10c-d2a3741cdf75",
+                    "deploy_now": true
                 }
             ]
         }`)
@@ -144,7 +147,7 @@ func TestBuildsCreate(t *testing.T) {
 		fmt.Fprintf(w, "{}")
 	})
 
-	err = cmdr.BuildsCreate("enterprise", "ncc/1701:A", "")
+	err = cmdr.BuildsCreate("enterprise", "ncc/1701:A", "", true)
 	assert.NoErr(t, err)
 	assert.Equal(t, testutil.StripProgress(b.String()), "Creating build... done\n", "output")
 
@@ -165,7 +168,7 @@ func TestBuildsCreate(t *testing.T) {
 
 	err = cmdr.BuildsCreate("bradbury", "nx/72307:latest", `web: ./drive
 warp: ./warp 8
-`)
+`, true)
 	assert.NoErr(t, err)
 	assert.Equal(t, testutil.StripProgress(b.String()), "Creating build... done\n", "output")
 
@@ -189,7 +192,7 @@ warp: ./warp 8
 `), os.ModePerm)
 	assert.NoErr(t, err)
 
-	err = cmdr.BuildsCreate("franklin", "nx/326:latest", "")
+	err = cmdr.BuildsCreate("franklin", "nx/326:latest", "", true)
 	assert.NoErr(t, err)
 	assert.Equal(t, testutil.StripProgress(b.String()), "Creating build... done\n", "output")
 
