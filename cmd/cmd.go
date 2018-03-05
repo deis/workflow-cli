@@ -40,7 +40,7 @@ type Commander interface {
 	ConfigSet(string, []string) error
 	ConfigUnset(string, []string) error
 	ConfigPull(string, bool, bool) error
-	ConfigPush(string, string) error
+	ConfigPush(string, string, bool) error
 	DomainsList(string, int) error
 	DomainsAdd(string, string) error
 	DomainsRemove(string, string) error

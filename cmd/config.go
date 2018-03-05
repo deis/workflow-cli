@@ -219,7 +219,7 @@ func (d *DeisCmd) ConfigPull(appID string, interactive bool, overwrite bool) err
 }
 
 // ConfigPush pushes an app's config from a file.
-func (d *DeisCmd) ConfigPush(appID, fileName string) error {
+func (d *DeisCmd) ConfigPush(appID, fileName string, verbose bool) error {
 	stat, err := os.Stdin.Stat()
 
 	if err != nil {
@@ -227,12 +227,20 @@ func (d *DeisCmd) ConfigPush(appID, fileName string) error {
 	}
 
 	var contents []byte
-
-	if (stat.Mode() & os.ModeCharDevice) == 0 {
+	if ((stat.Mode()&os.ModeNamedPipe) != 0 || stat.Size() > 0) && fileName == ".no-file" {
+		if verbose {
+			d.Println("Getting input from stdin")
+		}
 		buffer := new(bytes.Buffer)
 		buffer.ReadFrom(os.Stdin)
 		contents = buffer.Bytes()
 	} else {
+		if verbose {
+			d.Println("Not getting input from stdin")
+		}
+		if fileName == ".no-file" {
+			fileName = ".env"
+		}
 		contents, err = ioutil.ReadFile(fileName)
 
 		if err != nil {

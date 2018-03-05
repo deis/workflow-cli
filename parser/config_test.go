@@ -28,7 +28,7 @@ func (d FakeDeisCmd) ConfigPull(string, bool, bool) error {
 	return errors.New("config:pull")
 }
 
-func (d FakeDeisCmd) ConfigPush(string, string) error {
+func (d FakeDeisCmd) ConfigPush(string, string, bool) error {
 	return errors.New("config:push")
 }
 
